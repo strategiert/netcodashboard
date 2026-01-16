@@ -48,7 +48,7 @@ const statusOptions = [
   { value: "done", label: "Fertig" },
 ];
 const priorityOptions = [
-  { value: "", label: "Normal" },
+  { value: "normal", label: "Normal" },
   { value: "high", label: "High Priority" },
 ];
 
@@ -72,7 +72,7 @@ export function ContentForm({
     defaultValues?.proximity || "adjacent"
   );
   const [status, setStatus] = useState(defaultValues?.status || "planned");
-  const [priority, setPriority] = useState(defaultValues?.priority || "");
+  const [priority, setPriority] = useState(defaultValues?.priority || "normal");
   const [goal, setGoal] = useState(defaultValues?.goal || "");
 
   const createContent = useMutation(api.content.create);
@@ -92,7 +92,7 @@ export function ContentForm({
           phaseId: phaseId as Id<"phases">,
           proximity,
           status,
-          priority: priority || undefined,
+          priority: priority === "high" ? "high" : undefined,
           goal: goal || undefined,
         });
       } else {
@@ -104,7 +104,7 @@ export function ContentForm({
           phaseId: phaseId as Id<"phases">,
           proximity,
           status,
-          priority: priority || undefined,
+          priority: priority === "high" ? "high" : undefined,
           goal: goal || undefined,
         });
       }
@@ -219,7 +219,7 @@ export function ContentForm({
             </SelectTrigger>
             <SelectContent>
               {priorityOptions.map((opt) => (
-                <SelectItem key={opt.value || "normal"} value={opt.value}>
+                <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
               ))}
