@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NetCo Marketing Workstation
 
-## Getting Started
+Eine einheitliche interaktive Marketing-Workstation für alle drei NetCo-Marken:
+- **NetCo Body-Cam** - Sicherheitslösungen für ÖPNV, Rettungsdienste, Sicherheit
+- **BauTV+** - Baustellendokumentation und -transparenz
+- **Microvista** - CT-Analyse für Industrieprüfung
 
-First, run the development server:
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router) + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Icons**: Lucide React
+- **Backend/Datenbank**: Convex
+- **State Management**: Convex Reactive Queries
+
+## Setup
+
+### 1. Dependencies installieren
+
+```bash
+npm install
+```
+
+### 2. Convex einrichten
+
+```bash
+npx convex dev
+```
+
+Folgen Sie den Anweisungen:
+- Wählen Sie "new project" um ein neues Projekt zu erstellen
+- Benennen Sie es z.B. "netco-marketing-workstation"
+- Die `.env.local` Datei wird automatisch erstellt
+
+### 3. Datenbank seeden
+
+Die Datenbank wird beim ersten Besuch der App automatisch mit Beispieldaten gefüllt.
+
+### 4. Entwicklungsserver starten
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Öffnen Sie [http://localhost:3000](http://localhost:3000) im Browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Projektstruktur
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+netcodashboard/
+├── src/
+│   ├── app/                     # Next.js App Router
+│   │   ├── [brand]/             # Brand-spezifische Seiten
+│   │   │   ├── page.tsx         # Dashboard
+│   │   │   ├── funnel/          # Funnel-Übersicht
+│   │   │   ├── content/         # Content-Verwaltung
+│   │   │   ├── stakeholders/    # Stakeholder/Personas
+│   │   │   ├── journeys/        # Customer Journeys
+│   │   │   └── seo/             # SEO Cluster
+│   │   ├── settings/            # Einstellungen
+│   │   ├── layout.tsx           # Root Layout
+│   │   └── page.tsx             # Home (Redirect)
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui Komponenten
+│   │   ├── forms/               # Formulare
+│   │   ├── providers/           # Context Provider
+│   │   ├── brand-selector.tsx   # Marken-Wechsler
+│   │   └── sidebar.tsx          # Navigation
+│   └── lib/                     # Utilities
+├── convex/
+│   ├── schema.ts                # Datenbank-Schema
+│   ├── brands.ts                # Brand Queries/Mutations
+│   ├── phases.ts                # Phasen Queries/Mutations
+│   ├── content.ts               # Content Queries/Mutations
+│   ├── stakeholders.ts          # Stakeholder Queries/Mutations
+│   ├── journeys.ts              # Journey Queries/Mutations
+│   ├── seoClusters.ts           # SEO Cluster Queries/Mutations
+│   └── seed.ts                  # Seed-Script
+└── docs/                        # Ursprüngliche Dashboard-Prototypen
+```
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+### MVP (aktuell implementiert)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [x] Brand-Selector - Zwischen Marken wechseln
+- [x] Dashboard - Übersicht mit Stats
+- [x] Funnel-Ansicht - Phasen-Timeline mit Content
+- [x] Content-CRUD - Erstellen, Lesen, Bearbeiten, Löschen
+- [x] Filter & Suche - Nach Phase, Status, Format filtern
+- [x] Stakeholder-Ansicht - Persona-Karten
+- [x] SEO Cluster - Themen-Gruppierungen
+- [x] Seed-Daten - Automatische Datenbefüllung
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Geplant (nach MVP)
 
-## Deploy on Vercel
+- [ ] Customer Journey Editor
+- [ ] Redaktionsplan/Kalender
+- [ ] Drag & Drop Sortierung
+- [ ] Erweiterte Stakeholder-Verwaltung
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Vercel
+
+1. Repository auf GitHub pushen
+2. Vercel-Projekt erstellen und mit GitHub verbinden
+3. Convex Production-Deployment:
+   ```bash
+   npx convex deploy
+   ```
+4. `NEXT_PUBLIC_CONVEX_URL` in Vercel Environment Variables setzen
+
+## Lizenz
+
+Privat - NetCo GmbH
