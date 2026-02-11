@@ -11,10 +11,12 @@ import {
   Route,
   Search,
   Settings,
+  Megaphone,
 } from "lucide-react";
 
 const navItems = [
   { href: "", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/campaigns", label: "Kampagnen", icon: Megaphone },
   { href: "/funnel", label: "Funnel", icon: Filter },
   { href: "/content", label: "Content", icon: FileText },
   { href: "/stakeholders", label: "Stakeholder", icon: Users },

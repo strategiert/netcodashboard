@@ -87,4 +87,52 @@ export default defineSchema({
     cluster: v.string(),
     cta: v.string(),
   }).index("by_brand", ["brandId"]),
+
+  campaigns: defineTable({
+    brandId: v.id("brands"),
+    name: v.string(),
+    objective: v.string(),
+    status: v.string(),
+    priority: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    startDate: v.optional(v.string()),
+    endDate: v.optional(v.string()),
+    budgetTotal: v.optional(v.number()),
+    budgetSpent: v.optional(v.number()),
+    notes: v.optional(v.string()),
+  })
+    .index("by_brand", ["brandId"])
+    .index("by_brand_status", ["brandId", "status"]),
+
+  campaignScenarios: defineTable({
+    campaignId: v.id("campaigns"),
+    key: v.string(),
+    name: v.string(),
+    trigger: v.string(),
+    pressAngle: v.string(),
+    socialAngle: v.string(),
+    adAngle: v.string(),
+    cta: v.string(),
+    status: v.string(),
+    order: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_campaign_status", ["campaignId", "status"]),
+
+  campaignTasks: defineTable({
+    campaignId: v.id("campaigns"),
+    scenarioId: v.optional(v.id("campaignScenarios")),
+    channel: v.string(),
+    title: v.string(),
+    owner: v.optional(v.string()),
+    dueDate: v.optional(v.string()),
+    status: v.string(),
+    priority: v.optional(v.string()),
+    assetType: v.optional(v.string()),
+    note: v.optional(v.string()),
+    link: v.optional(v.string()),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_campaign_status", ["campaignId", "status"])
+    .index("by_scenario", ["scenarioId"]),
 });

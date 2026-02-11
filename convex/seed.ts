@@ -1,4 +1,5 @@
 import { mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 export const seedAll = mutation({
   args: {},
@@ -49,7 +50,7 @@ export const seedAll = mutation({
       { order: 5, name: "Kaufentscheidung", shortName: "Entscheidung", color: "#22c55e", mindset: '"NetCo ist es" - Implementierung starten' },
     ];
 
-    const bodycamPhaseIds: Record<number, string> = {};
+    const bodycamPhaseIds: Record<number, Id<"phases">> = {};
     for (const phase of bodycamPhases) {
       const id = await ctx.db.insert("phases", { brandId: bodycamId, ...phase });
       bodycamPhaseIds[phase.order] = id;
@@ -64,7 +65,7 @@ export const seedAll = mutation({
       { order: 4, name: "Entscheidung & Conversion", shortName: "Conversion", color: "#9333ea", mindset: '"Wie läuft das mit euch?" - Abschluss ermöglichen' },
     ];
 
-    const bautvPhaseIds: Record<number, string> = {};
+    const bautvPhaseIds: Record<number, Id<"phases">> = {};
     for (const phase of bautvPhases) {
       const id = await ctx.db.insert("phases", { brandId: bautvId, ...phase });
       bautvPhaseIds[phase.order] = id;
@@ -79,7 +80,7 @@ export const seedAll = mutation({
       { order: 5, name: "Decision → Customer", shortName: "Customer", color: "#a855f7", mindset: '"Wie läuft das mit euch?" - Einstieg leicht machen' },
     ];
 
-    const microvistaPhaseIds: Record<number, string> = {};
+    const microvistaPhaseIds: Record<number, Id<"phases">> = {};
     for (const phase of microvistaPhases) {
       const id = await ctx.db.insert("phases", { brandId: microvistaId, ...phase });
       microvistaPhaseIds[phase.order] = id;
@@ -117,7 +118,7 @@ export const seedAll = mutation({
       const { phaseOrder, ...contentData } = content;
       await ctx.db.insert("contentPieces", {
         brandId: bodycamId,
-        phaseId: bodycamPhaseIds[phaseOrder] as any,
+        phaseId: bodycamPhaseIds[phaseOrder],
         ...contentData,
       });
     }
@@ -157,7 +158,7 @@ export const seedAll = mutation({
       const { phaseOrder, ...contentData } = content;
       await ctx.db.insert("contentPieces", {
         brandId: bautvId,
-        phaseId: bautvPhaseIds[phaseOrder] as any,
+        phaseId: bautvPhaseIds[phaseOrder],
         ...contentData,
       });
     }
@@ -199,7 +200,7 @@ export const seedAll = mutation({
       const { phaseOrder, ...contentData } = content;
       await ctx.db.insert("contentPieces", {
         brandId: microvistaId,
-        phaseId: microvistaPhaseIds[phaseOrder] as any,
+        phaseId: microvistaPhaseIds[phaseOrder],
         ...contentData,
       });
     }
@@ -461,6 +462,190 @@ export const seedAll = mutation({
     for (const cluster of bautvClusters) {
       await ctx.db.insert("seoClusters", { brandId: bautvId, ...cluster });
     }
+
+    // ===== BODYCAM SUMMIT CAMPAIGN TEMPLATE =====
+    const summitCampaignId = await ctx.db.insert("campaigns", {
+      brandId: bodycamId,
+      name: "Sicherheitsgipfel Reaktionskampagne",
+      objective:
+        "Szenario-basierte Reaktion auf den Sicherheitsgipfel mit PR, Social, Paid und Whitepaper-Aktivierung.",
+      status: "ready",
+      priority: "high",
+      owner: "Marketing",
+      startDate: "2026-02-11",
+      endDate: "2026-02-21",
+      budgetTotal: 120000,
+      budgetSpent: 0,
+      notes:
+        "Empathisch kommunizieren, nur belegte Claims nutzen, DB-Entscheidung am Freitag 13.02.2026 in Echtzeit abbilden. Quellenbasis: docs/Bodycam_Evidence_Brief_2026-02.md, DB-Transcript, Oliver-Pohl-Transcript.",
+    });
+
+    const summitScenarioA = await ctx.db.insert("campaignScenarios", {
+      campaignId: summitCampaignId,
+      key: "A",
+      name: "DB beschliesst konkrete Ausweitung",
+      trigger: "DB kommuniziert direkte Massnahmen nach Gipfel.",
+      pressAngle: "Schnelle, sichere Umsetzung mit klaren Einsatzprotokollen.",
+      socialAngle: "Umsetzung statt Symbolpolitik: Training, Regeln, Datenschutz.",
+      adAngle: "Rollout-Unterstuetzung fuer Verkehrsunternehmen.",
+      cta: "Implementierungsfahrplan anfordern",
+      status: "ready",
+      order: 1,
+    });
+
+    const summitScenarioB = await ctx.db.insert("campaignScenarios", {
+      campaignId: summitCampaignId,
+      key: "B",
+      name: "Brancheneinordnung ohne Pflicht",
+      trigger: "Empfehlungen, aber keine harte Verpflichtung.",
+      pressAngle: "Freiwilliger Branchenstandard senkt Risiken sofort.",
+      socialAngle: "Praxisnahe Standards fuer OePNV und Sicherheitsdienste.",
+      adAngle: "Pilotprogramme fuer Betriebe jetzt starten.",
+      cta: "Pilotprogramm starten",
+      status: "ready",
+      order: 2,
+    });
+
+    const summitScenarioC = await ctx.db.insert("campaignScenarios", {
+      campaignId: summitCampaignId,
+      key: "C",
+      name: "Politischer Fahrplan zur Pflicht",
+      trigger: "Bund/Land signalisiert verpflichtende Einfuehrung.",
+      pressAngle: "Pflichtfaehige, datenschutzkonforme Skalierung.",
+      socialAngle: "Recht + Training + Betrieb als gemeinsamer Standard.",
+      adAngle: "Kapazitaeten fuer bundesweiten Rollout sichern.",
+      cta: "Kapazitaetsgespraech buchen",
+      status: "ready",
+      order: 3,
+    });
+
+    const summitScenarioD = await ctx.db.insert("campaignScenarios", {
+      campaignId: summitCampaignId,
+      key: "D",
+      name: "Keine klare Entscheidung",
+      trigger: "Gipfel endet ohne konkrete Beschluesse.",
+      pressAngle: "Sicherheitsarbeit nicht vertagen: pilotieren und evaluieren.",
+      socialAngle: "Jetzt vorbereiten statt nach dem naechsten Vorfall reagieren.",
+      adAngle: "Pragmatischer 90-Tage-Pilot mit KPI-Set.",
+      cta: "90-Tage-Blueprint erhalten",
+      status: "ready",
+      order: 4,
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      scenarioId: summitScenarioA,
+      channel: "PR",
+      title: "Presse-Statement Szenario A final freigeben",
+      owner: "PR Team",
+      dueDate: "2026-02-13",
+      status: "planned",
+      priority: "high",
+      assetType: "Pressemitteilung",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      scenarioId: summitScenarioB,
+      channel: "PR",
+      title: "Presse-Statement Szenario B final freigeben",
+      owner: "PR Team",
+      dueDate: "2026-02-13",
+      status: "planned",
+      priority: "high",
+      assetType: "Pressemitteilung",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      scenarioId: summitScenarioC,
+      channel: "PR",
+      title: "Presse-Statement Szenario C final freigeben",
+      owner: "PR Team",
+      dueDate: "2026-02-13",
+      status: "planned",
+      priority: "high",
+      assetType: "Pressemitteilung",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      scenarioId: summitScenarioD,
+      channel: "PR",
+      title: "Presse-Statement Szenario D final freigeben",
+      owner: "PR Team",
+      dueDate: "2026-02-13",
+      status: "planned",
+      priority: "high",
+      assetType: "Pressemitteilung",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "Social",
+      title: "8 LinkedIn Posts fuer 4 Szenarien vorbereiten",
+      owner: "Social Team",
+      dueDate: "2026-02-12",
+      status: "in-progress",
+      priority: "high",
+      assetType: "Post-Serie",
+    });
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "PR",
+      title: "DB-Bodycam-Video als Faktencheck in Presskit einarbeiten",
+      owner: "PR Team",
+      dueDate: "2026-02-12",
+      status: "planned",
+      priority: "high",
+      assetType: "Faktencheck",
+      note: "Quelle: docs/Deutsche Bahn berichtet ueber den Einsatz von Body-Cams.docx",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "Whitepaper",
+      title: "Oliver-Pohl-Transcript in Deeskalationskapitel uebernehmen",
+      owner: "Editorial",
+      dueDate: "2026-02-13",
+      status: "planned",
+      priority: "high",
+      assetType: "Whitepaper",
+      note: "Quelle: docs/NetCo Body-Cam Fachdialog 2026_Deeskalation mit Oliver Pohl (2).mp4.txt",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "Whitepaper",
+      title: "Whitepaper Kapitel 1-5 final texten",
+      owner: "Editorial",
+      dueDate: "2026-02-16",
+      status: "in-progress",
+      priority: "high",
+      assetType: "Whitepaper",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "Video",
+      title: "15s/30s/45s Video-Skripte finalisieren",
+      owner: "Creative Team",
+      dueDate: "2026-02-12",
+      status: "in-progress",
+      priority: "high",
+      assetType: "Video-Skript",
+    });
+
+    await ctx.db.insert("campaignTasks", {
+      campaignId: summitCampaignId,
+      channel: "Paid",
+      title: "Berlin Geo-Fencing Kampagnen aufsetzen",
+      owner: "Performance Team",
+      dueDate: "2026-02-12",
+      status: "planned",
+      priority: "high",
+      assetType: "Google Ads",
+    });
 
     return {
       message: "Seed completed successfully",

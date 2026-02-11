@@ -9,6 +9,7 @@
  */
 
 import type * as brands from "../brands.js";
+import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as journeys from "../journeys.js";
 import type * as phases from "../phases.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   brands: typeof brands;
+  campaigns: typeof campaigns;
   content: typeof content;
   journeys: typeof journeys;
   phases: typeof phases;
