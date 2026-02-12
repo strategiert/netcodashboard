@@ -2,7 +2,7 @@
 Stand: 12.02.2026
 
 ## Nutzung
-- Genau ein Szenario auswählen (A/B/C).
+- Genau ein Szenario auswählen (A/B/C/D).
 - Nur freigegebene Zahlen und Claims verwenden.
 - Betroffenheit respektvoll adressieren, keine Krisenvermarktung.
 
@@ -40,19 +40,35 @@ NetCo begleitet Betreiber bei der Einführung praxisnaher Sicherheitskonzepte f�
 
 ---
 
-## PM C - Prüfauftrag ohne harte Vorgabe
-**Titel:** Nach dem Gipfel: Betreiber können Sicherheitsstandards sofort operativ vorziehen
+## PM C - Politischer Fahrplan zur Pflicht
+**Titel:** Politischer Fahrplan zur Pflicht: Sicherheitsstandards jetzt skalierbar aufsetzen
 
 **Lead:**  
-Auch ohne unmittelbare Pflichtregelungen ist die Lage eindeutig: Gewaltlagen im öffentlichen Verkehr erfordern konkrete Schritte. NetCo empfiehlt einen stufenweisen Einstieg mit Reifegradanalyse, Pilotbetrieb und KPI-gesteuerter Skalierung.
+Der politische Fahrplan Richtung verbindlicher Standards erhöht den Druck auf Betreiber. NetCo unterstützt Verkehrsunternehmen mit einem pflichtfähigen Umsetzungsmodell aus klaren Einsatzregeln, Trainingsstruktur und belastbarer Dokumentation.
 
 **Kernaussagen:**  
-- Abwarten erhöht operatives Risiko.  
-- Pilot plus Training schafft schnelle Lernkurven.  
-- Frühe Standardisierung reduziert Umsetzungsfriktion bei späteren Vorgaben.
+- Pflichtfähigkeit entsteht durch Standards in Betrieb, Recht und Schulung.  
+- Skalierung muss kontrolliert und KPI-geführt erfolgen.  
+- Frühe Vorbereitung reduziert Friktion bei verbindlichen Vorgaben.
 
 **Boilerplate kurz:**  
 NetCo stellt umsetzungsorientierte Sicherheitskonzepte bereit, die schnell starten und kontrolliert skalieren.
+
+---
+
+## PM D - Keine klare Entscheidung
+**Titel:** Nach dem Gipfel ohne Beschluss: Betreiber sollten Sicherheitsarbeit sofort pilotieren
+
+**Lead:**  
+Auch ohne klare politische Entscheidung bleibt der Handlungsdruck in konfliktgeladenen Einsatzlagen hoch. NetCo empfiehlt einen strukturierten 90-Tage-Pilot mit KPI-Framework, um Schutzmaßnahmen praxisnah zu testen und belastbar auszuwerten.
+
+**Kernaussagen:**  
+- Sicherheitsarbeit darf nicht auf den nächsten Beschluss warten.  
+- Pilot plus Training liefert schnelle operative Lernkurven.  
+- Evidenzbasierte Auswertung schafft belastbare Entscheidungsgrundlagen.
+
+**Boilerplate kurz:**  
+NetCo unterstützt Betreiber mit pragmatischen Sicherheitskonzepten, die kurzfristig starten und strukturiert skaliert werden können.
 
 ---
 
@@ -65,4 +81,3 @@ NetCo stellt umsetzungsorientierte Sicherheitskonzepte bereit, die schnell start
 
 **Frage:** Was ist kurzfristig machbar?  
 **Antwort:** Ein belastbarer Einstieg ist in einem 30/60/90-Tage-Ansatz organisierbar.
-

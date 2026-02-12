@@ -1,6 +1,6 @@
 # Content Pack: Sicherheitsgipfel Bahn (einsatzbereit)
 
-## 1) Pressestatement-Templates (A/B/C)
+## 1) Pressestatement-Templates (A/B/C/D)
 
 ## Szenario A (DB-fokussiert)
 **Titel:** Deutsche Bahn setzt auf mehr Schutz im Einsatz: NetCo unterstützt schnellen Bodycam-Rollout  
@@ -12,16 +12,21 @@ Nach dem Sicherheitsgipfel in Berlin ist klar: Der Schutz von Zugpersonal und Si
 **Kurztext:**  
 Die heutigen Entscheidungen zeigen: Sicherheitskonzepte im ÖPNV müssen standardisiert, wirksam und schnell umsetzbar sein. NetCo stellt dafür ein übertragbares Bodycam- und Deeskalationsmodell bereit, das für Bahn-, Bus- und Stadtverkehrsbetriebe nutzbar ist. Fokus sind Mitarbeiterschutz, Deeskalation und rechtssichere Dokumentation.
 
-## Szenario C (Prüfauftrag)
-**Titel:** Nach dem Gipfel: Jetzt operative Standards setzen, bevor neue Vorgaben kommen  
+## Szenario C (Pflicht-Fahrplan)
+**Titel:** Politischer Fahrplan zur Pflicht: Betreiber brauchen jetzt skalierbare Sicherheitsstandards  
 **Kurztext:**  
-Auch ohne sofortige Pflichtregelung ist der Handlungsdruck hoch. NetCo empfiehlt einen strukturierten Einstieg mit Reifegradanalyse, Schulungsplan und Pilotbetrieb. So können Betreiber kurzfristig Sicherheit verbessern und gleichzeitig ihre Organisation auf künftige Vorgaben vorbereiten.
+Der politische Fahrplan in Richtung verbindlicher Standards erhöht den Umsetzungsdruck. NetCo unterstützt Betreiber mit einem pflichtfähigen Modell aus Einsatzregeln, Schulung, Datenschutz und Betrieb, damit Organisationen kontrolliert skalieren können.
+
+## Szenario D (Keine klare Entscheidung)
+**Titel:** Nach dem Gipfel ohne Beschluss: Jetzt pilotieren statt vertagen  
+**Kurztext:**  
+Auch ohne harte Entscheidung bleibt das Risiko im Einsatzalltag bestehen. NetCo empfiehlt einen 90-Tage-Pilot mit klaren KPI, um Maßnahmen evidenzbasiert zu priorisieren und schnell Wirksamkeit aufzubauen.
 
 ## 2) LinkedIn-Posts (3x)
 
 ## Post 1 (Gipfeltag)
 Sicherheit im Bahnverkehr ist kein abstraktes Thema, sondern Einsatzrealität für tausende Mitarbeitende.  
-Wir haben unser Operativ-Paket für drei Szenarien vorbereitet: DB-fokussiert, ÖPNV-weit, oder stufenweiser Einstieg.  
+Wir haben unser Operativ-Paket für vier Szenarien vorbereitet: DB-fokussiert, ÖPNV-weit, Pflicht-Fahrplan oder Pilot ohne Beschluss.  
 Wenn ihr wissen wollt, wie ein Rollout in 30/60/90 Tagen aussehen kann: Whitepaper + Leitfaden sind jetzt in Vorbereitung.
 
 ## Post 2 (Fokus Umsetzung)
@@ -38,7 +43,7 @@ Start mit Zugbegleitung/Kontrolle, anschliessend übertragbar auf weitere Einsat
 Wer vorab die Inhaltsstruktur und Umsetzungscheckliste sehen will, kann sich jetzt vormerken lassen.
 
 ## 3) X/Twitter Kurzposts (6x)
-- Sicherheit im Bahnverkehr braucht jetzt klare operative Standards. Wir haben Szenario-Pakete für DB, ÖPNV und Stufenmodell vorbereitet.
+- Sicherheit im Bahnverkehr braucht jetzt klare operative Standards. Wir haben Szenario-Pakete für DB, ÖPNV, Pflicht-Fahrplan und Pilotmodus vorbereitet.
 - Bodycams wirken besonders dann, wenn Einsatzregeln und Schulung mitgedacht werden. Technik allein reicht nicht.
 - Nach dem Gipfel entscheidet die Umsetzungsgeschwindigkeit. 30/60/90-Tage-Blueprint ist bereit.
 - Deeskalation + Beweissicherung + Einsatzpraxis: diese Kombination muss in jedes Sicherheitskonzept.
@@ -88,4 +93,3 @@ Wer vorab die Inhaltsstruktur und Umsetzungscheckliste sehen will, kann sich jet
 - Freitag: Entscheidung + erste Einordnung + Statement.
 - Samstag: "Was bedeutet das operativ?" mit Checkliste.
 - Sonntag: Whitepaper-Teaser + Termin für Branchenbriefing.
-

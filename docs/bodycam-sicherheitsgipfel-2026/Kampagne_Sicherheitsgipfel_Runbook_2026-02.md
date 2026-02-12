@@ -32,23 +32,29 @@
 - CTA: "Whitepaper + Branchen-Checkliste herunterladen".
 - Wichtigster Nachweis: Übertragbarkeit von Bahn- auf ÖPNV-Einsatzprofile.
 
-### Szenario C: Politischer Prüfauftrag, aber ohne harte Vorgaben
-- Primarbotschaft: "Jetzt Standards setzen, bevor Pflichtregeln kommen."
-- Angebot: Reifegrad-Assessment + Schulungs-Blueprint.
-- CTA: "Kostenfreie Einsatzanalyse sichern".
-- Wichtigster Nachweis: Operative Readiness und Datensicherheit.
+### Szenario C: Politischer Fahrplan zur Pflicht
+- Primarbotschaft: "Pflichtfähige Standards jetzt belastbar vorbereiten."
+- Angebot: Skalierungspaket mit Rechts-, Betriebs- und Trainingsbausteinen.
+- CTA: "Kapazitätsgespräch buchen".
+- Wichtigster Nachweis: Pflichtfähigkeit, Datenschutzkonformität und Umsetzungsreife.
+
+### Szenario D: Keine klare Entscheidung nach dem Gipfel
+- Primarbotschaft: "Sicherheitsarbeit nicht vertagen: pilotieren, messen, verbessern."
+- Angebot: 90-Tage-Pilot mit KPI-Set und Review-Mechanik.
+- CTA: "90-Tage-Blueprint anfordern".
+- Wichtigster Nachweis: Handlungsfähigkeit trotz unklarer Beschlusslage.
 
 ## 72h Ablaufplan
 
 ### T-24 bis T-1 (Donnerstag)
 - Finaler Faktencheck: Zahlen, Quellen, Zitierfähigkeit.
-- Drei Pressetexte vorproduzieren (A/B/C).
+- Vier Pressetexte vorproduzieren (A/B/C/D).
 - Landingpage-Module vorbereiten: Hero-Text, FAQ, CTA je Szenario.
 - Paid Search strukturell vorbereiten: Kampagnen pausiert, nicht gelöscht.
 - Social-Creatives und Kurzvideos mit variablen Endcards renderbereit machen.
 
 ### T+0 bis T+4 (Freitag, direkt nach Gipfel)
-- Beschluss in Szenario A/B/C einsortieren.
+- Beschluss in Szenario A/B/C/D einsortieren.
 - Passendes Pressestatement in 30 Minuten veröffentlichen.
 - Blog-Update mit "Was heute beschlossen wurde" als Above-the-fold-Kasten.
 - Paid aktivieren: Berlin geofenced + nationale Suchkampagnen.
@@ -103,4 +109,3 @@
 - Freigabe Marketing + Recht + Geschäftsführung.
 - Tracking aktiv (UTM, Events, Formularziele).
 - Vertrieb und Support gebrieft.
-
