@@ -1,0 +1,85 @@
+# ----------------------------------------
+# Traffic acquisition: Session source / medium
+# Account: Microvista
+# Property: http://www.microvista.de - GA4
+# ----------------------------------------
+# 
+# All Users
+# Start date: 20230101
+# End date: 20260131
+Session source / medium,Sessions,Engaged sessions,Engagement rate,Average engagement time per session,Events per session,Event count,Key events,Session key event rate,Total revenue
+google / cpc,5824,3856,0.6620879120879121,44.6823489010989,6.981112637362638,40658,1,0.00017170329670329672,0
+(direct) / (none),2709,1672,0.6172019195275009,45.17386489479513,6.974160206718346,18893,4,0.0014765596160944998,0
+google / organic,1071,659,0.61531279178338,45.89915966386555,6.286647992530345,6733,2,0.0018674136321195146,0
+bing / organic,258,170,0.6589147286821705,56.81782945736434,7.089147286821706,1829,0,0,0
+microvista.de / referral,235,57,0.2425531914893617,0,3.3148936170212764,779,0,0,0
+netco.de / referral,217,129,0.5944700460829493,51.193548387096776,8.585253456221198,1863,0,0,0
+fb / paid,117,32,0.27350427350427353,5.0256410256410255,3.8205128205128207,447,0,0,0
+(not set),29,2,0.06896551724137931,45.89655172413793,5.241379310344827,152,0,0,0
+linkedin.com / referral,27,17,0.6296296296296297,22.25925925925926,5.962962962962963,161,0,0,0
+(data not available),25,16,0.64,39.28,6.44,161,0,0,0
+LinkedIn / Newsletter,25,13,0.52,70.6,6.08,152,0,0,0
+Newsletter / Email,24,15,0.625,109.625,6.041666666666667,145,0,0,0
+Nessie / E-Mail,21,12,0.5714285714285714,29.476190476190474,4.619047619047619,97,0,0,0
+ig / paid,16,4,0.25,5.125,3.75,60,0,0,0
+an / paid,15,8,0.5333333333333333,4.333333333333333,4.6,69,0,0,0
+industrial-computed-tomography.com / referral,15,9,0.6,28.2,13.533333333333333,203,0,0,0
+statics.teams.cdn.office.net / referral,15,11,0.7333333333333333,42.8,6.8,102,0,0,0
+chatgpt.com / referral,13,7,0.5384615384615384,35.38461538461539,8.538461538461538,111,0,0,0
+de.search.yahoo.com / referral,12,10,0.8333333333333334,50,7.666666666666667,92,0,0,0
+metrology.news / referral,11,6,0.5454545454545454,8.909090909090908,4.090909090909091,45,0,0,0
+mobile-ct.eu / referral,8,3,0.375,10.625,3.75,30,0,0,0
+Webseite / Blog,7,5,0.7142857142857143,42.142857142857146,5.428571428571429,38,0,0,0
+chatgpt.com / (not set),7,4,0.5714285714285714,14,5.714285714285714,40,0,0,0
+lusha.com / referral,7,6,0.8571428571428571,14.857142857142858,7,49,0,0,0
+search.google.com / referral,7,5,0.7142857142857143,21.571428571428573,11,77,0,0,0
+youtube.com / referral,7,6,0.8571428571428571,54.42857142857143,9.142857142857142,64,0,0,0
+duckduckgo / organic,6,5,0.8333333333333334,183.66666666666666,6.833333333333333,41,0,0,0
+ecosia.org / organic,6,5,0.8333333333333334,51.166666666666664,9.833333333333334,59,0,0,0
+ads.google.com / referral,5,4,0.8,9,4.4,22,0,0,0
+m.facebook.com / referral,4,0,0,0,4,16,0,0,0
+amazon.co.uk / referral,3,0,0,0,3.3333333333333335,10,0,0,0
+claude6.claudechat.pro / referral,3,2,0.6666666666666666,50.666666666666664,7.666666666666667,23,0,0,0
+en.wikipedia.org / referral,3,2,0.6666666666666666,22.666666666666668,4.333333333333333,13,0,0,0
+facebook.com / referral,3,0,0,4,4.666666666666667,14,0,0,0
+msn.com / referral,3,1,0.3333333333333333,35.333333333333336,9.333333333333334,28,0,0,0
+onestopndt.com / referral,3,1,0.3333333333333333,2.3333333333333335,3.3333333333333335,10,0,0,0
+search.brave.com / referral,3,2,0.6666666666666666,2.6666666666666665,5.333333333333333,16,0,0,0
+tagassistant.google.com / referral,3,2,0.6666666666666666,4.666666666666667,4.666666666666667,14,0,0,0
+CleverReach / Newsletter,2,2,1,59.5,6,12,0,0,0
+application.creacult.nl / referral,2,0,0,0,2.5,5,0,0,0
+de.wikipedia.org / referral,2,1,0.5,53.5,6,12,0,0,0
+emailsystem.ignoprg.ir / referral,2,2,1,9.5,6,12,2,1,0
+euc-excel.officeapps.live.com / referral,2,1,0.5,8,4.5,9,0,0,0
+globenewswire.com / referral,2,0,0,3.5,5,10,0,0,0
+instagram.com / referral,2,0,0,0,3,6,0,0,0
+interventional-systems.atlassian.net / referral,2,2,1,22.5,5.5,11,0,0,0
+investieren-in-sachsen-anhalt.de / referral,2,2,1,76.5,10.5,21,0,0,0
+lnkd.in / referral,2,2,1,142.5,12.5,25,0,0,0
+ntp.msn.com / referral,2,2,1,127.5,11.5,23,0,0,0
+overwolf.com / referral,2,0,0,0,4,8,0,0,0
+perplexity / (not set),2,2,1,67.5,6,12,0,0,0
+perplexity.ai / referral,2,1,0.5,73.5,8.5,17,0,0,0
+randstad-de-01.lightning.force.com / referral,2,1,0.5,0,3,6,0,0,0
+youscan.eu / referral,2,2,1,13.5,6.5,13,0,0,0
+10.98.1.117 / referral,1,1,1,51,5,5,0,0,0
+Banner / qrcode,1,0,0,0,3,3,0,0,0
+acod.de / referral,1,0,0,1,3,3,0,0,0
+adfs.handtmann.de / referral,1,1,1,97,6,6,0,0,0
+app.dnbhoovers.com / referral,1,0,0,3,5,5,0,0,0
+cn.bing.com / referral,1,1,1,113,5,5,0,0,0
+contribute.flowminr.com / referral,1,1,1,48,10,10,0,0,0
+de.m.wikipedia.org / referral,1,1,1,0,5,5,0,0,0
+firmendb.de / referral,1,0,0,0,3,3,0,0,0
+focus.de / referral,1,0,0,0,3,3,0,0,0
+gemini.google.com / referral,1,1,1,56,5,5,0,0,0
+invest-in-saxony-anhalt.com / referral,1,1,1,70,21,21,0,0,0
+lens.google.com / referral,1,0,0,0,3,3,0,0,0
+lm.facebook.com / referral,1,1,1,5,6,6,0,0,0
+localhost:3000 / referral,1,0,0,1,4,4,0,0,0
+merkur.de / referral,1,0,0,0,3,3,0,0,0
+nessie.pl / referral,1,1,1,23,5,5,0,0,0
+sherlock-who.com / referral,1,1,1,12,5,5,0,0,0
+suche.t-online.de / referral,1,1,1,25,5,5,0,0,0
+waimaosou.com / referral,1,1,1,9,5,5,0,0,0
+yahoo / organic,1,1,1,46,4,4,0,0,0
