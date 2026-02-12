@@ -477,17 +477,17 @@ export const seedAll = mutation({
       budgetTotal: 120000,
       budgetSpent: 0,
       notes:
-        "Empathisch kommunizieren, nur belegte Claims nutzen, DB-Entscheidung am Freitag 13.02.2026 in Echtzeit abbilden. Quellenbasis: docs/Bodycam_Evidence_Brief_2026-02.md, DB-Transcript, Oliver-Pohl-Transcript.",
+        "Empathisch kommunizieren, nur belegte Claims nutzen und die Gipfel-Entscheidung in Echtzeit abbilden. Unterlagenbasis: docs/bodycam-sicherheitsgipfel-2026/*.md",
     });
 
     const summitScenarioA = await ctx.db.insert("campaignScenarios", {
       campaignId: summitCampaignId,
       key: "A",
-      name: "DB beschliesst konkrete Ausweitung",
-      trigger: "DB kommuniziert direkte Massnahmen nach Gipfel.",
+      name: "DB beschließt konkrete Ausweitung",
+      trigger: "DB kommuniziert direkte Maßnahmen nach dem Gipfel.",
       pressAngle: "Schnelle, sichere Umsetzung mit klaren Einsatzprotokollen.",
       socialAngle: "Umsetzung statt Symbolpolitik: Training, Regeln, Datenschutz.",
-      adAngle: "Rollout-Unterstuetzung fuer Verkehrsunternehmen.",
+      adAngle: "Rollout-Unterstützung für Verkehrsunternehmen.",
       cta: "Implementierungsfahrplan anfordern",
       status: "ready",
       order: 1,
@@ -499,8 +499,8 @@ export const seedAll = mutation({
       name: "Brancheneinordnung ohne Pflicht",
       trigger: "Empfehlungen, aber keine harte Verpflichtung.",
       pressAngle: "Freiwilliger Branchenstandard senkt Risiken sofort.",
-      socialAngle: "Praxisnahe Standards fuer OePNV und Sicherheitsdienste.",
-      adAngle: "Pilotprogramme fuer Betriebe jetzt starten.",
+      socialAngle: "Praxisnahe Standards für ÖPNV und Sicherheitsdienste.",
+      adAngle: "Pilotprogramme für Betriebe jetzt starten.",
       cta: "Pilotprogramm starten",
       status: "ready",
       order: 2,
@@ -510,11 +510,11 @@ export const seedAll = mutation({
       campaignId: summitCampaignId,
       key: "C",
       name: "Politischer Fahrplan zur Pflicht",
-      trigger: "Bund/Land signalisiert verpflichtende Einfuehrung.",
-      pressAngle: "Pflichtfaehige, datenschutzkonforme Skalierung.",
+      trigger: "Bund/Land signalisiert verpflichtende Einführung.",
+      pressAngle: "Pflichtfähige, datenschutzkonforme Skalierung.",
       socialAngle: "Recht + Training + Betrieb als gemeinsamer Standard.",
-      adAngle: "Kapazitaeten fuer bundesweiten Rollout sichern.",
-      cta: "Kapazitaetsgespraech buchen",
+      adAngle: "Kapazitäten für bundesweiten Rollout sichern.",
+      cta: "Kapazitätsgespräch buchen",
       status: "ready",
       order: 3,
     });
@@ -523,9 +523,9 @@ export const seedAll = mutation({
       campaignId: summitCampaignId,
       key: "D",
       name: "Keine klare Entscheidung",
-      trigger: "Gipfel endet ohne konkrete Beschluesse.",
+      trigger: "Gipfel endet ohne konkrete Beschlüsse.",
       pressAngle: "Sicherheitsarbeit nicht vertagen: pilotieren und evaluieren.",
-      socialAngle: "Jetzt vorbereiten statt nach dem naechsten Vorfall reagieren.",
+      socialAngle: "Jetzt vorbereiten statt nach dem nächsten Vorfall reagieren.",
       adAngle: "Pragmatischer 90-Tage-Pilot mit KPI-Set.",
       cta: "90-Tage-Blueprint erhalten",
       status: "ready",
@@ -583,7 +583,7 @@ export const seedAll = mutation({
     await ctx.db.insert("campaignTasks", {
       campaignId: summitCampaignId,
       channel: "Social",
-      title: "8 LinkedIn Posts fuer 4 Szenarien vorbereiten",
+      title: "8 LinkedIn Posts für 4 Szenarien vorbereiten",
       owner: "Social Team",
       dueDate: "2026-02-12",
       status: "in-progress",
@@ -605,7 +605,7 @@ export const seedAll = mutation({
     await ctx.db.insert("campaignTasks", {
       campaignId: summitCampaignId,
       channel: "Whitepaper",
-      title: "Oliver-Pohl-Transcript in Deeskalationskapitel uebernehmen",
+      title: "Oliver-Pohl-Transcript in Deeskalationskapitel übernehmen",
       owner: "Editorial",
       dueDate: "2026-02-13",
       status: "planned",
@@ -639,13 +639,126 @@ export const seedAll = mutation({
     await ctx.db.insert("campaignTasks", {
       campaignId: summitCampaignId,
       channel: "Paid",
-      title: "Berlin Geo-Fencing Kampagnen aufsetzen",
+      title: "Berlin Geo-Fencing Kampagnen für Gipfelumfeld live setzen",
       owner: "Performance Team",
       dueDate: "2026-02-12",
       status: "planned",
       priority: "high",
       assetType: "Google Ads",
     });
+
+    const summitAssets = [
+      {
+        title: "Operatives Runbook",
+        category: "Runbook",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Kampagne_Sicherheitsgipfel_Runbook_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Kampagne_Sicherheitsgipfel_Runbook_2026-02.md",
+        summary:
+          "72h-Ablauf, Szenario-Matrix A/B/C und Go/No-Go-Checkliste für den Gipfelbetrieb.",
+        owner: "Marketing Lead",
+        status: "ready",
+        order: 1,
+      },
+      {
+        title: "Content Pack",
+        category: "Content",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Content_Pack_Sicherheitsgipfel_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Content_Pack_Sicherheitsgipfel_2026-02.md",
+        summary:
+          "Vorlagen für PR, Social, Video und Whitepaper-CTAs pro Szenario.",
+        owner: "Content Team",
+        status: "ready",
+        order: 2,
+      },
+      {
+        title: "Pressemappe",
+        category: "PR",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Pressemappe_Sicherheitsgipfel_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Pressemappe_Sicherheitsgipfel_2026-02.md",
+        summary: "PM-Templates für Szenario A/B/C inklusive Q&A.",
+        owner: "PR Team",
+        status: "ready",
+        order: 3,
+      },
+      {
+        title: "Whitepaper Draft",
+        category: "Whitepaper",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Whitepaper_Sicherheit_Individuum_2026.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Whitepaper_Sicherheit_Individuum_2026.md",
+        summary:
+          "Vollständiger Entwurf mit Lagebild, SOP, Datenschutz, KPI und 30/60/90-Rollout.",
+        owner: "Editorial",
+        status: "ready",
+        order: 4,
+      },
+      {
+        title: "Social + Visuals Paket",
+        category: "Social",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Social_und_Visuals_Paket_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Social_und_Visuals_Paket_2026-02.md",
+        summary:
+          "Post-Copy, Creative-Briefs und Visual-Baukasten für LinkedIn, X und Reels.",
+        owner: "Social Team",
+        status: "ready",
+        order: 5,
+      },
+      {
+        title: "Video Storyboard + Script",
+        category: "Video",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Video_Storyboard_und_Script_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Video_Storyboard_und_Script_2026-02.md",
+        summary:
+          "30s Ad + 60s Erklärvideo mit Shotlist, Sprechertext und Remotion-Sequenzen.",
+        owner: "Creative Team",
+        status: "ready",
+        order: 6,
+      },
+      {
+        title: "FirstBookAI Framework",
+        category: "Book",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/FirstBookAI_Book_Framework_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/FirstBookAI_Book_Framework_2026-02.md",
+        summary:
+          "Copy-Paste Eingabe für FirstBookAI inklusive Kapitelrahmen und Positionierung.",
+        owner: "Leadership",
+        status: "ready",
+        order: 7,
+      },
+      {
+        title: "Dashboard Task Sync",
+        category: "Ops",
+        filePath:
+          "docs/bodycam-sicherheitsgipfel-2026/Dashboard_Task_Sync_2026-02.md",
+        publicUrl:
+          "/campaign-assets/bodycam-sicherheitsgipfel-2026/Dashboard_Task_Sync_2026-02.md",
+        summary:
+          "Importvorlage mit Ownern, Status und Deliverables für Freitag bis T+72.",
+        owner: "Marketing Ops",
+        status: "ready",
+        order: 8,
+      },
+    ];
+
+    for (const asset of summitAssets) {
+      await ctx.db.insert("campaignAssets", {
+        campaignId: summitCampaignId,
+        ...asset,
+      });
+    }
 
     return {
       message: "Seed completed successfully",

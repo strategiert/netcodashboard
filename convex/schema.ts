@@ -135,4 +135,20 @@ export default defineSchema({
     .index("by_campaign", ["campaignId"])
     .index("by_campaign_status", ["campaignId", "status"])
     .index("by_scenario", ["scenarioId"]),
+
+  campaignAssets: defineTable({
+    campaignId: v.id("campaigns"),
+    scenarioId: v.optional(v.id("campaignScenarios")),
+    title: v.string(),
+    category: v.string(),
+    filePath: v.string(),
+    publicUrl: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    status: v.string(),
+    order: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_campaign_status", ["campaignId", "status"])
+    .index("by_scenario", ["scenarioId"]),
 });

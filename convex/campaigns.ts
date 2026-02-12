@@ -2,6 +2,112 @@ import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 
+const summitAssetTemplates = [
+  {
+    title: "Operatives Runbook",
+    category: "Runbook",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Kampagne_Sicherheitsgipfel_Runbook_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Kampagne_Sicherheitsgipfel_Runbook_2026-02.md",
+    summary:
+      "72h-Ablauf, Szenario-Matrix A/B/C und Go/No-Go-Checkliste für den Gipfelbetrieb.",
+    owner: "Marketing Lead",
+    status: "ready",
+    order: 1,
+  },
+  {
+    title: "Content Pack",
+    category: "Content",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Content_Pack_Sicherheitsgipfel_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Content_Pack_Sicherheitsgipfel_2026-02.md",
+    summary:
+      "Vorlagen für PR, Social, Video und Whitepaper-CTAs pro Szenario.",
+    owner: "Content Team",
+    status: "ready",
+    order: 2,
+  },
+  {
+    title: "Pressemappe",
+    category: "PR",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Pressemappe_Sicherheitsgipfel_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Pressemappe_Sicherheitsgipfel_2026-02.md",
+    summary: "PM-Templates für Szenario A/B/C inklusive Q&A.",
+    owner: "PR Team",
+    status: "ready",
+    order: 3,
+  },
+  {
+    title: "Whitepaper Draft",
+    category: "Whitepaper",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Whitepaper_Sicherheit_Individuum_2026.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Whitepaper_Sicherheit_Individuum_2026.md",
+    summary:
+      "Vollstaendiger Entwurf mit Lagebild, SOP, Datenschutz, KPI und 30/60/90-Rollout.",
+    owner: "Editorial",
+    status: "ready",
+    order: 4,
+  },
+  {
+    title: "Social + Visuals Paket",
+    category: "Social",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Social_und_Visuals_Paket_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Social_und_Visuals_Paket_2026-02.md",
+    summary:
+      "Post-Copy, Creative-Briefs und Visual-Baukasten für LinkedIn, X und Reels.",
+    owner: "Social Team",
+    status: "ready",
+    order: 5,
+  },
+  {
+    title: "Video Storyboard + Script",
+    category: "Video",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Video_Storyboard_und_Script_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Video_Storyboard_und_Script_2026-02.md",
+    summary:
+      "30s Ad + 60s Erklaervideo mit Shotlist, Sprechertext und Remotion-Sequenzen.",
+    owner: "Creative Team",
+    status: "ready",
+    order: 6,
+  },
+  {
+    title: "FirstBookAI Framework",
+    category: "Book",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/FirstBookAI_Book_Framework_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/FirstBookAI_Book_Framework_2026-02.md",
+    summary:
+      "Copy-Paste Eingabe für FirstBookAI inklusive Kapitelrahmen und Positionierung.",
+    owner: "Leadership",
+    status: "ready",
+    order: 7,
+  },
+  {
+    title: "Dashboard Task Sync",
+    category: "Ops",
+    filePath:
+      "docs/bodycam-sicherheitsgipfel-2026/Dashboard_Task_Sync_2026-02.md",
+    publicUrl:
+      "/campaign-assets/bodycam-sicherheitsgipfel-2026/Dashboard_Task_Sync_2026-02.md",
+    summary:
+      "Importvorlage mit Ownern, Status und Deliverables für Freitag bis T+72.",
+    owner: "Marketing Ops",
+    status: "ready",
+    order: 8,
+  },
+] as const;
+
 export const listByBrand = query({
   args: { brandId: v.id("brands") },
   handler: async (ctx, args) => {
@@ -24,6 +130,11 @@ export const listByBrand = query({
           .withIndex("by_campaign", (q) => q.eq("campaignId", campaign._id))
           .collect();
 
+        const assets = await ctx.db
+          .query("campaignAssets")
+          .withIndex("by_campaign", (q) => q.eq("campaignId", campaign._id))
+          .collect();
+
         const doneTasks = tasks.filter((t) => t.status === "done").length;
         const overdueTasks = tasks.filter(
           (t) => t.dueDate && t.dueDate < today && t.status !== "done"
@@ -38,6 +149,7 @@ export const listByBrand = query({
           doneTasks,
           openTasks: tasks.length - doneTasks,
           overdueTasks,
+          assetCount: assets.length,
         };
       })
     );
@@ -56,6 +168,7 @@ export const listByBrand = query({
       liveCampaigns: sorted.filter((c) => c.status === "live").length,
       totalOpenTasks: sorted.reduce((sum, c) => sum + c.openTasks, 0),
       totalOverdueTasks: sorted.reduce((sum, c) => sum + c.overdueTasks, 0),
+      totalAssets: sorted.reduce((sum, c) => sum + c.assetCount, 0),
     };
 
     return { campaigns: sorted, overview };
@@ -78,17 +191,29 @@ export const getCampaignDetails = query({
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
       .collect();
 
+    const assets = await ctx.db
+      .query("campaignAssets")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .collect();
+
     const sortedScenarios = scenarios.sort((a, b) => a.order - b.order);
     const sortedTasks = tasks.sort((a, b) => {
       const aDate = a.dueDate || "9999-12-31";
       const bDate = b.dueDate || "9999-12-31";
       return aDate.localeCompare(bDate);
     });
+    const sortedAssets = assets.sort((a, b) => {
+      if (a.order === b.order) {
+        return a.title.localeCompare(b.title);
+      }
+      return a.order - b.order;
+    });
 
     return {
       campaign,
       scenarios: sortedScenarios,
       tasks: sortedTasks,
+      assets: sortedAssets,
     };
   },
 });
@@ -220,6 +345,43 @@ export const updateTaskStatus = mutation({
   },
 });
 
+export const createAsset = mutation({
+  args: {
+    campaignId: v.id("campaigns"),
+    scenarioId: v.optional(v.id("campaignScenarios")),
+    title: v.string(),
+    category: v.string(),
+    filePath: v.string(),
+    publicUrl: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    status: v.string(),
+    order: v.number(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("campaignAssets", args);
+  },
+});
+
+export const updateAsset = mutation({
+  args: {
+    id: v.id("campaignAssets"),
+    scenarioId: v.optional(v.id("campaignScenarios")),
+    title: v.optional(v.string()),
+    category: v.optional(v.string()),
+    filePath: v.optional(v.string()),
+    publicUrl: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    status: v.optional(v.string()),
+    order: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    await ctx.db.patch(id, updates);
+  },
+});
+
 export const createBodycamSummitTemplate = mutation({
   args: { brandId: v.id("brands") },
   handler: async (ctx, args) => {
@@ -233,38 +395,39 @@ export const createBodycamSummitTemplate = mutation({
       .withIndex("by_brand", (q) => q.eq("brandId", args.brandId))
       .collect();
 
+    let campaignId: Id<"campaigns">;
     const existingTemplate = existing.find(
       (c) => c.name === "Sicherheitsgipfel Reaktionskampagne"
     );
 
     if (existingTemplate) {
-      return existingTemplate._id;
+      campaignId = existingTemplate._id;
+    } else {
+      campaignId = await ctx.db.insert("campaigns", {
+        brandId: args.brandId,
+        name: "Sicherheitsgipfel Reaktionskampagne",
+        objective:
+          "Szenario-basierte Reaktion auf den Sicherheitsgipfel mit PR, Social, Paid und Whitepaper-Aktivierung.",
+        status: "ready",
+        priority: "high",
+        owner: "Marketing",
+        startDate: "2026-02-11",
+        endDate: "2026-02-21",
+        budgetTotal: 120000,
+        budgetSpent: 0,
+        notes:
+          "Empathisch kommunizieren, nur belegte Claims nutzen und die Gipfel-Entscheidung in Echtzeit abbilden. Unterlagenbasis: docs/bodycam-sicherheitsgipfel-2026/*.md",
+      });
     }
-
-    const campaignId = await ctx.db.insert("campaigns", {
-      brandId: args.brandId,
-      name: "Sicherheitsgipfel Reaktionskampagne",
-      objective:
-        "Szenario-basierte Reaktion auf den Sicherheitsgipfel mit PR, Social, Paid und Whitepaper-Aktivierung.",
-      status: "ready",
-      priority: "high",
-      owner: "Marketing",
-      startDate: "2026-02-11",
-      endDate: "2026-02-21",
-      budgetTotal: 120000,
-      budgetSpent: 0,
-      notes:
-        "Empathisch kommunizieren, nur belegte Claims nutzen, DB-Entscheidung am Freitag 13.02.2026 in Echtzeit abbilden. Quellenbasis: docs/Bodycam_Evidence_Brief_2026-02.md, DB-Transcript, Oliver-Pohl-Transcript.",
-    });
 
     const scenarios = [
       {
         key: "A",
-        name: "DB beschliesst konkrete Ausweitung",
-        trigger: "DB kommuniziert direkte Massnahmen nach Gipfel.",
+        name: "DB beschließt konkrete Ausweitung",
+        trigger: "DB kommuniziert direkte Maßnahmen nach dem Gipfel.",
         pressAngle: "Schnelle, sichere Umsetzung mit klaren Einsatzprotokollen.",
         socialAngle: "Umsetzung statt Symbolpolitik: Training, Regeln, Datenschutz.",
-        adAngle: "Rollout-Unterstuetzung fuer Verkehrsunternehmen.",
+        adAngle: "Rollout-Unterstützung für Verkehrsunternehmen.",
         cta: "Implementierungsfahrplan anfordern",
         status: "ready",
         order: 1,
@@ -274,8 +437,8 @@ export const createBodycamSummitTemplate = mutation({
         name: "Brancheneinordnung ohne Pflicht",
         trigger: "Empfehlungen, aber keine harte Verpflichtung.",
         pressAngle: "Freiwilliger Branchenstandard senkt Risiken sofort.",
-        socialAngle: "Praxisnahe Standards fuer OePNV und Sicherheitsdienste.",
-        adAngle: "Pilotprogramme fuer Betriebe jetzt starten.",
+        socialAngle: "Praxisnahe Standards für ÖPNV und Sicherheitsdienste.",
+        adAngle: "Pilotprogramme für Betriebe jetzt starten.",
         cta: "Pilotprogramm starten",
         status: "ready",
         order: 2,
@@ -283,20 +446,20 @@ export const createBodycamSummitTemplate = mutation({
       {
         key: "C",
         name: "Politischer Fahrplan zur Pflicht",
-        trigger: "Bund/Land signalisiert verpflichtende Einfuehrung.",
-        pressAngle: "Pflichtfaehige, datenschutzkonforme Skalierung.",
+        trigger: "Bund/Land signalisiert verpflichtende Einführung.",
+        pressAngle: "Pflichtfähige, datenschutzkonforme Skalierung.",
         socialAngle: "Recht + Training + Betrieb als gemeinsamer Standard.",
-        adAngle: "Kapazitaeten fuer bundesweiten Rollout sichern.",
-        cta: "Kapazitaetsgespraech buchen",
+        adAngle: "Kapazitäten für bundesweiten Rollout sichern.",
+        cta: "Kapazitätsgespräch buchen",
         status: "ready",
         order: 3,
       },
       {
         key: "D",
         name: "Keine klare Entscheidung",
-        trigger: "Gipfel endet ohne konkrete Beschluesse.",
+        trigger: "Gipfel endet ohne konkrete Beschlüsse.",
         pressAngle: "Sicherheitsarbeit nicht vertagen: pilotieren und evaluieren.",
-        socialAngle: "Jetzt vorbereiten statt nach dem naechsten Vorfall reagieren.",
+        socialAngle: "Jetzt vorbereiten statt nach dem nächsten Vorfall reagieren.",
         adAngle: "Pragmatischer 90-Tage-Pilot mit KPI-Set.",
         cta: "90-Tage-Blueprint erhalten",
         status: "ready",
@@ -304,19 +467,39 @@ export const createBodycamSummitTemplate = mutation({
       },
     ];
 
-    const scenarioIds = {} as Record<string, Id<"campaignScenarios">>;
+    const existingScenarios = await ctx.db
+      .query("campaignScenarios")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+      .collect();
 
-    for (const scenario of scenarios) {
-      const scenarioId = await ctx.db.insert("campaignScenarios", {
-        campaignId,
-        ...scenario,
-      });
-      scenarioIds[scenario.key] = scenarioId;
+    const scenarioIds = {} as Record<string, Id<"campaignScenarios">>;
+    for (const scenario of existingScenarios) {
+      scenarioIds[scenario.key] = scenario._id;
     }
 
-    const tasks = [
+    for (const scenario of scenarios) {
+      if (!scenarioIds[scenario.key]) {
+        const scenarioId = await ctx.db.insert("campaignScenarios", {
+          campaignId,
+          ...scenario,
+        });
+        scenarioIds[scenario.key] = scenarioId;
+      }
+    }
+
+    const tasks: {
+      scenarioKey?: string;
+      channel: string;
+      title: string;
+      owner: string;
+      dueDate: string;
+      status: string;
+      priority: string;
+      assetType: string;
+      note?: string;
+    }[] = [
       {
-        scenarioId: scenarioIds.A,
+        scenarioKey: "A",
         channel: "PR",
         title: "Presse-Statement Szenario A final freigeben",
         owner: "PR Team",
@@ -326,7 +509,7 @@ export const createBodycamSummitTemplate = mutation({
         assetType: "Pressemitteilung",
       },
       {
-        scenarioId: scenarioIds.B,
+        scenarioKey: "B",
         channel: "PR",
         title: "Presse-Statement Szenario B final freigeben",
         owner: "PR Team",
@@ -336,7 +519,7 @@ export const createBodycamSummitTemplate = mutation({
         assetType: "Pressemitteilung",
       },
       {
-        scenarioId: scenarioIds.C,
+        scenarioKey: "C",
         channel: "PR",
         title: "Presse-Statement Szenario C final freigeben",
         owner: "PR Team",
@@ -346,7 +529,7 @@ export const createBodycamSummitTemplate = mutation({
         assetType: "Pressemitteilung",
       },
       {
-        scenarioId: scenarioIds.D,
+        scenarioKey: "D",
         channel: "PR",
         title: "Presse-Statement Szenario D final freigeben",
         owner: "PR Team",
@@ -357,7 +540,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Social",
-        title: "8 LinkedIn Posts fuer 4 Szenarien vorbereiten",
+        title: "8 LinkedIn Posts für 4 Szenarien vorbereiten",
         owner: "Social Team",
         dueDate: "2026-02-12",
         status: "in-progress",
@@ -385,7 +568,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Whitepaper",
-        title: "Oliver-Pohl-Transcript in Deeskalationskapitel uebernehmen",
+        title: "Oliver-Pohl-Transcript in Deeskalationskapitel übernehmen",
         owner: "Editorial",
         dueDate: "2026-02-13",
         status: "planned",
@@ -395,7 +578,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Paid",
-        title: "Berlin Geo-Fencing Kampagnen fuer Gipfelumfeld live setzen",
+        title: "Berlin Geo-Fencing Kampagnen für Gipfelumfeld live setzen",
         owner: "Performance Team",
         dueDate: "2026-02-12",
         status: "planned",
@@ -404,7 +587,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Paid",
-        title: "Deutschlandweite Search + LinkedIn Kampagne fuer Folgewoche",
+        title: "Deutschlandweite Search + LinkedIn Kampagne für Folgewoche",
         owner: "Performance Team",
         dueDate: "2026-02-14",
         status: "planned",
@@ -431,7 +614,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Whitepaper",
-        title: "Branchenmodule OePNV, Security, kommunaler Dienst fertigstellen",
+        title: "Branchenmodule ÖPNV, Security, kommunaler Dienst fertigstellen",
         owner: "Editorial",
         dueDate: "2026-02-18",
         status: "planned",
@@ -440,7 +623,7 @@ export const createBodycamSummitTemplate = mutation({
       },
       {
         channel: "Ops",
-        title: "Freigabe-War-Room fuer Freitag mit Legal/PR/Vertrieb aufsetzen",
+        title: "Freigabe-War-Room für Freitag mit Legal/PR/Vertrieb aufsetzen",
         owner: "Marketing Lead",
         dueDate: "2026-02-12",
         status: "planned",
@@ -449,10 +632,51 @@ export const createBodycamSummitTemplate = mutation({
       },
     ];
 
+    const existingTasks = await ctx.db
+      .query("campaignTasks")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+      .collect();
+
+    const existingTaskTitles = new Set(existingTasks.map((task) => task.title));
+
     for (const task of tasks) {
+      if (existingTaskTitles.has(task.title)) continue;
+      const scenarioId = task.scenarioKey
+        ? scenarioIds[task.scenarioKey]
+        : undefined;
+
       await ctx.db.insert("campaignTasks", {
         campaignId,
-        ...task,
+        scenarioId,
+        channel: task.channel,
+        title: task.title,
+        owner: task.owner,
+        dueDate: task.dueDate,
+        status: task.status,
+        priority: task.priority,
+        assetType: task.assetType,
+        note: task.note,
+      });
+    }
+
+    const existingAssets = await ctx.db
+      .query("campaignAssets")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+      .collect();
+    const existingAssetPaths = new Set(existingAssets.map((asset) => asset.filePath));
+
+    for (const asset of summitAssetTemplates) {
+      if (existingAssetPaths.has(asset.filePath)) continue;
+      await ctx.db.insert("campaignAssets", {
+        campaignId,
+        title: asset.title,
+        category: asset.category,
+        filePath: asset.filePath,
+        publicUrl: asset.publicUrl,
+        summary: asset.summary,
+        owner: asset.owner,
+        status: asset.status,
+        order: asset.order,
       });
     }
 

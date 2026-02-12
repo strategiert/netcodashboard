@@ -38,6 +38,9 @@ import {
   CheckCircle2,
   ListChecks,
   Plus,
+  ExternalLink,
+  Files,
+  ClipboardCopy,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -61,6 +64,13 @@ const taskStatuses = [
   { value: "in-progress", label: "In Arbeit" },
   { value: "blocked", label: "Blockiert" },
   { value: "done", label: "Erledigt" },
+];
+
+const assetStatuses = [
+  { value: "draft", label: "Entwurf" },
+  { value: "ready", label: "Bereit" },
+  { value: "live", label: "In Nutzung" },
+  { value: "archived", label: "Archiv" },
 ];
 
 const channelOptions = [
@@ -87,6 +97,32 @@ const statusBadgeClass: Record<string, string> = {
   blocked: "bg-red-500/20 text-red-300 border-red-500/30",
   done: "bg-green-500/20 text-green-300 border-green-500/30",
   archived: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
+};
+
+type CampaignAsset = {
+  _id: Id<"campaignAssets">;
+  scenarioId?: Id<"campaignScenarios">;
+  title: string;
+  category: string;
+  filePath: string;
+  publicUrl?: string;
+  summary?: string;
+  owner?: string;
+  status: string;
+  order: number;
+};
+
+const mapAssetCategoryToChannel = (category: string): string => {
+  const normalized = category.toLowerCase();
+  if (normalized === "pr") return "PR";
+  if (normalized === "social") return "Social";
+  if (normalized === "video") return "Video";
+  if (normalized === "whitepaper") return "Whitepaper";
+  if (normalized === "ops") return "Ops";
+  if (normalized === "book") return "Content";
+  if (normalized === "runbook") return "Ops";
+  if (normalized === "content") return "Content";
+  return "Content";
 };
 
 export default function CampaignsPage() {
@@ -150,6 +186,7 @@ export default function CampaignsPage() {
   const createTask = useMutation(api.campaigns.createTask);
   const updateTaskStatus = useMutation(api.campaigns.updateTaskStatus);
   const createTemplate = useMutation(api.campaigns.createBodycamSummitTemplate);
+  const updateAsset = useMutation(api.campaigns.updateAsset);
 
   const scenarioLookup = useMemo(() => {
     const lookup: Record<string, string> = {};
@@ -260,15 +297,47 @@ export default function CampaignsPage() {
     try {
       const campaignId = await createTemplate({ brandId: brandId as Id<"brands"> });
       setSelectedCampaignId(campaignId);
-      toast.success("Bodycam Template geladen");
+      toast.success("Template und Unterlagen synchronisiert");
     } catch {
       toast.error("Template konnte nicht geladen werden");
+    }
+  };
+
+  const handleCopyPath = async (filePath: string) => {
+    try {
+      await navigator.clipboard.writeText(filePath);
+      toast.success("Dateipfad kopiert");
+    } catch {
+      toast.error("Dateipfad konnte nicht kopiert werden");
+    }
+  };
+
+  const handleCreateTaskFromAsset = async (asset: CampaignAsset) => {
+    if (!activeCampaignId) return;
+    try {
+      await createTask({
+        campaignId: activeCampaignId as Id<"campaigns">,
+        scenarioId: asset.scenarioId,
+        channel: mapAssetCategoryToChannel(asset.category),
+        title: `Unterlage umsetzen: ${asset.title}`,
+        owner: asset.owner,
+        dueDate: undefined,
+        status: "planned",
+        priority: "high",
+        assetType: asset.category,
+        note: `Quelle: ${asset.filePath}`,
+        link: asset.publicUrl,
+      });
+      toast.success("Task aus Unterlage erstellt");
+    } catch {
+      toast.error("Task konnte nicht erstellt werden");
     }
   };
 
   const selectedCampaign = campaignDetails?.campaign;
   const scenarioCount = campaignDetails?.scenarios.length || 0;
   const taskCount = campaignDetails?.tasks.length || 0;
+  const assetCount = campaignDetails?.assets.length || 0;
   const doneCount =
     campaignDetails?.tasks.filter((task) => task.status === "done").length || 0;
   const completion = taskCount > 0 ? Math.round((doneCount / taskCount) * 100) : 0;
@@ -279,14 +348,14 @@ export default function CampaignsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Kampagnensteuerung</h1>
           <p className="text-muted-foreground">
-            Szenarien, Aufgaben und Ausspielung fuer {brand.name}
+            Szenarien, Aufgaben und Unterlagen für {brand.name}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {brandSlug === "bodycam" && (
             <Button variant="outline" onClick={handleTemplateLoad}>
               <Megaphone className="mr-2 h-4 w-4" />
-              Gipfel-Template laden
+              Gipfel-Template syncen
             </Button>
           )}
           <Dialog open={isCreateCampaignOpen} onOpenChange={setIsCreateCampaignOpen}>
@@ -351,7 +420,7 @@ export default function CampaignsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Prioritaet</label>
+                  <label className="text-sm font-medium">Priorität</label>
                   <Select value={campaignPriority} onValueChange={setCampaignPriority}>
                     <SelectTrigger>
                       <SelectValue />
@@ -393,7 +462,7 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Kampagnen</CardTitle>
@@ -428,9 +497,17 @@ export default function CampaignsPage() {
             <div className="text-2xl font-bold">{campaignList.overview.totalOpenTasks}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Unterlagen</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{campaignList.overview.totalAssets || 0}</div>
+          </CardContent>
+        </Card>
         <Card className={campaignList.overview.totalOverdueTasks > 0 ? "border-red-500/40" : ""}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ueberfaellig</CardTitle>
+            <CardTitle className="text-sm font-medium">Überfällig</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-400">
@@ -473,8 +550,10 @@ export default function CampaignsPage() {
                     {campaign.objective}
                   </p>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{campaign.doneTasks}/{campaign.taskCount} Tasks</span>
-                    <span>{campaign.liveScenarios} live</span>
+                    <span>
+                      {campaign.doneTasks}/{campaign.taskCount} Tasks
+                    </span>
+                    <span>{campaign.assetCount || 0} Unterlagen</span>
                   </div>
                 </button>
               ))
@@ -485,7 +564,7 @@ export default function CampaignsPage() {
         {!selectedCampaign || !campaignDetails ? (
           <Card>
             <CardContent className="flex min-h-[360px] items-center justify-center text-muted-foreground">
-              Kampagne auswaehlen oder neu anlegen.
+              Kampagne auswählen oder neu anlegen.
             </CardContent>
           </Card>
         ) : (
@@ -529,7 +608,7 @@ export default function CampaignsPage() {
                           id: selectedCampaign._id,
                           priority: value === "high" ? "high" : undefined,
                         });
-                        toast.success("Prioritaet aktualisiert");
+                        toast.success("Priorität aktualisiert");
                       }}
                     >
                       <SelectTrigger className="w-[120px]">
@@ -565,9 +644,13 @@ export default function CampaignsPage() {
                   </div>
                   <div className="rounded-lg border p-3">
                     <p className="text-xs text-muted-foreground">Fortschritt</p>
-                    <p className="mt-1 text-sm font-medium">{doneCount}/{taskCount} Tasks</p>
+                    <p className="mt-1 text-sm font-medium">
+                      {doneCount}/{taskCount} Tasks
+                    </p>
                   </div>
-                </div>                <div>
+                </div>
+
+                <div>
                   <div className="mb-1 flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Umsetzungsgrad</span>
                     <span className="font-medium">{completion}%</span>
@@ -575,16 +658,17 @@ export default function CampaignsPage() {
                   <div className="h-2 rounded-full bg-muted">
                     <div
                       className="h-2 rounded-full bg-primary transition-all"
-                      style={{ width: `%` }}
+                      style={{ width: `${completion}%` }}
                     />
                   </div>
-                  {selectedCampaign.notes ? (
-                    <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-100">
-                      <p className="font-medium">Campaign Notes</p>
-                      <p className="mt-1 text-blue-100/90">{selectedCampaign.notes}</p>
-                    </div>
-                  ) : null}
                 </div>
+
+                {selectedCampaign.notes ? (
+                  <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-100">
+                    <p className="font-medium">Kampagnennotiz</p>
+                    <p className="mt-1 text-blue-100/90">{selectedCampaign.notes}</p>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 
@@ -614,7 +698,7 @@ export default function CampaignsPage() {
                               toast.success(`Szenario ${scenario.key} aktualisiert`);
                             }}
                           >
-                            <SelectTrigger className="w-[130px] h-8 text-xs">
+                            <SelectTrigger className="h-8 w-[130px] text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -648,6 +732,111 @@ export default function CampaignsPage() {
                       </div>
                     ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle>Unterlagenbibliothek ({assetCount})</CardTitle>
+                  <Badge variant="outline" className="border-blue-500/40 text-blue-300">
+                    <Files className="mr-1 h-3 w-3" />
+                    Einsatzbereit
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {assetCount === 0 ? (
+                  <div className="p-6 text-sm text-muted-foreground">
+                    Noch keine Unterlagen hinterlegt.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Unterlage</TableHead>
+                        <TableHead>Kategorie</TableHead>
+                        <TableHead>Szenario</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Aktionen</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {campaignDetails.assets.map((asset) => (
+                        <TableRow key={asset._id}>
+                          <TableCell>
+                            <p className="font-medium">{asset.title}</p>
+                            {asset.summary ? (
+                              <p className="mt-1 text-xs text-muted-foreground">{asset.summary}</p>
+                            ) : null}
+                            <p className="mt-1 font-mono text-xs text-muted-foreground">
+                              {asset.filePath}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{asset.category}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            {asset.scenarioId ? (
+                              <Badge variant="secondary">
+                                {scenarioLookup[asset.scenarioId] || "?"}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={asset.status}
+                              onValueChange={async (value) => {
+                                await updateAsset({
+                                  id: asset._id,
+                                  status: value,
+                                });
+                                toast.success("Unterlagenstatus aktualisiert");
+                              }}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {assetStatuses.map((status) => (
+                                  <SelectItem key={status.value} value={status.value}>
+                                    {status.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-2">
+                              {asset.publicUrl ? (
+                                <Button size="sm" variant="outline" asChild>
+                                  <a href={asset.publicUrl} target="_blank" rel="noreferrer">
+                                    <ExternalLink className="mr-1 h-3 w-3" />
+                                    Öffnen
+                                  </a>
+                                </Button>
+                              ) : null}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCopyPath(asset.filePath)}
+                              >
+                                <ClipboardCopy className="mr-1 h-3 w-3" />
+                                Pfad
+                              </Button>
+                              <Button size="sm" onClick={() => handleCreateTaskFromAsset(asset)}>
+                                <Plus className="mr-1 h-3 w-3" />
+                                Task
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
@@ -716,7 +905,7 @@ export default function CampaignsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Faelligkeit</label>
+                          <label className="text-sm font-medium">Fälligkeit</label>
                           <Input
                             type="date"
                             value={taskDueDate}
@@ -739,7 +928,7 @@ export default function CampaignsPage() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Prioritaet</label>
+                          <label className="text-sm font-medium">Priorität</label>
                           <Select value={taskPriority} onValueChange={setTaskPriority}>
                             <SelectTrigger>
                               <SelectValue />
@@ -788,7 +977,7 @@ export default function CampaignsPage() {
                         <TableHead>Kanal</TableHead>
                         <TableHead>Owner</TableHead>
                         <TableHead>Szenario</TableHead>
-                        <TableHead>Faelligkeit</TableHead>
+                        <TableHead>Fälligkeit</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -802,20 +991,28 @@ export default function CampaignsPage() {
                         return (
                           <TableRow key={task._id}>
                             <TableCell>
-                              <div>
-                                <p className="font-medium">{task.title}</p>
-                                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                                  {task.assetType ? <span>{task.assetType}</span> : null}
-                                  {task.priority === "high" ? (
-                                    <Badge variant="outline" className="border-amber-500/40 text-amber-400">
-                                      High
-                                    </Badge>
-                                  ) : null}
-                                {task.note ? (
-                                  <p className="mt-1 text-xs text-muted-foreground">{task.note}</p>
+                              <p className="font-medium">{task.title}</p>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                {task.assetType ? <span>{task.assetType}</span> : null}
+                                {task.priority === "high" ? (
+                                  <Badge variant="outline" className="border-amber-500/40 text-amber-400">
+                                    High
+                                  </Badge>
                                 ) : null}
-                                </div>
+                                {task.link ? (
+                                  <a
+                                    href={task.link}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center text-blue-300 hover:underline"
+                                  >
+                                    <ExternalLink className="mr-1 h-3 w-3" /> Quelle
+                                  </a>
+                                ) : null}
                               </div>
+                              {task.note ? (
+                                <p className="mt-1 text-xs text-muted-foreground">{task.note}</p>
+                              ) : null}
                             </TableCell>
                             <TableCell>{task.channel}</TableCell>
                             <TableCell>{task.owner || "-"}</TableCell>
