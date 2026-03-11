@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muster-Dienstanweisung Bodycam-Einsatz</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 18mm 15mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 10pt; line-height: 1.5; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm 15mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } }
+
+    .doc-header { text-align: center; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 2px solid var(--primary); }
+    .doc-header .org { font-size: 8pt; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2mm; }
+    .doc-header h1 { font-family: 'Antonio', sans-serif; font-size: 18pt; color: var(--primary); }
+    .doc-header .meta { font-size: 8pt; color: var(--text-light); margin-top: 2mm; }
+
+    .edit-hint { background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 3mm; font-size: 8pt; color: #92400e; margin-bottom: 5mm; }
+    .edit-hint strong { color: #78350f; }
+    .field { background: #fff7ed; border-bottom: 1px dashed var(--secondary); padding: 0 1mm; font-style: italic; color: var(--secondary); }
+
+    h2 { font-family: 'Antonio', sans-serif; font-size: 12pt; color: var(--primary); margin: 5mm 0 2mm; padding-bottom: 1mm; border-bottom: 1px solid var(--surface); }
+    h3 { font-size: 10pt; font-weight: 700; color: var(--primary); margin: 3mm 0 1mm; }
+
+    .section { margin-bottom: 3mm; }
+    ol, ul { margin-left: 5mm; margin-bottom: 2mm; }
+    li { margin-bottom: 1mm; }
+
+    .signature-block { margin-top: 10mm; display: grid; grid-template-columns: 1fr 1fr; gap: 15mm; }
+    .sig-line { border-top: 1px solid var(--text); padding-top: 1mm; font-size: 8pt; color: var(--text-light); margin-top: 12mm; }
+
+    .footer-note { margin-top: 8mm; padding-top: 3mm; border-top: 1px solid var(--surface); font-size: 7pt; color: var(--text-light); text-align: center; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-header">
+    <div class="org"><span class="field">[Name der Organisation]</span></div>
+    <h1>DIENSTANWEISUNG<br>BODY-CAM-EINSATZ</h1>
+    <div class="meta">Aktenzeichen: <span class="field">[DA-BC-001]</span> · Gültig ab: <span class="field">[Datum]</span> · Version: 1.0</div>
+  </div>
+
+  <div class="edit-hint">
+    <strong>Hinweis:</strong> Dies ist ein Muster. Alle <span class="field">orangefarbenen Felder</span> müssen an Ihre Organisation angepasst werden. Abstimmung mit Datenschutzbeauftragtem und Betriebsrat/Personalrat ist vor Inkrafttreten zwingend erforderlich.
+  </div>
+
+  <h2>§ 1 Zweck und Geltungsbereich</h2>
+  <div class="section">
+    <ol>
+      <li>Diese Dienstanweisung regelt den Einsatz von Body-Cams (Körperkameras) durch Mitarbeitende der <span class="field">[Organisation]</span> im Außendienst.</li>
+      <li>Zweck des Einsatzes ist ausschließlich der <strong>Schutz der Mitarbeitenden</strong> vor verbalen und tätlichen Übergriffen sowie die <strong>Beweissicherung</strong> bei Straftaten und Ordnungswidrigkeiten.</li>
+      <li>Die Dienstanweisung gilt für alle Mitarbeitenden der <span class="field">[Abteilung/Bereich]</span>, die im Außendienst eingesetzt werden und freiwillig am Body-Cam-Programm teilnehmen.</li>
+      <li>Der Einsatz erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse) und § 26 BDSG in Verbindung mit der Betriebsvereinbarung vom <span class="field">[Datum]</span>.</li>
+    </ol>
+  </div>
+
+  <h2>§ 2 Grundsätze</h2>
+  <div class="section">
+    <ol>
+      <li>Der Body-Cam-Einsatz dient <strong>ausschließlich dem Mitarbeiterschutz</strong>. Eine Nutzung zur Leistungs- oder Verhaltenskontrolle ist untersagt.</li>
+      <li>Die Aufzeichnung erfolgt <strong>nur anlassbezogen</strong> — nicht dauerhaft.</li>
+      <li>Jede Aufzeichnung muss <strong>mündlich angekündigt</strong> werden (Art. 13 DSGVO, EuGH C-422/24).</li>
+      <li>Die Teilnahme am Body-Cam-Programm ist für Mitarbeitende <strong>freiwillig</strong>.</li>
+      <li>Es besteht <strong>kein Anspruch auf permanente Aufzeichnung</strong> — die Kamera ist ein Schutzinstrument, kein Überwachungsmittel.</li>
+    </ol>
+  </div>
+
+  <h2>§ 3 Einsatzbereiche und Einschränkungen</h2>
+  <div class="section">
+    <h3>3.1 Zulässige Einsatzbereiche</h3>
+    <ul>
+      <li><span class="field">[Öffentliche Plätze, Haltestellen, Fahrzeuge, Bürgerkontakt im Außendienst]</span></li>
+      <li>Einsatz bei konkreter Gefährdungslage oder Konfliktsituation</li>
+      <li>Einsatz zur Beweissicherung bei Straftaten/Ordnungswidrigkeiten</li>
+    </ul>
+    <h3>3.2 Verbotene Bereiche</h3>
+    <ul>
+      <li>Toiletten und Umkleidekabinen — <strong>absolut verboten</strong></li>
+      <li>Medizinische Behandlungsräume — <strong>absolut verboten</strong></li>
+      <li>Privatwohnungen — nur mit ausdrücklicher Einwilligung oder bei gegenwärtiger Gefahr</li>
+      <li>Versammlungen und Demonstrationen — nur bei konkreter Straftat</li>
+    </ul>
+    <h3>3.3 Unzulässige Verwendung</h3>
+    <ul>
+      <li>Daueraufzeichnung ohne konkreten Anlass</li>
+      <li>Leistungs- oder Verhaltenskontrolle von Mitarbeitenden</li>
+      <li>Private Aufnahmen jeglicher Art</li>
+      <li>Weitergabe an unbefugte Dritte</li>
+    </ul>
+  </div>
+
+  <h2>§ 4 Bedienung und Verfahren</h2>
+  <div class="section">
+    <ol>
+      <li><strong>Dienstbeginn:</strong> Body-Cam am SmartHub/ChargeHub entnehmen und mit NFC-Karte oder PIN anmelden.</li>
+      <li><strong>Pre-Recording:</strong> Die Kamera speichert die letzten <span class="field">[60/120]</span> Sekunden im flüchtigen Speicher (RAM). Bei Aktivierung werden diese dauerhaft gespeichert.</li>
+      <li><strong>Aufnahmestart:</strong> Bei Konfliktsituation: (a) Aufnahmetaste drücken, (b) mündlich ankündigen: <em>„Ich weise Sie darauf hin, dass ich eine Körperkamera trage, die jetzt aufzeichnet."</em></li>
+      <li><strong>Aufnahmeende:</strong> Nach Deeskalation/Ende der Situation Aufnahme stoppen.</li>
+      <li><strong>Dienstende:</strong> Kamera in SmartHub/ChargeHub einsetzen. Datenübertragung erfolgt automatisch und verschlüsselt.</li>
+      <li>Auf der Kamera gespeicherte Daten werden nach erfolgreichem Upload <strong>automatisch gelöscht</strong>.</li>
+    </ol>
+  </div>
+
+  <h2>§ 5 Datenschutz und Speicherung</h2>
+  <div class="section">
+    <ol>
+      <li>Alle Aufnahmen werden mit <strong>AES-256 verschlüsselt</strong> und auf dem Server der <span class="field">[Organisation / NetCo Cloud (Serverstandort Deutschland)]</span> gespeichert.</li>
+      <li>Aufnahmen ohne Beweisrelevanz werden nach <strong><span class="field">[72]</span> Stunden automatisch gelöscht</strong>.</li>
+      <li>Beweisrelevante Aufnahmen werden für die Dauer der Ermittlungen/des Verfahrens aufbewahrt und danach gelöscht.</li>
+      <li>Zugriff auf Aufnahmen haben ausschließlich: <span class="field">[Vorgesetzte/r, DSB, bei Straftaten: Strafverfolgungsbehörden auf Anforderung]</span>.</li>
+      <li>Jeder Zugriff wird <strong>protokolliert</strong> (Audit-Trail).</li>
+      <li>Betroffene haben das Recht auf Auskunft, Berichtigung und Löschung gemäß Art. 15–17 DSGVO.</li>
+    </ol>
+  </div>
+
+  <h2>§ 6 Transparenzhinweise</h2>
+  <div class="section">
+    <ol>
+      <li>In allen Einsatzbereichen sind <strong>Hinweisschilder</strong> mit Verweis auf die Videoüberwachung anzubringen.</li>
+      <li>Ein <strong>QR-Code</strong> auf den Schildern verweist auf die vollständige Datenschutzmitteilung.</li>
+      <li>Die Body-Cam zeigt bei Aufzeichnung ein <strong>rotes LED-Signal</strong> und gibt ein <strong>akustisches Signal</strong>.</li>
+      <li>Das <strong>Frontdisplay</strong> zeigt dem Gegenüber die Aufnahme (Spiegel-Funktion).</li>
+    </ol>
+  </div>
+
+  <h2>§ 7 Schulung und Dokumentation</h2>
+  <div class="section">
+    <ol>
+      <li>Alle Mitarbeitende müssen vor dem ersten Einsatz eine <strong>3-Stufen-Schulung</strong> absolvieren: Technik, Recht, Taktik.</li>
+      <li>Die Schulung wird dokumentiert und ist <strong>jährlich aufzufrischen</strong>.</li>
+      <li>Jeder Einsatz der Body-Cam ist im <strong>Einsatzprotokoll</strong> zu vermerken (Datum, Uhrzeit, Anlass, Dauer).</li>
+    </ol>
+  </div>
+
+  <h2>§ 8 Verstöße</h2>
+  <div class="section">
+    <p>Verstöße gegen diese Dienstanweisung können arbeitsrechtliche Konsequenzen nach sich ziehen. Insbesondere die unzulässige Nutzung zur Leistungskontrolle, unbefugte Weitergabe von Aufnahmen oder private Nutzung der Body-Cam führen zu disziplinarischen Maßnahmen.</p>
+  </div>
+
+  <h2>§ 9 Inkrafttreten und Evaluierung</h2>
+  <div class="section">
+    <ol>
+      <li>Diese Dienstanweisung tritt am <span class="field">[Datum]</span> in Kraft.</li>
+      <li>Sie wird nach <strong>12 Monaten evaluiert</strong> und bei Bedarf angepasst.</li>
+      <li>Änderungen bedürfen der Zustimmung des Betriebsrats/Personalrats.</li>
+    </ol>
+  </div>
+
+  <div class="signature-block">
+    <div>
+      <div class="sig-line"><span class="field">[Name, Titel]</span><br>Geschäftsführung / Amtsleitung</div>
+    </div>
+    <div>
+      <div class="sig-line"><span class="field">[Name, Titel]</span><br>Betriebsrat / Personalrat</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Muster bereitgestellt von <strong>NetCo Professional Services GmbH</strong> · Keine Rechtsberatung. Anpassung an lokales Recht erforderlich.<br>
+    www.netco-bodycam.com · +49 3946 7099-0 · info@netco.de
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IT-Sicherheitskonzept Vorlage (BSI-konform) — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 15mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 9.5pt; line-height: 1.5; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 15mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } .page-break { page-break-before: always; } }
+
+    .doc-header { text-align: center; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 2px solid var(--primary); }
+    .doc-header .org { font-size: 8pt; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2mm; }
+    .doc-header h1 { font-family: 'Antonio', sans-serif; font-size: 18pt; color: var(--primary); }
+    .doc-header .meta { font-size: 8pt; color: var(--text-light); margin-top: 2mm; }
+
+    .edit-hint { background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 3mm; font-size: 8pt; color: #92400e; margin-bottom: 5mm; }
+    .field { background: #fff7ed; border-bottom: 1px dashed var(--secondary); padding: 0 1mm; font-style: italic; color: var(--secondary); }
+
+    h2 { font-family: 'Antonio', sans-serif; font-size: 12pt; color: var(--primary); margin: 5mm 0 2mm; padding-bottom: 1mm; border-bottom: 1px solid var(--surface); counter-increment: section; }
+    h2::before { content: counter(section) ". "; }
+    body { counter-reset: section; }
+    h3 { font-size: 10pt; font-weight: 700; color: var(--primary); margin: 3mm 0 1mm; }
+
+    ol, ul { margin-left: 5mm; margin-bottom: 2mm; }
+    li { margin-bottom: 1mm; }
+    table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; font-size: 8.5pt; }
+    th { background: var(--primary); color: white; padding: 2mm; text-align: left; font-size: 8pt; }
+    td { padding: 2mm; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+    tr:nth-child(even) td { background: var(--surface); }
+
+    .risk-high { color: #dc2626; font-weight: 700; }
+    .risk-mid { color: #d97706; font-weight: 700; }
+    .risk-low { color: #16a34a; font-weight: 700; }
+
+    .footer-note { margin-top: 8mm; padding-top: 3mm; border-top: 1px solid var(--surface); font-size: 7pt; color: var(--text-light); text-align: center; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-header">
+    <div class="org"><span class="field">[Name der Organisation]</span></div>
+    <h1>IT-SICHERHEITSKONZEPT<br>BODY-CAM-SYSTEM</h1>
+    <div class="meta">BSI IT-Grundschutz-konform · Dok-Nr: <span class="field">[IT-SEC-BC-001]</span> · Version: 1.0 · Stand: <span class="field">[Datum]</span></div>
+  </div>
+
+  <div class="edit-hint">
+    <strong>Muster-Vorlage:</strong> Alle <span class="field">orangefarbenen Felder</span> anpassen. Orientiert am BSI IT-Grundschutz-Kompendium (APP, SYS, NET, OPS Module). Abstimmung mit IT-Sicherheitsbeauftragtem und DSB erforderlich.
+  </div>
+
+  <h2>Systemübersicht</h2>
+  <p>Das Body-Cam-System besteht aus folgenden Komponenten:</p>
+  <table>
+    <thead><tr><th>Komponente</th><th>Beschreibung</th><th>BSI-Baustein</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Body-Cam Pro</strong></td><td>Endgerät am Körper, Full HD, AES-256, GPS, Pre-Recording</td><td>SYS.3.4 Mobile Datenträger</td></tr>
+      <tr><td><strong>SmartHub / ChargeHub</strong></td><td>Docking-Station, automatische Datenübertragung via LAN/USB-C</td><td>SYS.4.1 Drucker/Peripherie</td></tr>
+      <tr><td><strong>NetCo Suite Server</strong></td><td>AdminClient + MediaClient, On-Prem oder Cloud (DE)</td><td>SYS.1.1 Allg. Server, APP.3.1 Webanwendung</td></tr>
+      <tr><td><strong>Netzwerk</strong></td><td>LAN für SmartHubs, ggf. LTE für Streaming</td><td>NET.1.1 Netzarchitektur</td></tr>
+      <tr><td><strong>MediaPlayer</strong></td><td>Verschlüsselter Player für Export an Strafverfolgung</td><td>APP.1.1 Office-Produkte</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Schutzbedarf</h2>
+  <table>
+    <thead><tr><th>Schutzziel</th><th>Einstufung</th><th>Begründung</th></tr></thead>
+    <tbody>
+      <tr><td>Vertraulichkeit</td><td class="risk-high">Hoch</td><td>Videoaufnahmen enthalten personenbezogene Daten, ggf. Opfer/Täter-Bilder</td></tr>
+      <tr><td>Integrität</td><td class="risk-high">Hoch</td><td>Aufnahmen dienen als Beweismittel — Manipulation muss ausgeschlossen sein</td></tr>
+      <tr><td>Verfügbarkeit</td><td class="risk-mid">Normal</td><td>Kurzfristiger Ausfall tolerierbar, keine Echtzeitabhängigkeit (außer LTE)</td></tr>
+      <tr><td>Authentizität</td><td class="risk-high">Hoch</td><td>Zuordnung Aufnahme ↔ Benutzer muss zweifelsfrei nachweisbar sein</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Risikoanalyse</h2>
+  <table>
+    <thead><tr><th>Risiko</th><th>Eintritt</th><th>Auswirkung</th><th>Maßnahme</th></tr></thead>
+    <tbody>
+      <tr><td>Kamera-Verlust/-Diebstahl</td><td class="risk-mid">Mittel</td><td class="risk-high">Hoch</td><td>AES-256 auf Gerät, Remote-Wipe via AdminClient, Zugangssperre nach 3 Fehlversuchen</td></tr>
+      <tr><td>Unbefugter Zugriff Server</td><td class="risk-low">Gering</td><td class="risk-high">Hoch</td><td>Rollenbasierte Zugriffskontrolle, 2FA für Admins, Netzwerksegmentierung</td></tr>
+      <tr><td>Datenmanipulation</td><td class="risk-low">Gering</td><td class="risk-high">Hoch</td><td>Digitale Wasserzeichen, Hash-Prüfung, .mex-Containerformat, Audit-Trail</td></tr>
+      <tr><td>Netzwerkausfall</td><td class="risk-mid">Mittel</td><td class="risk-mid">Mittel</td><td>Lokale Speicherung auf Kamera (64 GB), Sync bei Reconnect</td></tr>
+      <tr><td>Insider-Missbrauch</td><td class="risk-low">Gering</td><td class="risk-high">Hoch</td><td>4-Augen-Prinzip für Export, Zugriffsprotokolle, Schulung</td></tr>
+      <tr><td>DSGVO-Verstoß (zu lange gespeichert)</td><td class="risk-mid">Mittel</td><td class="risk-high">Hoch</td><td>Automatische Löschfristen im AdminClient, Monitoring, Audit</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Technische Maßnahmen (TOM)</h2>
+  <h3>4.1 Verschlüsselung</h3>
+  <ul>
+    <li><strong>Auf der Kamera:</strong> AES-256-Verschlüsselung aller Aufnahmen während der Aufzeichnung</li>
+    <li><strong>Übertragung:</strong> Ende-zu-Ende-Verschlüsselung Hub → Server (TLS 1.3 + AES-256)</li>
+    <li><strong>Speicherung:</strong> Verschlüsselung at-rest auf Server (AES-256)</li>
+    <li><strong>Export:</strong> .mex-Containerformat, nur mit NetCo MediaPlayer abspielbar, kopiergeschützt</li>
+  </ul>
+
+  <h3>4.2 Zugriffskontrolle</h3>
+  <ul>
+    <li><strong>Kamera:</strong> NFC/RFID-Karte oder PIN + UserID (kein Zugriff auf Rohdateien am Gerät)</li>
+    <li><strong>AdminClient:</strong> Rollenbasiert (Admin, Supervisor, Viewer), 2FA empfohlen</li>
+    <li><strong>MediaClient:</strong> Eingeschränkte Rechte, kein Export ohne Admin-Freigabe</li>
+    <li><strong>Server:</strong> Netzwerksegmentierung, Firewall, nur LAN-Zugriff für SmartHubs</li>
+  </ul>
+
+  <h3>4.3 Integritätsschutz</h3>
+  <ul>
+    <li>Digitale Wasserzeichen mit Seriennummer, UserID, GPS-Koordinaten, Zeitstempel</li>
+    <li>MKV-Format mit eingebettetem Audio (Vollständigkeit)</li>
+    <li>Hash-Wert pro Aufnahme (Manipulationserkennung)</li>
+    <li>Audit-Trail: Jede Aktion (Zugriff, Export, Löschung) wird protokolliert</li>
+  </ul>
+
+  <h3>4.4 Datenlöschung</h3>
+  <ul>
+    <li>Automatische Löschung auf Kamera nach erfolgreichem Upload</li>
+    <li>Konfigurierbare Löschfristen im AdminClient (<span class="field">[72 Stunden]</span> Standard)</li>
+    <li>Revisionssichere Löschprotokolle (wer hat was wann gelöscht)</li>
+    <li>Keine manuelle Löschung einzelner Aufnahmen (nur Admin mit Begründung)</li>
+  </ul>
+
+  <h2>Organisatorische Maßnahmen</h2>
+  <ul>
+    <li>IT-Sicherheitsbeauftragter wird in Konzept eingebunden</li>
+    <li>Betriebsvereinbarung regelt organisatorischen Rahmen</li>
+    <li>Schulungspflicht für alle Nutzer und Administratoren</li>
+    <li>Vierteljährlicher Sicherheitsaudit (Zugriffsrechte, Löschprotokolle, Firmware-Stand)</li>
+    <li>Incident-Response-Plan für Datenverlust/-diebstahl</li>
+    <li>Regelmäßige Firmware-Updates (NetCo stellt bereit)</li>
+    <li>Notfallplan: Bei Serverausfall → Kameras speichern lokal bis Reconnect</li>
+  </ul>
+
+  <h2>Netzwerkarchitektur</h2>
+  <p>Empfohlene Netzwerktopologie für <span class="field">[On-Premises / Cloud]</span>-Betrieb:</p>
+  <table>
+    <thead><tr><th>Segment</th><th>Komponenten</th><th>Zugriff</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Kamera-Netz (VLAN)</strong></td><td>SmartHubs</td><td>Nur → NetCo Server (Port 443)</td></tr>
+      <tr><td><strong>Management-Netz</strong></td><td>AdminClient, MediaClient</td><td>Nur → NetCo Server (HTTPS)</td></tr>
+      <tr><td><strong>Server-Netz</strong></td><td>NetCo Suite Server, Datenbank</td><td>Kein Internet-Zugriff, nur LAN</td></tr>
+      <tr><td><strong>LTE (optional)</strong></td><td>Body-Cam Pro LTE</td><td>VPN → NetCo Server</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Wartung und Betrieb</h2>
+  <ul>
+    <li>Firmware-Updates: NetCo stellt Updates bereit, Rollout über AdminClient</li>
+    <li>Hardware-Wartung: Refurbishing alle 2 Jahre (bei Mietmodell inklusive)</li>
+    <li>Akku-Prüfung: Kapazitätstest bei jeder Wartung</li>
+    <li>Log-Rotation: Server-Logs nach <span class="field">[12 Monaten]</span> archivieren</li>
+    <li>Backup: Beweisrelevante Aufnahmen in separatem, verschlüsseltem Archiv</li>
+  </ul>
+
+  <h2>Verantwortlichkeiten</h2>
+  <table>
+    <thead><tr><th>Rolle</th><th>Verantwortung</th></tr></thead>
+    <tbody>
+      <tr><td><span class="field">[IT-Leitung]</span></td><td>Gesamtverantwortung IT-Sicherheit, Server-Betrieb, Netzwerk</td></tr>
+      <tr><td><span class="field">[IT-Sicherheitsbeauftragter]</span></td><td>Risikoanalyse, Audits, Incident Response</td></tr>
+      <tr><td><span class="field">[Datenschutzbeauftragter]</span></td><td>DSGVO-Konformität, DSFA, Löschfristen-Monitoring</td></tr>
+      <tr><td><span class="field">[Fachbereichsleitung]</span></td><td>Einsatzkonzept, Schulung, operative Nutzung</td></tr>
+      <tr><td>NetCo Support</td><td>Firmware-Updates, Hardware-Wartung, technischer Support</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer-note">
+    Muster bereitgestellt von <strong>NetCo Professional Services GmbH</strong> · Orientiert am BSI IT-Grundschutz-Kompendium · Keine Rechts- oder Sicherheitsberatung im Einzelfall.<br>
+    www.netco-bodycam.com · +49 3946 7099-0 · info@netco.de
+  </div>
+</div>
+</body>
+</html>

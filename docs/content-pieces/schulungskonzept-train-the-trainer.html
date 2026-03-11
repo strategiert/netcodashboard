@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schulungskonzept Train-the-Trainer — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 12mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 9pt; line-height: 1.4; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 12mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 3px solid var(--secondary); }
+    .header h1 { font-family: 'Antonio', sans-serif; font-size: 20pt; color: var(--primary); line-height: 1.1; }
+    .header .subtitle { font-size: 9pt; color: var(--text-light); margin-top: 1mm; }
+    .header-right { text-align: right; }
+    .header-right .logo { font-family: 'Antonio', sans-serif; font-size: 14pt; color: var(--primary); }
+
+    .intro { background: var(--surface); border-radius: 4px; padding: 3mm 4mm; margin-bottom: 5mm; font-size: 9pt; }
+
+    /* Module cards */
+    .module { margin-bottom: 4mm; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .module-header { display: flex; align-items: center; gap: 3mm; padding: 2.5mm 3mm; background: var(--primary); color: white; }
+    .module-header.m2 { background: #1e40af; }
+    .module-header.m3 { background: #7c3aed; }
+    .module-header.m4 { background: #059669; }
+    .module-num { font-family: 'Antonio', sans-serif; font-size: 16pt; opacity: 0.6; width: 25px; }
+    .module-title { font-family: 'Antonio', sans-serif; font-size: 11pt; flex: 1; }
+    .module-time { font-size: 7pt; background: rgba(255,255,255,0.2); padding: 1mm 2.5mm; border-radius: 3px; }
+
+    .module-body { padding: 3mm; display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+    .module-body.single { grid-template-columns: 1fr; }
+
+    .mod-section h4 { font-size: 8pt; font-weight: 700; color: var(--primary); margin-bottom: 1mm; text-transform: uppercase; letter-spacing: 0.3px; }
+    .mod-list { list-style: none; font-size: 8pt; }
+    .mod-list li { padding: 0.5mm 0 0.5mm 3mm; position: relative; }
+    .mod-list li::before { content: '→'; position: absolute; left: 0; color: var(--secondary); font-weight: 700; font-size: 7pt; }
+
+    .practice-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 2mm 3mm; font-size: 8pt; margin-top: 1mm; }
+    .practice-box strong { color: #92400e; }
+
+    /* Timeline overview */
+    .timeline-overview { display: flex; gap: 2mm; margin-bottom: 5mm; }
+    .tl-block { flex: 1; background: var(--surface); border-radius: 4px; padding: 2mm; text-align: center; border-top: 3px solid var(--primary); }
+    .tl-block.active { border-top-color: var(--secondary); background: #fff7ed; }
+    .tl-block .time { font-family: 'Antonio', sans-serif; font-size: 10pt; color: var(--primary); }
+    .tl-block .desc { font-size: 6.5pt; color: var(--text-light); }
+
+    /* Certification */
+    .cert-box { background: var(--primary); color: white; border-radius: 6px; padding: 4mm; margin-bottom: 4mm; }
+    .cert-box h3 { font-family: 'Antonio', sans-serif; font-size: 12pt; margin-bottom: 2mm; }
+    .cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; font-size: 8pt; }
+    .cert-grid .item { display: flex; align-items: flex-start; gap: 1.5mm; }
+    .cert-grid .check { color: var(--secondary); font-weight: 700; flex-shrink: 0; }
+
+    .footer { margin-top: 3mm; padding-top: 2mm; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; font-size: 7pt; color: var(--text-light); }
+    .footer .cta { background: var(--secondary); color: white; padding: 1.5mm 4mm; border-radius: 3px; font-weight: 700; font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>SCHULUNGSKONZEPT<br>TRAIN-THE-TRAINER</h1>
+      <div class="subtitle">Interne Multiplikatoren für die Body-Cam-Einführung ausbilden</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div style="font-size:7pt; color:var(--text-light)">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    Statt jede neue Kraft einzeln durch NetCo schulen zu lassen, bilden Sie <strong>interne Trainer</strong> aus. Diese können Kolleginnen und Kollegen selbständig einweisen — spart Kosten, ist flexibel und stärkt die Eigenverantwortung. NetCo unterstützt mit Erstschulung und Materialien.
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-overview">
+    <div class="tl-block active"><div class="time">Tag 1</div><div class="desc">Modul 1: Technik<br>(4h)</div></div>
+    <div class="tl-block"><div class="time">Tag 1</div><div class="desc">Modul 2: Recht<br>(3h)</div></div>
+    <div class="tl-block active"><div class="time">Tag 2</div><div class="desc">Modul 3: Taktik<br>(3h)</div></div>
+    <div class="tl-block"><div class="time">Tag 2</div><div class="desc">Modul 4: Didaktik<br>(2h)</div></div>
+    <div class="tl-block active"><div class="time">Woche 2</div><div class="desc">Praxis<br>+ Prüfung</div></div>
+  </div>
+
+  <!-- Module 1 -->
+  <div class="module">
+    <div class="module-header">
+      <span class="module-num">1</span>
+      <span class="module-title">TECHNIK & BEDIENUNG</span>
+      <span class="module-time">4 Stunden</span>
+    </div>
+    <div class="module-body">
+      <div class="mod-section">
+        <h4>Inhalte</h4>
+        <ul class="mod-list">
+          <li>Body-Cam Pro: Tasten, Display, LED, Mikrofon, Akku</li>
+          <li>Ein-/Ausschalten, Aufnahme starten/stoppen</li>
+          <li>Pre-Recording konfigurieren (30–120 s)</li>
+          <li>NFC/RFID-Login für Schichtbetrieb</li>
+          <li>SmartHub: Docking, Datenübertragung, Laden</li>
+          <li>ChargeHub: USB-C, mobiles Laden (Auto)</li>
+          <li>LTE-Variante: SIM, Live-Streaming, Bandbreite</li>
+          <li>Troubleshooting: Akku leer, kein Upload, LED-Codes</li>
+        </ul>
+      </div>
+      <div class="mod-section">
+        <h4>Lernziele</h4>
+        <ul class="mod-list">
+          <li>Trainer kann alle Funktionen blind bedienen</li>
+          <li>Trainer kann Fehlerbilder erkennen und lösen</li>
+          <li>Trainer kann Neulingen die Bedienung in 15 min erklären</li>
+        </ul>
+        <div class="practice-box">
+          <strong>Praxis:</strong> Jeder Teilnehmer filmt eine simulierte Situation, dockt an, prüft Upload im AdminClient. Fehler werden provoziert und gelöst.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 2 -->
+  <div class="module">
+    <div class="module-header m2">
+      <span class="module-num">2</span>
+      <span class="module-title">RECHT & DATENSCHUTZ</span>
+      <span class="module-time">3 Stunden</span>
+    </div>
+    <div class="module-body">
+      <div class="mod-section">
+        <h4>Inhalte</h4>
+        <ul class="mod-list">
+          <li>Art. 6 DSGVO: Rechtsgrundlage berechtigtes Interesse</li>
+          <li>§ 26 BDSG: Kein Einsatz zur Leistungskontrolle</li>
+          <li>EuGH C-422/24: Informationspflicht bei Aufnahme</li>
+          <li>Betriebsvereinbarung: Was steht drin, was bedeutet es?</li>
+          <li>Verbotene Bereiche: Toiletten, Umkleiden, Behandlung</li>
+          <li>Speicherfristen: 72h Regel, Beweissicherung, Löschpflicht</li>
+          <li>Betroffenenrechte: Auskunft, Löschung, Widerspruch</li>
+          <li>Transparenz: Schilder, QR-Code, mündliche Ankündigung</li>
+        </ul>
+      </div>
+      <div class="mod-section">
+        <h4>Lernziele</h4>
+        <ul class="mod-list">
+          <li>Trainer kennt die 3 Rechtsgrundlagen und kann sie erklären</li>
+          <li>Trainer kann die „5 Verbote" aus dem Kopf aufsagen</li>
+          <li>Trainer kann den Ankündigungstext fehlerfrei vorsprechen</li>
+        </ul>
+        <div class="practice-box">
+          <strong>Praxis:</strong> Rollenspiel: „Ein Bürger fragt, warum Sie filmen." — Trainer übt korrekte Ankündigung und Auskunftserteilung. Fallbeispiele mit Datenschutz-Dilemmas.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 3 -->
+  <div class="module">
+    <div class="module-header m3">
+      <span class="module-num">3</span>
+      <span class="module-title">TAKTIK & DEESKALATION</span>
+      <span class="module-time">3 Stunden</span>
+    </div>
+    <div class="module-body">
+      <div class="mod-section">
+        <h4>Inhalte</h4>
+        <ul class="mod-list">
+          <li>Deeskalation: Grundprinzipien (Stimme, Abstand, Haltung)</li>
+          <li>Frontdisplay als Spiegel: Wirkung erklären & nutzen</li>
+          <li>Eskalationsstufen: Wann Kamera an, wann Display, wann Rückzug</li>
+          <li>Verbale Ankündigung: Timing, Tonfall, Wortwahl</li>
+          <li>Gruppen-Aktivierung: Bluetooth-Trigger, Kollegenschutz</li>
+          <li>Nach dem Vorfall: Protokoll, Meldekette, psychologische Nachsorge</li>
+        </ul>
+      </div>
+      <div class="mod-section">
+        <h4>Lernziele</h4>
+        <ul class="mod-list">
+          <li>Trainer kann 3 Deeskalationstechniken mit Body-Cam demonstrieren</li>
+          <li>Trainer kennt die Eskalationsstufen und Handlungsoptionen</li>
+          <li>Trainer kann Rollenspiele anleiten und Feedback geben</li>
+        </ul>
+        <div class="practice-box">
+          <strong>Praxis:</strong> 3 Szenarien durchspielen: (1) Verbale Aggression → Display-Deeskalation, (2) Tätlicher Angriff → Aufnahme + Rückzug, (3) Gruppenbedrohung → Kollegenalarm. Videoanalyse der Übungen.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module 4 -->
+  <div class="module">
+    <div class="module-header m4">
+      <span class="module-num">4</span>
+      <span class="module-title">DIDAKTIK & WEITERGABE</span>
+      <span class="module-time">2 Stunden</span>
+    </div>
+    <div class="module-body single">
+      <div class="mod-section">
+        <h4>Der Trainer als Multiplikator</h4>
+        <ul class="mod-list">
+          <li>Aufbau einer 90-Minuten-Kurzschulung für neue Kolleg:innen</li>
+          <li>Checkliste: Was muss ein Neuling nach der Schulung können?</li>
+          <li>Material: Schulungsfolien (NetCo stellt bereit), Handout, Quick-Reference-Card</li>
+          <li>Praxisübung anleiten: Dos & Don'ts beim Rollenspiel</li>
+          <li>Feedback geben: konstruktiv, konkret, motivierend</li>
+          <li>Dokumentation: Schulungsnachweis führen, jährliche Auffrischung planen</li>
+        </ul>
+        <div class="practice-box" style="margin-top:2mm">
+          <strong>Abschlussprüfung:</strong> Jeder Trainer-Kandidat hält eine 15-minütige Mini-Schulung für die Gruppe. Bewertung durch NetCo-Trainer nach Kriterien: Fachlich korrekt, verständlich, praxisnah.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Certification -->
+  <div class="cert-box">
+    <h3>ZERTIFIZIERUNG & MATERIAL</h3>
+    <div class="cert-grid">
+      <div class="item"><span class="check">✓</span> NetCo Train-the-Trainer Zertifikat</div>
+      <div class="item"><span class="check">✓</span> Schulungsfolien (anpassbar, mit Logo)</div>
+      <div class="item"><span class="check">✓</span> Quick-Reference-Card für Teilnehmer</div>
+      <div class="item"><span class="check">✓</span> Rechtliche Checkliste (DSGVO)</div>
+      <div class="item"><span class="check">✓</span> 3 Rollenspiel-Szenarien mit Drehbuch</div>
+      <div class="item"><span class="check">✓</span> Schulungsnachweis-Vorlage</div>
+      <div class="item"><span class="check">✓</span> Jährliche Auffrischung (Online, 2h)</div>
+      <div class="item"><span class="check">✓</span> Hotline für Trainer-Rückfragen</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Train-the-Trainer Schulung: 2 Tage vor Ort, max. 8 Teilnehmer. Preis auf Anfrage.</span>
+    </div>
+    <div class="cta">Schulung buchen →</div>
+  </div>
+</div>
+</body>
+</html>

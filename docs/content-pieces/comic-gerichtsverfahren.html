@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerichtsverfahren mit vs. ohne Bodycam — NetCo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; --green: #16a34a; --red: #dc2626; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 10mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 8.5pt; line-height: 1.35; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 10mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } }
+
+    .header { text-align: center; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 3px solid var(--secondary); }
+    .header h1 { font-family: 'Antonio', sans-serif; font-size: 20pt; color: var(--primary); }
+    .header .sub { font-size: 9pt; color: var(--text-light); }
+
+    .versus-label { text-align: center; font-family: 'Antonio', sans-serif; font-size: 14pt; color: var(--secondary); margin: 3mm 0; }
+
+    /* Two-track layout */
+    .tracks { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+    .track { border-radius: 6px; overflow: hidden; }
+    .track-bad { border: 2px solid var(--red); }
+    .track-good { border: 2px solid var(--green); }
+    .track-header { padding: 2.5mm 3mm; color: white; font-family: 'Antonio', sans-serif; font-size: 11pt; display: flex; align-items: center; gap: 2mm; }
+    .track-bad .track-header { background: var(--red); }
+    .track-good .track-header { background: var(--green); }
+    .track-header .icon { font-size: 16pt; }
+
+    .scene { padding: 2.5mm 3mm; border-bottom: 1px solid #f1f5f9; }
+    .scene:last-child { border-bottom: none; }
+    .scene-num { font-family: 'Antonio', sans-serif; font-size: 9pt; color: var(--text-light); margin-bottom: 0.5mm; }
+    .scene-title { font-weight: 700; font-size: 8.5pt; color: var(--text); margin-bottom: 1mm; }
+    .scene-text { font-size: 7.5pt; color: var(--text-light); }
+    .track-bad .scene-title { color: #991b1b; }
+    .track-good .scene-title { color: #166534; }
+
+    .bubble { background: var(--surface); border-radius: 6px; padding: 1.5mm 2.5mm; font-size: 7pt; font-style: italic; margin-top: 1mm; position: relative; }
+    .bubble .who { font-weight: 700; font-style: normal; }
+    .track-bad .bubble { background: #fef2f2; }
+    .track-good .bubble { background: #f0fdf4; }
+
+    /* Result boxes */
+    .result { padding: 3mm; text-align: center; }
+    .track-bad .result { background: #fef2f2; }
+    .track-good .result { background: #f0fdf4; }
+    .result .outcome { font-family: 'Antonio', sans-serif; font-size: 16pt; }
+    .track-bad .result .outcome { color: var(--red); }
+    .track-good .result .outcome { color: var(--green); }
+    .result .detail { font-size: 7.5pt; color: var(--text-light); margin-top: 1mm; }
+
+    /* Bottom section */
+    .takeaway { background: var(--primary); color: white; border-radius: 6px; padding: 4mm; margin-top: 4mm; }
+    .takeaway h3 { font-family: 'Antonio', sans-serif; font-size: 12pt; margin-bottom: 2mm; }
+    .takeaway-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; font-size: 8pt; }
+    .takeaway-item { text-align: center; }
+    .takeaway-item .num { font-family: 'Antonio', sans-serif; font-size: 20pt; color: var(--secondary); }
+    .takeaway-item .lbl { color: #94a3b8; font-size: 7pt; }
+
+    .footer { margin-top: 3mm; padding-top: 2mm; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; font-size: 7pt; color: var(--text-light); }
+    .footer .cta { background: var(--secondary); color: white; padding: 1.5mm 4mm; border-radius: 3px; font-weight: 700; font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>GERICHTSVERFAHREN:<br>MIT VS. OHNE BODYCAM</h1>
+    <div class="sub">Zwei Wege, ein Vorfall — wie Body-Cam-Aufnahmen den Unterschied vor Gericht machen</div>
+  </div>
+
+  <!-- Ausgangslage -->
+  <div style="background:var(--surface); border-radius:6px; padding:3mm 4mm; margin-bottom:3mm; text-align:center">
+    <strong style="color:var(--primary)">AUSGANGSLAGE:</strong> Ein Ordnungsamtsmitarbeiter wird bei einer Kontrolle am Marktplatz vom Kontrollierten geschubst und beleidigt. Der Mitarbeiter erleidet eine Prellung am Arm. Er erstattet Anzeige.
+  </div>
+
+  <div class="versus-label">OHNE BODYCAM ← VS. → MIT BODYCAM</div>
+
+  <div class="tracks">
+    <!-- Track: OHNE -->
+    <div class="track track-bad">
+      <div class="track-header"><span class="icon">✗</span> OHNE BODY-CAM</div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 1</div>
+        <div class="scene-title">Anzeige aufnehmen</div>
+        <div class="scene-text">Mitarbeiter erstattet Anzeige. Beschreibt den Vorfall aus Erinnerung. Kein Zeuge vor Ort — Aussage gegen Aussage.</div>
+        <div class="bubble"><span class="who">Polizei:</span> „War sonst jemand dabei?" — „Nein, wir waren allein."</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 2</div>
+        <div class="scene-title">Ermittlung läuft</div>
+        <div class="scene-text">Staatsanwaltschaft ermittelt. Beschuldigter bestreitet alles: „Ich habe ihn nicht angefasst." Kein Beweis außer Zeugenaussage.</div>
+        <div class="bubble"><span class="who">Beschuldigter:</span> „Der Mitarbeiter hat mich provoziert. Ich habe mich nur gewehrt."</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 3</div>
+        <div class="scene-title">Verhandlung</div>
+        <div class="scene-text">Aussage gegen Aussage. Richter muss Glaubwürdigkeit abwägen. Kein objektiver Beweis. Verteidiger stellt Mitarbeiter als aggressiv dar.</div>
+        <div class="bubble"><span class="who">Verteidiger:</span> „Mein Mandant bestreitet die Tat. Es gibt keinen Beweis."</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 4</div>
+        <div class="scene-title">Urteil</div>
+        <div class="scene-text">Freispruch wegen mangelnder Beweislage (in dubio pro reo). Mitarbeiter fühlt sich im Stich gelassen.</div>
+        <div class="bubble"><span class="who">Mitarbeiter:</span> „6 Monate Verfahren, für nichts. Nie wieder Außendienst."</div>
+      </div>
+
+      <div class="result">
+        <div class="outcome">FREISPRUCH</div>
+        <div class="detail">Mangelnde Beweislage · Aussage gegen Aussage<br>Mitarbeiter demoralisiert · Täter nicht bestraft<br>Kosten: ~4.500 € Verfahren (Arbeitgeber trägt AG-Kosten)<br>Folge: Mitarbeiter kündigt, 15.000 € Nachbesetzungskosten</div>
+      </div>
+    </div>
+
+    <!-- Track: MIT -->
+    <div class="track track-good">
+      <div class="track-header"><span class="icon">✓</span> MIT BODY-CAM</div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 1</div>
+        <div class="scene-title">Vorfall wird aufgezeichnet</div>
+        <div class="scene-text">Pre-Recording läuft. Bei Eskalation drückt Mitarbeiter den Aufnahmeknopf. Mündliche Ankündigung. Die letzten 60 Sekunden VOR der Eskalation sind gespeichert.</div>
+        <div class="bubble"><span class="who">Kamera:</span> Aufnahme zeigt: ruhige Kontrolle → plötzlicher Angriff. Alles dokumentiert.</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 2</div>
+        <div class="scene-title">Beweissicherung</div>
+        <div class="scene-text">Aufnahme wird über SmartHub verschlüsselt übertragen. Wasserzeichen, Metadaten (User-ID, GPS, Uhrzeit). Export als .mex-Datei für Staatsanwaltschaft.</div>
+        <div class="bubble"><span class="who">Supervisor:</span> „Beweiskette lückenlos. MediaPlayer-Export für die StA ist fertig."</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 3</div>
+        <div class="scene-title">Verhandlung</div>
+        <div class="scene-text">Richter sieht die Aufnahme. Tatablauf ist objektiv dokumentiert. Verteidiger kann die Beweiskraft nicht anfechten — AES-256, Wasserzeichen, Audit-Trail.</div>
+        <div class="bubble"><span class="who">Richter:</span> „Die Aufnahme ist eindeutig. Der Angriff ist zweifelsfrei dokumentiert."</div>
+      </div>
+
+      <div class="scene">
+        <div class="scene-num">Szene 4</div>
+        <div class="scene-title">Urteil</div>
+        <div class="scene-text">Verurteilung wegen Körperverletzung und Beleidigung. Geldstrafe + Schadenersatz. Klares Signal.</div>
+        <div class="bubble"><span class="who">Mitarbeiter:</span> „Endlich Gerechtigkeit. Ich gehe wieder gerne in den Außendienst."</div>
+      </div>
+
+      <div class="result">
+        <div class="outcome">VERURTEILUNG</div>
+        <div class="detail">Eindeutige Beweislage · Video + Audio + Metadaten<br>Mitarbeiter gestärkt · Täter bestraft · Präzedenzwirkung<br>Verfahren kürzer (~3 Monate statt 6+)<br>Abschreckung: Weniger Wiederholungstäter</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Takeaways -->
+  <div class="takeaway">
+    <h3>DIE ZAHLEN SPRECHEN FÜR SICH</h3>
+    <div class="takeaway-grid">
+      <div class="takeaway-item">
+        <div class="num">~15%</div>
+        <div class="lbl">Verurteilungsquote<br>OHNE Videobeweismittel</div>
+      </div>
+      <div class="takeaway-item">
+        <div class="num">~68%</div>
+        <div class="lbl">Verurteilungsquote<br>MIT Videobeweismittel</div>
+      </div>
+      <div class="takeaway-item">
+        <div class="num">+353%</div>
+        <div class="lbl">Steigerung der<br>erfolgreichen Strafanzeigen</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#dbeafe; border:1px solid #93c5fd; border-radius:4px; padding:3mm; margin-top:3mm; font-size:8pt; text-align:center">
+    <strong style="color:#1e40af">NetCo Body-Cam Pro:</strong> AES-256 Verschlüsselung · Digitale Wasserzeichen · Lückenlose Beweiskette · Gerichtsverwertbar · Server in Deutschland · .mex-Export für Strafverfolgungsbehörden
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Verurteilungsquoten basieren auf Branchenstudien und Praxisdaten. Individuelle Ergebnisse können abweichen.</span>
+    </div>
+    <div class="cta">Demo anfragen →</div>
+  </div>
+</div>
+</body>
+</html>

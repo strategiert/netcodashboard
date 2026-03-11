@@ -5,11 +5,6 @@ import { dirname, join } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const pages = [
-  { file: 'referenzliste-25-kunden.html', out: 'NetCo_Referenzliste_Kunden_2026.pdf', landscape: false, margin: '10mm' },
-  { file: 'anbieter-vergleichsmatrix.html', out: 'NetCo_Anbieter_Vergleichsmatrix_2026.pdf', landscape: true, margin: '8mm' },
-  { file: 'checkliste-pilotprojekt-oepnv.html', out: 'NetCo_Checkliste_Pilotprojekt_OEPNV_2026.pdf', landscape: false, margin: '10mm' },
-  { file: 'implementierungs-guide-90-tage.html', out: 'NetCo_90_Tage_Rollout_Guide_2026.pdf', landscape: false, margin: '10mm' },
-  { file: 'case-study-koeln.html', out: 'NetCo_Case_Study_Koeln_2026.pdf', landscape: false, margin: '10mm' },
   { file: 'branchenvergleich-7-branchen.html', out: 'NetCo_Branchenvergleich_7_Branchen_2026.pdf', landscape: false, margin: '10mm' },
   { file: 'prozess-comic-einfuehrung.html', out: 'NetCo_Prozess_Comic_Einfuehrung_2026.pdf', landscape: false, margin: '8mm' },
   { file: 'dienstanweisung-bodycam-muster.html', out: 'NetCo_Dienstanweisung_Muster_2026.pdf', landscape: false, margin: '12mm' },
@@ -38,7 +33,7 @@ async function generatePDFs() {
   }
 
   await browser.close();
-  console.log('\nDone! PDFs generated in:', __dirname);
+  console.log('\nDone!');
 }
 
 generatePDFs().catch(console.error);
