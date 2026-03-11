@@ -1084,3 +1084,223 @@ export const seedBuyingCenterAndJourneys = mutation({
     return { message: "Buying Center, Journeys & Phase 3+4 Content seeded successfully" };
   },
 });
+
+export const seedBodycamSeoClusters = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const brands = await ctx.db.query("brands").collect();
+    const bodycam = brands.find(b => b.slug === "bodycam");
+    if (!bodycam) return { message: "Brand bodycam not found" };
+
+    // Check if already seeded
+    const existing = await ctx.db
+      .query("seoClusters")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+    if (existing.length > 0) {
+      return { message: "Bodycam SEO Clusters already seeded" };
+    }
+
+    // GSC-Datenanalyse Jan 2025 – März 2026
+    // Cluster basierend auf echten Suchanfragen + Impressionen + Klicks
+    const clusters = [
+      {
+        name: "Bodycam Rechtsgrundlagen (Bundesländer)",
+        proximity: "nah",
+        description: "Stärkstes organisches Cluster — 8 Bundesland-spezifische Rechtsgrundlagen-Artikel dominieren die Impressionen. Top-Performer: Niedersachsen (1.081 Klicks, 24K Imp), Bayern (533 Klicks, 33K Imp), BW (427 Klicks, 29K Imp).",
+        topics: [
+          "bodycam polizei rechtsgrundlage (1.990 Imp, Pos 1)",
+          "bodycam polizei niedersachsen (1.475 Imp, Pos 1)",
+          "bodycam polizei bayern (1.362 Imp, Pos 1)",
+          "bodycam polizei bw / baden-württemberg (1.057+ Imp, Pos 2-4)",
+          "bodycam polizei nrw (1.712 Imp, Pos 2)",
+          "bodycam polizei hamburg (845 Imp, Pos 1)",
+          "bodycam polizei berlin (357 Imp, Pos 5)",
+          "bodycam polizei hessen (121 Imp, Pos 7)",
+          "bodycam saarland / rheinland-pfalz (833-842 Imp)",
+          "15c polg nrw / polg bw (1.389-3.131 Imp)",
+        ],
+      },
+      {
+        name: "Bodycam kaufen & Preise",
+        proximity: "sehr nah",
+        description: "Hochkommerzielle Kaufintention — 'bodycam kaufen' ist das zweitstärkste Keyword (25K Imp, 178 Klicks). Preisseite auf Pos 12 mit 56K Impressionen. Riesiges Conversion-Potential.",
+        topics: [
+          "bodycam kaufen (25.891 Imp, 178 Klicks, Pos 5)",
+          "body cam kaufen (2.456 Imp, Pos 4)",
+          "bodycams kaufen (1.481 Imp, Pos 4)",
+          "bodycam preis / preise (1.285 Imp, Pos 5)",
+          "was kostet eine bodycam (556 Imp)",
+          "netco bodycam preis (228 Imp, 65 Klicks, Pos 1)",
+          "bodycam kosten (228 Imp)",
+          "bodycam hersteller (1.350 Imp, Pos 6)",
+          "bodycam mieten (3.239 Imp auf Miet-Artikel)",
+          "bodycam testsieger / vergleich (337-65 Imp)",
+        ],
+      },
+      {
+        name: "Bodycam Polizei (allgemein)",
+        proximity: "adjacent",
+        description: "Breites Informationscluster rund um Polizei-Bodycams — nicht direkt kaufrelevant, aber enormes Volumen. Zieht B2G-Entscheider an. Hauptseite /polizei/ hat 40K Impressionen.",
+        topics: [
+          "bodycam polizei (5.732 Imp, Pos 8)",
+          "polizei bodycam (3.519 Imp, Pos 10)",
+          "bodycam polizei deutschland (1.514 Imp, Pos 4)",
+          "polizei bodycam pflicht (1.861 Imp, Pos 8)",
+          "haben deutsche polizisten bodycams (1.381 Imp)",
+          "bodycam polizei pro contra (587 Imp)",
+          "bodycam polizei vor und nachteile (584 Imp)",
+          "bodycam bundespolizei (885 Imp)",
+          "bodycam polizei kosten (32 Imp)",
+          "welche bodycam benutzt die polizei (50 Imp)",
+        ],
+      },
+      {
+        name: "DSGVO & Datenschutz",
+        proximity: "nah",
+        description: "Kritisches Vertrauens-Cluster — DSGVO-Seite hat 32K Imp. Datenschutz ist der häufigste Einwand im Buying Center (Beeinflusser). Inhalte müssen überzeugen.",
+        topics: [
+          "bodycam datenschutz (1.069 Imp, Pos 7)",
+          "bodycam erlaubt (1.393 Imp, Pos 9)",
+          "bodycam dsgvo (32.105 Imp auf DSGVO-Seite)",
+          "bodycam als privatperson (2.910 Imp)",
+          "polizei bodycam datenschutz (891 Imp)",
+          "bodycam privat erlaubt (113 Imp)",
+          "cloud act bodycams (64 Imp)",
+          "eugh urteil bodycam (368 Imp, Pos 5)",
+          "bodycam als beweismittel (1.187 Imp)",
+          "bodycam in wohnungen (32 Imp)",
+        ],
+      },
+      {
+        name: "Bodycam Technik & Features",
+        proximity: "sehr nah",
+        description: "Produktnahes Cluster — Technik-Seite 44K Imp, Zubehör 38K Imp. Pre-Recording, Livestreaming und Halterungen sind Differenzierungs-Features.",
+        topics: [
+          "bodycam mit live übertragung (1.193 Imp, 47 Klicks, Pos 1)",
+          "bodycam livestream / streaming (1.176-1.151 Imp, Pos 1-3)",
+          "pre recording bodycam (812 Imp, Pos 15)",
+          "bodycam halterung (1.685 Imp, 24 Klicks, Pos 1)",
+          "bodycam halterung polizei (1.052 Imp, Pos 3)",
+          "bodycam software (393 Imp, Pos 1)",
+          "bodycam mit handy verbinden (162 Imp)",
+          "bodycam frontdisplay (1.480 Imp auf Blog)",
+          "body cam pro (32 Imp, 5 Klicks)",
+          "bodycam wasserdicht (404 Imp)",
+        ],
+      },
+      {
+        name: "Branchen: ÖPNV & Bahn",
+        proximity: "sehr nah",
+        description: "Kernbranche — DB, BVG, KVB und andere ÖPNV-Referenzen ziehen Branchenentscheider. Hohe Sichtbarkeit über Referenz- und Case-Study-Seiten.",
+        topics: [
+          "bodycam deutsche bahn (1.399 Imp)",
+          "bvg sicherheitsdienst (1.554 Imp)",
+          "bodycam bahn (919 Imp)",
+          "db sicherheit (319 Imp)",
+          "sicherheit deutsche bahn (29 Imp)",
+          "kvb kölner verkehrsbetriebe (190 Imp)",
+          "bodycam bahnsecurity / bahnsicherheit (71-70 Imp)",
+          "case study stölting trainservice (50 Imp)",
+          "nordwestbahn bodycam (476 Imp auf Blog)",
+          "sicherheit im öpnv (39 Imp)",
+        ],
+      },
+      {
+        name: "Branchen: Ordnungsamt & Kommune",
+        proximity: "sehr nah",
+        description: "Zweitstärkste Branche — NRW-Ordnungsämter dominieren. Duisburg allein hat 5.264 Imp. Referenzen aus Köln, Hamm, Bonn, Siegburg generieren organischen Traffic.",
+        topics: [
+          "ordnungsamt duisburg (5.264 Imp)",
+          "bodycam ordnungsamt (1.101 Imp, Pos 1)",
+          "nrw ordnungsamt bodycam (5.242 Imp auf Blog)",
+          "ordnungsamt siegburg (1.166 Imp)",
+          "stadtordnungsdienst bonn (883 Imp)",
+          "body cam köln / stadt köln (877-2.493 Imp)",
+          "bodycam ordnungsamt hamm (3.226 Imp auf Blog)",
+          "kommunaler ordnungsdienst (178-101 Imp)",
+          "ordnungsamt bodycam nrw (2.558 Imp auf Blog)",
+          "bodycam städtischer ordnungsdienst (51 Imp)",
+        ],
+      },
+      {
+        name: "Branchen: Sicherheitsdienste & Security",
+        proximity: "nah",
+        description: "Wachsendes Segment — private Sicherheit sucht nach Bodycam-Lösungen. Sicherheitsdienst-Seite hat 1.199 Imp. Potenzial für B2B-Content.",
+        topics: [
+          "bodycam sicherheitsdienst (1.133 Imp, Pos 4)",
+          "body cam security (807 Imp, Pos 6)",
+          "bodycam security (977 Imp, Pos 22)",
+          "sicherheitskräfte bodycam (4.717 Imp auf Blog)",
+          "body cams in privaten sicherheitsunternehmen (4.323 Imp)",
+          "body cams als sicherheitspersonal (3.526 Imp)",
+          "sicherheitsdienst bvg (130 Imp)",
+          "body cams auf großveranstaltungen (689 Imp)",
+          "body cams in einkaufszentren (41 Imp)",
+          "deeskalation sicherheitsdienst (79 Imp)",
+        ],
+      },
+      {
+        name: "Branchen: Gesundheitswesen",
+        proximity: "nah",
+        description: "Aufstrebendes Segment — Krankenhaus-Seite hat 915 Imp, Notaufnahmen-Artikel 1.248 Imp. Übergriffe auf Pflegepersonal sind medial präsent.",
+        topics: [
+          "bodycam krankenhaus (277 Imp, Pos 8)",
+          "krankenhaus sicherheit (3.281 Imp auf Blog)",
+          "notaufnahmen sicherheit bodycam (1.248 Imp)",
+          "bodycam gesundheitswesen (212 Imp, Pos 3)",
+          "bodycam rettungsdienst (890 Imp, Pos 28)",
+          "videoüberwachung im krankenhaus (91 Imp)",
+          "wenn helfende zum opfer werden (432 Imp)",
+        ],
+      },
+      {
+        name: "Deeskalation & Wirksamkeit",
+        proximity: "adjacent",
+        description: "USP-Cluster — Deeskalation ist NetCos Kernargument (75% Deeskalationsrate). Deeskalationsschulungen-Artikel hat 9% CTR. Wenig Suchvolumen, aber hohe Conversion.",
+        topics: [
+          "deeskalationsschulungen bodycam (788 Imp, 71 Klicks, 9% CTR)",
+          "deeskalation bodycam (2.343 Imp auf Blog)",
+          "bodycam frontdisplay deeskalation (1.480 Imp)",
+          "deeskalation sicherheitsdienst (79 Imp)",
+          "deeskalierend wirken (45 Imp)",
+          "konflikt deeskalation (45 Imp)",
+          "deeskalierende kommunikation polizei (118 Imp)",
+        ],
+      },
+      {
+        name: "Events & Konferenz",
+        proximity: "sehr nah",
+        description: "Eigene Events als Lead-Magnete — Konferenz-Seite 32K Imp, Fachdialog 288 Imp mit 23% CTR (!). Höchste CTR aller Seiten.",
+        topics: [
+          "body cam konferenz (31.733 Imp, 224 Klicks)",
+          "fachdialog bodycam (288 Imp, 66 Klicks, 23% CTR)",
+          "body cam konferenz frankfurt (26 Imp)",
+          "bundeskongress kommunale ordnung (110 Imp)",
+          "konferenz sicherheit (535 Imp)",
+          "zweite/dritte body cam konferenz (1.740-791 Imp)",
+        ],
+      },
+      {
+        name: "NetCo Brand & Navigation",
+        proximity: "sehr nah",
+        description: "Branded Search — 'netco bodycam' hat 19% CTR (434 Klicks). Markenbekanntheit wächst. Wichtig für Retargeting und Brand Protection.",
+        topics: [
+          "netco bodycam (2.301 Imp, 434 Klicks, 19% CTR)",
+          "netco (6.636 Imp, 39 Klicks, Pos 3)",
+          "netco professional services (920 Imp, Pos 1)",
+          "netco bodycam preis (228 Imp, 65 Klicks, 29% CTR)",
+          "netco gmbh (63 Imp)",
+          "netco blankenburg (774 Imp)",
+          "sascha kittelmann (787 Imp, 48 Klicks)",
+        ],
+      },
+    ];
+
+    for (const cluster of clusters) {
+      await ctx.db.insert("seoClusters", { brandId: bodycam._id, ...cluster });
+    }
+
+    return { message: `${clusters.length} Bodycam SEO Clusters seeded successfully` };
+  },
+});
