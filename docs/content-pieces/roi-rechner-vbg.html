@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROI-Rechner mit VBG-Förderung — NetCo Body-Cam</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            netco: { primary: '#003366', secondary: '#ff6600', surface: '#f1f5f9', muted: '#ccd6e0' },
+          },
+          fontFamily: {
+            heading: ['Antonio', 'sans-serif'],
+            body: ['PT Sans', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PT Sans', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Antonio', sans-serif; }
+    input[type="range"] { -webkit-appearance: none; height: 6px; border-radius: 3px; background: #ccd6e0; outline: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #ff6600; cursor: pointer; }
+    input[type="number"] { font-family: 'PT Sans', sans-serif; }
+    .result-glow { box-shadow: 0 0 30px rgba(255, 102, 0, 0.15); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <!-- Header -->
+  <header class="bg-netco-primary text-white py-8 px-6">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-netco-secondary font-bold text-sm tracking-widest uppercase mb-2">NetCo Body-Cam Pro</p>
+      <h1 class="text-4xl tracking-tight leading-none mb-2">ROI-RECHNER</h1>
+      <p class="text-slate-300 text-lg">Investitionskosten, VBG-Förderung & Return on Investment auf einen Blick</p>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <!-- Input Section -->
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+      <h2 class="text-xl text-netco-primary mb-6">KONFIGURATION</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Anzahl Kameras -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Anzahl Body-Cams</label>
+          <div class="flex items-center gap-4">
+            <input type="range" id="cameraCount" min="4" max="100" value="20" class="flex-1" oninput="calculate()">
+            <input type="number" id="cameraCountNum" min="4" max="200" value="20" class="w-20 border border-slate-300 rounded-lg px-3 py-2 text-center font-bold" oninput="syncSlider('cameraCount', this.value); calculate()">
+          </div>
+        </div>
+
+        <!-- Modell -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Modell</label>
+          <select id="model" class="w-full border border-slate-300 rounded-lg px-3 py-2" onchange="calculate()">
+            <option value="miete">Miete (ab 50 €/Monat pro Kamera)</option>
+            <option value="miete-lte">Miete + LTE (ab 90 €/Monat pro Kamera)</option>
+            <option value="kauf">Kauf (Einmalpreis + Lizenz)</option>
+          </select>
+        </div>
+
+        <!-- Laufzeit -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Betrachtungszeitraum</label>
+          <select id="period" class="w-full border border-slate-300 rounded-lg px-3 py-2" onchange="calculate()">
+            <option value="12">12 Monate</option>
+            <option value="24" selected>24 Monate</option>
+            <option value="36">36 Monate</option>
+            <option value="60">60 Monate</option>
+          </select>
+        </div>
+
+        <!-- VBG-Förderung -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">VBG-Förderung</label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-4 py-2 cursor-pointer">
+              <input type="radio" name="vbg" value="yes" checked onchange="calculate()">
+              <span class="text-sm font-bold text-green-800">Ja (40%)</span>
+            </label>
+            <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 cursor-pointer">
+              <input type="radio" name="vbg" value="no" onchange="calculate()">
+              <span class="text-sm">Nein</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Übergriffe pro Jahr -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Übergriffe pro Jahr (geschätzt)</label>
+          <div class="flex items-center gap-4">
+            <input type="range" id="incidents" min="0" max="100" value="15" class="flex-1" oninput="calculate()">
+            <input type="number" id="incidentsNum" min="0" max="500" value="15" class="w-20 border border-slate-300 rounded-lg px-3 py-2 text-center font-bold" oninput="syncSlider('incidents', this.value); calculate()">
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Tätliche Angriffe + schwere Beleidigungen auf Mitarbeitende</p>
+        </div>
+
+        <!-- Kosten pro Vorfall -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-2">Kosten pro Vorfall (€)</label>
+          <div class="flex items-center gap-4">
+            <input type="range" id="costPerIncident" min="500" max="15000" step="500" value="3500" class="flex-1" oninput="calculate()">
+            <input type="number" id="costPerIncidentNum" min="0" max="50000" value="3500" class="w-24 border border-slate-300 rounded-lg px-3 py-2 text-center font-bold" oninput="syncSlider('costPerIncident', this.value); calculate()">
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Ausfallzeit, Rechtskosten, Nachbesetzung, Schadenersatz</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="grid md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Gesamtinvestition</p>
+        <p id="totalInvestment" class="font-heading text-3xl text-netco-primary">—</p>
+        <p id="totalInvestmentSub" class="text-xs text-slate-500 mt-1"></p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-center">
+        <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">VBG-Förderung</p>
+        <p id="vbgAmount" class="font-heading text-3xl text-green-600">—</p>
+        <p class="text-xs text-slate-500 mt-1">40% der förderfähigen Kosten</p>
+      </div>
+      <div class="bg-netco-primary rounded-xl shadow-sm p-5 text-center result-glow">
+        <p class="text-xs font-bold text-netco-secondary uppercase tracking-wide mb-1">Ihre Nettokosten</p>
+        <p id="netCost" class="font-heading text-3xl text-white">—</p>
+        <p id="netCostSub" class="text-xs text-slate-300 mt-1"></p>
+      </div>
+    </section>
+
+    <!-- ROI Breakdown -->
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+      <h2 class="text-xl text-netco-primary mb-4">ROI-ANALYSE</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Einsparungen -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-700 mb-3 uppercase">Geschätzte Einsparungen</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+              <span class="text-sm">Reduzierte Übergriffe (−54% lt. BVG)</span>
+              <span id="savingsIncidents" class="font-bold text-green-700">—</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+              <span class="text-sm">Geringere Krankheitstage</span>
+              <span id="savingsSick" class="font-bold text-green-700">—</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+              <span class="text-sm">Weniger Rechtskosten (Beweissicherung)</span>
+              <span id="savingsLegal" class="font-bold text-green-700">—</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-slate-100">
+              <span class="text-sm">Reduzierte Fluktuation</span>
+              <span id="savingsTurnover" class="font-bold text-green-700">—</span>
+            </div>
+            <div class="flex justify-between items-center py-2 bg-green-50 rounded-lg px-3 -mx-3">
+              <span class="font-bold text-green-800">Gesamteinsparung (Zeitraum)</span>
+              <span id="savingsTotal" class="font-heading text-xl text-green-700">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROI Ergebnis -->
+        <div>
+          <h3 class="text-sm font-bold text-slate-700 mb-3 uppercase">Return on Investment</h3>
+          <div class="bg-netco-surface rounded-xl p-5 text-center mb-4">
+            <p class="text-xs text-slate-500 mb-1">ROI</p>
+            <p id="roiPercent" class="font-heading text-5xl text-netco-primary">—</p>
+            <p id="roiLabel" class="text-sm text-slate-600 mt-1"></p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-netco-surface rounded-lg p-3 text-center">
+              <p class="text-xs text-slate-500">Amortisation</p>
+              <p id="payback" class="font-heading text-lg text-netco-primary">—</p>
+            </div>
+            <div class="bg-netco-surface rounded-lg p-3 text-center">
+              <p class="text-xs text-slate-500">Kosten pro Kamera/Monat</p>
+              <p id="costPerCamMonth" class="font-heading text-lg text-netco-primary">—</p>
+            </div>
+          </div>
+
+          <!-- ROI Bar -->
+          <div class="mt-4">
+            <div class="flex justify-between text-xs text-slate-500 mb-1">
+              <span>Investition</span>
+              <span>Einsparung</span>
+            </div>
+            <div class="h-6 bg-slate-200 rounded-full overflow-hidden flex">
+              <div id="roiBarInvest" class="h-full bg-netco-primary transition-all duration-500" style="width:50%"></div>
+              <div id="roiBarSaving" class="h-full bg-green-500 transition-all duration-500" style="width:50%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kostenaufschlüsselung -->
+    <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+      <h2 class="text-xl text-netco-primary mb-4">KOSTENAUFSCHLÜSSELUNG</h2>
+      <div id="costBreakdown" class="space-y-2"></div>
+    </section>
+
+    <!-- VBG Info -->
+    <section class="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
+      <h2 class="text-xl text-green-800 mb-3">VBG-FÖRDERUNG — SO FUNKTIONIERT'S</h2>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <h4 class="font-bold text-green-800 mb-1">Was wird gefördert?</h4>
+          <p class="text-green-700">40% der Investitionskosten für Geräte, Software und Schulungen zur Gewaltprävention.</p>
+        </div>
+        <div>
+          <h4 class="font-bold text-green-800 mb-1">Wer ist förderberechtigt?</h4>
+          <p class="text-green-700">Alle Unternehmen, die bei der VBG versichert sind — ÖPNV, Kommunen, Sicherheitsdienste, etc.</p>
+        </div>
+        <div>
+          <h4 class="font-bold text-green-800 mb-1">NetCo erfüllt alle Kriterien</h4>
+          <p class="text-green-700">IP67, AES-256, Pre-Recording, HD, Weitwinkel, Display, Zeitstempel — alle VBG-Anforderungen abgedeckt.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Disclaimer & CTA -->
+    <section class="text-center py-6">
+      <p class="text-xs text-slate-400 mb-4">Alle Berechnungen sind Schätzungen basierend auf Branchendurchschnitten und veröffentlichten Studien (BVG −54%, Duisburg −75% Deeskalation). Individuelle Ergebnisse können abweichen.</p>
+      <div class="inline-block bg-netco-surface rounded-lg p-5">
+        <p class="font-heading text-xl text-netco-primary mb-1">INDIVIDUELLE BERECHNUNG GEWÜNSCHT?</p>
+        <p class="text-sm text-slate-600 mb-3">Wir erstellen Ihnen eine maßgeschneiderte ROI-Analyse für Ihren konkreten Einsatzfall.</p>
+        <div class="text-sm text-slate-600">
+          <strong>NetCo Professional Services GmbH</strong> · +49 3946 7099-0 · info@netco.de
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function syncSlider(id, value) {
+      document.getElementById(id).value = value;
+    }
+
+    function fmt(n) {
+      return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+    }
+
+    function calculate() {
+      const cameras = parseInt(document.getElementById('cameraCountNum').value) || 20;
+      const model = document.getElementById('model').value;
+      const months = parseInt(document.getElementById('period').value);
+      const vbg = document.querySelector('input[name="vbg"]:checked').value === 'yes';
+      const incidents = parseInt(document.getElementById('incidentsNum').value) || 0;
+      const costPerIncident = parseInt(document.getElementById('costPerIncidentNum').value) || 0;
+
+      // Sync sliders
+      document.getElementById('cameraCount').value = cameras;
+      document.getElementById('incidents').value = Math.min(incidents, 100);
+      document.getElementById('costPerIncident').value = Math.min(costPerIncident, 15000);
+
+      // --- KOSTEN ---
+      let totalInvestment = 0;
+      let breakdownHTML = '';
+
+      if (model === 'miete') {
+        const monthly = cameras * 50;
+        const smartHub = Math.ceil(cameras / 7) * 350; // einmalig
+        const halterungen = cameras * 25; // einmalig
+        totalInvestment = (monthly * months) + smartHub + halterungen;
+        breakdownHTML = `
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Body-Cams Miete (${cameras} × 50 €/Mo × ${months} Mo)</span><span class="font-bold">${fmt(monthly * months)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>SmartHub 7er (${Math.ceil(cameras/7)} Stk. × 350 €)</span><span class="font-bold">${fmt(smartHub)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Halterungen (${cameras} × 25 €)</span><span class="font-bold">${fmt(halterungen)}</span></div>
+        `;
+      } else if (model === 'miete-lte') {
+        const monthly = cameras * 90;
+        const chargeHub = cameras * 45;
+        const halterungen = cameras * 25;
+        totalInvestment = (monthly * months) + chargeHub + halterungen;
+        breakdownHTML = `
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Body-Cams LTE Miete (${cameras} × 90 €/Mo × ${months} Mo)</span><span class="font-bold">${fmt(monthly * months)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>ChargeHub (${cameras} × 45 €)</span><span class="font-bold">${fmt(chargeHub)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Halterungen (${cameras} × 25 €)</span><span class="font-bold">${fmt(halterungen)}</span></div>
+        `;
+      } else {
+        const camPrice = cameras >= 50 ? 750 : cameras >= 20 ? 850 : 950;
+        const camTotal = cameras * camPrice;
+        const softwareLicense = cameras * 15 * months;
+        const smartHub = Math.ceil(cameras / 7) * 350;
+        const halterungen = cameras * 25;
+        const schulung = 1500;
+        totalInvestment = camTotal + softwareLicense + smartHub + halterungen + schulung;
+        breakdownHTML = `
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Body-Cams Kauf (${cameras} × ${fmt(camPrice)})</span><span class="font-bold">${fmt(camTotal)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Software-Lizenz (${cameras} × 15 €/Mo × ${months} Mo)</span><span class="font-bold">${fmt(softwareLicense)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>SmartHub 7er (${Math.ceil(cameras/7)} Stk. × 350 €)</span><span class="font-bold">${fmt(smartHub)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Halterungen (${cameras} × 25 €)</span><span class="font-bold">${fmt(halterungen)}</span></div>
+          <div class="flex justify-between py-2 border-b border-slate-100"><span>Schulung vor Ort (pauschal)</span><span class="font-bold">${fmt(schulung)}</span></div>
+        `;
+      }
+
+      // VBG
+      const vbgAmount = vbg ? Math.round(totalInvestment * 0.4) : 0;
+      const netCost = totalInvestment - vbgAmount;
+
+      // --- EINSPARUNGEN ---
+      const years = months / 12;
+      const reducedIncidents = Math.round(incidents * 0.54); // BVG-Studie: -54%
+      const savingsIncidents = Math.round(reducedIncidents * costPerIncident * years);
+      const savingsSick = Math.round(reducedIncidents * 280 * 3 * years); // 3 Tage à 280€ Personalkosten
+      const savingsLegal = Math.round(reducedIncidents * 800 * years); // Rechtskosten pro Fall
+      const savingsTurnover = Math.round(reducedIncidents * 0.3 * 15000 * years); // 30% der reduzierten Fälle → Verhinderung Kündigung à 15k
+      const totalSavings = savingsIncidents + savingsSick + savingsLegal + savingsTurnover;
+
+      // ROI
+      const roi = netCost > 0 ? Math.round(((totalSavings - netCost) / netCost) * 100) : 0;
+      const monthlyCost = netCost / months;
+      const monthlySavings = totalSavings / months;
+      const paybackMonths = monthlySavings > 0 ? Math.ceil(netCost / monthlySavings) : 999;
+
+      // --- UPDATE UI ---
+      document.getElementById('totalInvestment').textContent = fmt(totalInvestment);
+      document.getElementById('totalInvestmentSub').textContent = `über ${months} Monate`;
+      document.getElementById('vbgAmount').textContent = vbg ? fmt(vbgAmount) : '—';
+      document.getElementById('netCost').textContent = fmt(netCost);
+      document.getElementById('netCostSub').textContent = `${fmt(Math.round(netCost / months))}/Monat`;
+
+      document.getElementById('savingsIncidents').textContent = fmt(savingsIncidents);
+      document.getElementById('savingsSick').textContent = fmt(savingsSick);
+      document.getElementById('savingsLegal').textContent = fmt(savingsLegal);
+      document.getElementById('savingsTurnover').textContent = fmt(savingsTurnover);
+      document.getElementById('savingsTotal').textContent = fmt(totalSavings);
+
+      document.getElementById('roiPercent').textContent = roi + '%';
+      document.getElementById('roiLabel').textContent = roi > 0 ? `Einsparung übersteigt Investition um ${roi}%` : 'Investition noch nicht amortisiert';
+      document.getElementById('payback').textContent = paybackMonths < months ? paybackMonths + ' Monate' : '> ' + months + ' Mo';
+      document.getElementById('costPerCamMonth').textContent = fmt(Math.round(netCost / cameras / months));
+
+      // ROI Bar
+      const total = netCost + totalSavings;
+      const investPct = total > 0 ? (netCost / total * 100) : 50;
+      document.getElementById('roiBarInvest').style.width = investPct + '%';
+      document.getElementById('roiBarSaving').style.width = (100 - investPct) + '%';
+
+      // Cost breakdown
+      breakdownHTML += `<div class="flex justify-between py-2 bg-netco-surface rounded-lg px-3 -mx-3 mt-2"><span class="font-bold">Gesamt</span><span class="font-heading text-lg text-netco-primary">${fmt(totalInvestment)}</span></div>`;
+      if (vbg) {
+        breakdownHTML += `<div class="flex justify-between py-2 px-3 -mx-3 text-green-700"><span class="font-bold">./. VBG-Förderung (40%)</span><span class="font-bold">−${fmt(vbgAmount)}</span></div>`;
+        breakdownHTML += `<div class="flex justify-between py-2 bg-netco-primary text-white rounded-lg px-3 -mx-3"><span class="font-bold">Ihre Nettokosten</span><span class="font-heading text-lg">${fmt(netCost)}</span></div>`;
+      }
+      document.getElementById('costBreakdown').innerHTML = breakdownHTML;
+    }
+
+    // Initial calculation
+    calculate();
+  </script>
+
+</body>
+</html>

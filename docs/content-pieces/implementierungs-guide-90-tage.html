@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>90-Tage-Rollout Guide — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+
+    :root {
+      --primary: #003366;
+      --secondary: #ff6600;
+      --surface: #f1f5f9;
+      --muted: #ccd6e0;
+      --text: #1e293b;
+      --text-light: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: A4 portrait; margin: 12mm; }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      color: var(--text);
+      font-size: 8.5pt;
+      line-height: 1.35;
+      background: white;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 12mm;
+      background: white;
+    }
+
+    @media print {
+      .page { padding: 0; margin: 0; width: 100%; min-height: auto; }
+      .page-break { page-break-before: always; }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 5mm;
+      padding-bottom: 3mm;
+      border-bottom: 3px solid var(--secondary);
+    }
+
+    .header h1 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 20pt;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .header .subtitle {
+      font-size: 9pt;
+      color: var(--text-light);
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .header-right .logo {
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      color: var(--primary);
+    }
+
+    /* Timeline */
+    .timeline {
+      display: grid;
+      grid-template-columns: 35px 1fr;
+      gap: 0;
+      margin-bottom: 4mm;
+    }
+
+    .timeline-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timeline-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-family: 'Antonio', sans-serif;
+      font-size: 10pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .timeline-dot.active { background: var(--secondary); }
+
+    .timeline-connector {
+      width: 2px;
+      flex: 1;
+      background: var(--muted);
+      min-height: 8mm;
+    }
+
+    .phase-block {
+      margin-bottom: 3mm;
+      padding-left: 3mm;
+    }
+
+    .phase-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2mm;
+    }
+
+    .phase-title {
+      font-family: 'Antonio', sans-serif;
+      font-size: 11pt;
+      color: var(--primary);
+    }
+
+    .phase-weeks {
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: var(--text-light);
+      background: var(--surface);
+      padding: 0.5mm 2.5mm;
+      border-radius: 3px;
+    }
+
+    /* Task grid */
+    .task-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2mm;
+    }
+
+    .task-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 2.5mm;
+      background: white;
+    }
+
+    .task-card.highlight {
+      border-color: var(--secondary);
+      background: #fff7ed;
+    }
+
+    .task-title {
+      font-weight: 700;
+      font-size: 8pt;
+      color: var(--primary);
+      margin-bottom: 1mm;
+    }
+
+    .task-body {
+      font-size: 7.5pt;
+      color: var(--text-light);
+    }
+
+    .task-owner {
+      display: inline-block;
+      font-size: 6.5pt;
+      padding: 0.3mm 2mm;
+      border-radius: 2px;
+      font-weight: 700;
+      background: #dbeafe;
+      color: #1e40af;
+      margin-top: 1mm;
+    }
+
+    .task-deliverable {
+      display: inline-block;
+      font-size: 6.5pt;
+      padding: 0.3mm 2mm;
+      border-radius: 2px;
+      font-weight: 700;
+      background: #dcfce7;
+      color: #166534;
+      margin-top: 1mm;
+    }
+
+    /* Milestone */
+    .milestone {
+      background: var(--primary);
+      color: white;
+      border-radius: 4px;
+      padding: 2mm 3mm;
+      margin: 2mm 0;
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .milestone .icon { font-size: 12pt; }
+
+    .milestone .text {
+      font-family: 'Antonio', sans-serif;
+      font-size: 9pt;
+    }
+
+    .milestone .sub {
+      font-size: 7pt;
+      color: #94a3b8;
+      font-family: 'PT Sans', sans-serif;
+    }
+
+    /* KPI box */
+    .kpi-row {
+      display: flex;
+      gap: 2mm;
+      margin: 3mm 0;
+    }
+
+    .kpi-card {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 2mm 3mm;
+      text-align: center;
+    }
+
+    .kpi-card .num {
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      color: var(--primary);
+    }
+
+    .kpi-card .lbl {
+      font-size: 6.5pt;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 3mm;
+      padding-top: 2mm;
+      border-top: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: var(--text-light);
+    }
+
+    .footer .cta {
+      background: var(--secondary);
+      color: white;
+      padding: 1.5mm 4mm;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 8pt;
+    }
+
+    /* Intro text */
+    .intro {
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 3mm 4mm;
+      margin-bottom: 4mm;
+      font-size: 8.5pt;
+    }
+
+    .intro strong { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>90-TAGE-ROLLOUT<br>IMPLEMENTIERUNGS-GUIDE</h1>
+      <div class="subtitle">Von der Entscheidung zum vollen Betrieb — Schritt für Schritt</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div style="font-size:7pt; color:var(--text-light)">Body-Cam Solutions</div>
+      <div style="font-size:7pt; color:var(--text-light)">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    Dieser Guide begleitet <strong>Champions</strong> und <strong>Projektverantwortliche</strong> durch die komplette Body-Cam-Einführung — von Tag 1 bis zum erfolgreichen Vollbetrieb. Jede Phase hat klare Aufgaben, Verantwortliche und Meilensteine. <strong>NetCo begleitet Sie durch den gesamten Prozess.</strong>
+  </div>
+
+  <!-- PHASE 1: Tag 1-14 -->
+  <div class="timeline">
+    <div class="timeline-line">
+      <div class="timeline-dot active">1</div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="phase-block">
+      <div class="phase-title-row">
+        <span class="phase-title">GRUNDLAGEN & STAKEHOLDER-BUY-IN</span>
+        <span class="phase-weeks">Tag 1–14</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-card highlight">
+          <div class="task-title">Kick-off Meeting</div>
+          <div class="task-body">GF, Betriebsrat, DSB, IT, Teamleitung an einen Tisch. Ziele definieren, Zeitplan abstimmen.</div>
+          <div class="task-owner">GF + Champion</div>
+          <div class="task-deliverable">Protokoll</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Bedarfsanalyse</div>
+          <div class="task-body">Übergriffszahlen 12 Mo., Hotspot-Linien, betroffene Mitarbeitende, aktuelle Schutzmaßnahmen.</div>
+          <div class="task-owner">Sicherheit</div>
+          <div class="task-deliverable">Lagebericht</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Einsatzkonzept (Entwurf)</div>
+          <div class="task-body">Zweck, Bereiche, Einsatzregeln, Pre-Recording (30–120s), Speicherdauer (max. 72h), Verbotszonen.</div>
+          <div class="task-owner">DSB + Champion</div>
+          <div class="task-deliverable">Entwurf BV</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">VBG-Förderantrag vorbereiten</div>
+          <div class="task-body">Antragsformular ausfüllen, Lagebericht beifügen. 40% auf Geräte + Software + Schulung.</div>
+          <div class="task-owner">Einkauf</div>
+          <div class="task-deliverable">Antrag</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="milestone">
+    <span class="icon">🎯</span>
+    <div><span class="text">MEILENSTEIN: Stakeholder-Alignment</span><br><span class="sub">Alle Schlüsselrollen informiert, Betriebsvereinbarung im Entwurf, VBG-Antrag eingereicht</span></div>
+  </div>
+
+  <!-- PHASE 2: Tag 15-30 -->
+  <div class="timeline">
+    <div class="timeline-line">
+      <div class="timeline-dot">2</div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="phase-block">
+      <div class="phase-title-row">
+        <span class="phase-title">BESCHAFFUNG & INFRASTRUKTUR</span>
+        <span class="phase-weeks">Tag 15–30</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-card highlight">
+          <div class="task-title">NetCo Bestellung & Konfiguration</div>
+          <div class="task-body">Modell (Standard/LTE), Stückzahl, Halterungen, SmartHubs bestellen. Demo-Termin vereinbaren.</div>
+          <div class="task-owner">Einkauf + NetCo</div>
+          <div class="task-deliverable">Bestellung</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">IT-Setup</div>
+          <div class="task-body">Server/Cloud-Entscheidung, NetCo Suite Installation, Netzwerk für SmartHubs, Firewall-Regeln.</div>
+          <div class="task-owner">IT</div>
+          <div class="task-deliverable">Systemdoku</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Betriebsvereinbarung finalisieren</div>
+          <div class="task-body">BV mit Betriebsrat verhandeln, unterschreiben. Einsatzkonzept als Anlage.</div>
+          <div class="task-owner">GF + BR</div>
+          <div class="task-deliverable">BV signiert</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Transparenzmaßnahmen</div>
+          <div class="task-body">Hinweisschilder produzieren, QR-Codes erstellen, Datenschutzseite aktualisieren.</div>
+          <div class="task-owner">Komm. + DSB</div>
+          <div class="task-deliverable">Material</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="milestone">
+    <span class="icon">📦</span>
+    <div><span class="text">MEILENSTEIN: Technik bereit</span><br><span class="sub">Kameras geliefert & konfiguriert, IT-Infrastruktur getestet, BV unterzeichnet</span></div>
+  </div>
+
+  <!-- PHASE 3: Tag 31-45 -->
+  <div class="timeline">
+    <div class="timeline-line">
+      <div class="timeline-dot active">3</div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="phase-block">
+      <div class="phase-title-row">
+        <span class="phase-title">SCHULUNG & GO LIVE</span>
+        <span class="phase-weeks">Tag 31–45</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-card highlight">
+          <div class="task-title">3-Stufen-Schulung</div>
+          <div class="task-body"><strong>Technik:</strong> Bedienung, Docking, Troubleshooting.<br><strong>Recht:</strong> DSGVO, wann filmen, Ankündigung.<br><strong>Taktik:</strong> Deeskalation, Frontdisplay nutzen.</div>
+          <div class="task-owner">NetCo + DSB</div>
+          <div class="task-deliverable">Zertifikat</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Supervisor-Schulung</div>
+          <div class="task-body">AdminClient, MediaClient, Auswertung, Export für Strafverfolgung, Löschprotokolle.</div>
+          <div class="task-owner">NetCo</div>
+          <div class="task-deliverable">Admin-Zugang</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Testlauf (1 Woche)</div>
+          <div class="task-body">5–10 Kameras im Echtbetrieb testen. Feedback sammeln, technische Probleme beheben.</div>
+          <div class="task-owner">Champion</div>
+          <div class="task-deliverable">Feedback</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Vollstart</div>
+          <div class="task-body">Alle Pilot-Kameras ausgeben, Schichtpläne anpassen, Feedback-Kanal einrichten (z.B. Teams-Channel).</div>
+          <div class="task-owner">Teamleitung</div>
+          <div class="task-deliverable">Go Live!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="milestone">
+    <span class="icon">🚀</span>
+    <div><span class="text">MEILENSTEIN: Body-Cams im Einsatz</span><br><span class="sub">Alle Pilotteilnehmer geschult und ausgestattet, Echtbetrieb läuft</span></div>
+  </div>
+
+  <!-- PHASE 4: Tag 46-75 -->
+  <div class="timeline">
+    <div class="timeline-line">
+      <div class="timeline-dot">4</div>
+      <div class="timeline-connector"></div>
+    </div>
+    <div class="phase-block">
+      <div class="phase-title-row">
+        <span class="phase-title">BETRIEB & MONITORING</span>
+        <span class="phase-weeks">Tag 46–75</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-card">
+          <div class="task-title">Wöchentliche Check-ins</div>
+          <div class="task-body">15 min Stand-up: Vorfälle, Feedback, technische Issues, Verbesserungsvorschläge.</div>
+          <div class="task-owner">Champion</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Vorfallstatistik</div>
+          <div class="task-body">Übergriffe tracken: vorher vs. nachher. Deeskalationsfälle dokumentieren.</div>
+          <div class="task-owner">Sicherheit</div>
+          <div class="task-deliverable">Dashboard</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Datenschutz-Audit</div>
+          <div class="task-body">Zugriffslogs prüfen, Löschfristen kontrollieren, Beschwerden auswerten.</div>
+          <div class="task-owner">DSB</div>
+          <div class="task-deliverable">Audit-Bericht</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Mitarbeiterbefragung</div>
+          <div class="task-body">Anonyme Umfrage: Sicherheitsgefühl (1-10), Handhabung, Verbesserungswünsche.</div>
+          <div class="task-owner">HR</div>
+          <div class="task-deliverable">Ergebnisse</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5: Tag 76-90 -->
+  <div class="timeline">
+    <div class="timeline-line">
+      <div class="timeline-dot active">5</div>
+      <div class="timeline-connector" style="background:transparent"></div>
+    </div>
+    <div class="phase-block">
+      <div class="phase-title-row">
+        <span class="phase-title">EVALUATION & SKALIERUNG</span>
+        <span class="phase-weeks">Tag 76–90</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-card highlight">
+          <div class="task-title">Abschlussbericht & ROI</div>
+          <div class="task-body">Statistiken, Kosteneinsparungen, Mitarbeiterfeedback, Empfehlung pro/contra Rollout.</div>
+          <div class="task-owner">Champion + GF</div>
+          <div class="task-deliverable">Report</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Go/No-Go Entscheidung</div>
+          <div class="task-body">Vorstand/GF entscheidet über Vollrollout. Umfang, Zeitplan, Budget festlegen.</div>
+          <div class="task-owner">GF</div>
+          <div class="task-deliverable">Beschluss</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Rollout-Plan erstellen</div>
+          <div class="task-body">Schrittweise Ausweitung: Linien, Bereiche, Stückzahlen. Train-the-Trainer aus Pilotgruppe.</div>
+          <div class="task-owner">Champion</div>
+          <div class="task-deliverable">Rollout-Plan</div>
+        </div>
+        <div class="task-card">
+          <div class="task-title">Skalierungsbestellung</div>
+          <div class="task-body">Staffelpreise verhandeln, Infrastruktur erweitern, BV für Vollbetrieb anpassen.</div>
+          <div class="task-owner">Einkauf + NetCo</div>
+          <div class="task-deliverable">Bestellung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="milestone">
+    <span class="icon">✅</span>
+    <div><span class="text">MEILENSTEIN: Pilot abgeschlossen, Rollout genehmigt</span><br><span class="sub">Erfolgreicher Pilot → Skalierung startet</span></div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="num">−54%</div><div class="lbl">Übergriffe (BVG)</div></div>
+    <div class="kpi-card"><div class="num">75%</div><div class="lbl">Deeskalation (Duisburg)</div></div>
+    <div class="kpi-card"><div class="num">50%</div><div class="lbl">Display-Deeskalation (Wien)</div></div>
+    <div class="kpi-card"><div class="num">40%</div><div class="lbl">VBG-Förderung</div></div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Steintor 7, 06484 Quedlinburg · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Wir begleiten Ihr Rollout-Projekt von Anfang bis Ende — Beratung, Schulung, Support.</span>
+    </div>
+    <div class="cta">Rollout-Beratung anfragen →</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkliste Pilotprojekt ÖPNV — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+
+    :root {
+      --primary: #003366;
+      --secondary: #ff6600;
+      --surface: #f1f5f9;
+      --muted: #ccd6e0;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --green: #16a34a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: A4 portrait; margin: 14mm; }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      color: var(--text);
+      font-size: 9pt;
+      line-height: 1.4;
+      background: white;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 14mm;
+      background: white;
+    }
+
+    @media print {
+      .page { padding: 0; margin: 0; width: 100%; min-height: auto; }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6mm;
+      padding-bottom: 3mm;
+      border-bottom: 3px solid var(--secondary);
+    }
+
+    .header h1 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 22pt;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .header .subtitle {
+      font-size: 10pt;
+      color: var(--text-light);
+      margin-top: 1mm;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 8pt;
+      color: var(--text-light);
+    }
+
+    .header-right .logo {
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      color: var(--primary);
+    }
+
+    /* Intro bar */
+    .intro-bar {
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 3mm 4mm;
+      margin-bottom: 5mm;
+      display: flex;
+      gap: 5mm;
+    }
+
+    .intro-stat {
+      text-align: center;
+      flex: 1;
+    }
+
+    .intro-stat .num {
+      font-family: 'Antonio', sans-serif;
+      font-size: 16pt;
+      color: var(--primary);
+    }
+
+    .intro-stat .lbl {
+      font-size: 7pt;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    /* Phase */
+    .phase {
+      margin-bottom: 4mm;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+      padding: 2mm 3mm;
+      border-radius: 4px;
+      margin-bottom: 2mm;
+    }
+
+    .phase-header.prep { background: #dbeafe; }
+    .phase-header.launch { background: #dcfce7; }
+    .phase-header.run { background: #fef3c7; }
+    .phase-header.eval { background: #fce7f3; }
+    .phase-header.scale { background: #e0e7ff; }
+
+    .phase-num {
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      color: var(--primary);
+      width: 22px;
+    }
+
+    .phase-title {
+      font-family: 'Antonio', sans-serif;
+      font-size: 10pt;
+      color: var(--primary);
+      flex: 1;
+    }
+
+    .phase-time {
+      font-size: 7pt;
+      font-weight: 700;
+      color: var(--text-light);
+      background: white;
+      padding: 1mm 3mm;
+      border-radius: 3px;
+    }
+
+    /* Checklist items */
+    .checklist {
+      list-style: none;
+      margin-left: 1mm;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 2mm;
+      padding: 1.5mm 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+
+    .checkbox {
+      width: 12px;
+      height: 12px;
+      border: 1.5px solid var(--muted);
+      border-radius: 2px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .check-text {
+      flex: 1;
+    }
+
+    .check-label {
+      font-weight: 700;
+      font-size: 8.5pt;
+    }
+
+    .check-detail {
+      font-size: 7.5pt;
+      color: var(--text-light);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 6.5pt;
+      padding: 0.3mm 2mm;
+      border-radius: 2px;
+      font-weight: 700;
+      margin-left: 1mm;
+    }
+
+    .tag-role { background: #dbeafe; color: #1e40af; }
+    .tag-doc { background: #fef3c7; color: #92400e; }
+    .tag-netco { background: #ffe0cc; color: #9a3412; }
+
+    /* Tip box */
+    .tip-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 4px;
+      padding: 2mm 3mm;
+      margin: 2mm 0;
+      font-size: 8pt;
+    }
+
+    .tip-box strong {
+      color: #92400e;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 4mm;
+      padding-top: 3mm;
+      border-top: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: var(--text-light);
+    }
+
+    .footer .cta {
+      background: var(--secondary);
+      color: white;
+      padding: 1.5mm 4mm;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 8pt;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>CHECKLISTE<br>PILOTPROJEKT ÖPNV</h1>
+      <div class="subtitle">Body-Cam-Einführung in 5 Phasen — vom Beschluss bis zum Rollout</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div>Body-Cam Solutions</div>
+      <div style="margin-top:2mm">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <div class="intro-bar">
+    <div class="intro-stat"><div class="num">5</div><div class="lbl">Phasen</div></div>
+    <div class="intro-stat"><div class="num">90</div><div class="lbl">Tage gesamt</div></div>
+    <div class="intro-stat"><div class="num">38</div><div class="lbl">Checkpunkte</div></div>
+    <div class="intro-stat"><div class="num">40%</div><div class="lbl">VBG-Förderung</div></div>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase">
+    <div class="phase-header prep">
+      <span class="phase-num">1</span>
+      <span class="phase-title">VORBEREITUNG & BESCHLUSS</span>
+      <span class="phase-time">Woche 1–3</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Bedarfsanalyse durchführen</span> <span class="tag tag-role">GF</span>
+          <div class="check-detail">Übergriffszahlen der letzten 12 Monate dokumentieren, Hotspots identifizieren</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Betriebsrat informieren & einbeziehen</span> <span class="tag tag-role">GF + BR</span>
+          <div class="check-detail">Frühzeitig ins Boot holen, Mitbestimmung nach BetrVG § 87 sicherstellen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Datenschutzbeauftragten einbinden</span> <span class="tag tag-role">DSB</span>
+          <div class="check-detail">DSFA (Datenschutz-Folgenabschätzung) initiieren, Rechtsgrundlage prüfen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">VBG-Förderantrag stellen</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">40% Zuschuss auf Geräte + Software + Schulungen. Antrag VOR Beschaffung!</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Einsatzkonzept erstellen</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Zweck, Bereiche, Einsatzregeln, Pre-Recording-Dauer, Speicherfristen festlegen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Betriebsvereinbarung verhandeln</span> <span class="tag tag-role">GF + BR</span>
+          <div class="check-detail">Einsatzkonzept einbetten, Auswertungsverbote (keine Leistungskontrolle!), Löschfristen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Budget freigeben</span> <span class="tag tag-role">GF</span>
+          <div class="check-detail">Pilotgröße festlegen (Empfehlung: 10–20 Kameras), Miet- oder Kaufmodell wählen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Pilotteilnehmer auswählen</span> <span class="tag tag-role">Teamleitung</span>
+          <div class="check-detail">Freiwillige aus Hochrisiko-Linien/-Bereichen (z.B. Nachtschicht, Fahrkartenkontrolle)</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase">
+    <div class="phase-header launch">
+      <span class="phase-num">2</span>
+      <span class="phase-title">BESCHAFFUNG & SETUP</span>
+      <span class="phase-time">Woche 4–5</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">NetCo kontaktieren & Angebot einholen</span> <span class="tag tag-netco">NetCo</span>
+          <div class="check-detail">Demo anfragen, Pilotkonditionen verhandeln (Event-Tarif: 219€/Woche für 4 Cams möglich)</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">IT-Infrastruktur vorbereiten</span> <span class="tag tag-role">IT</span>
+          <div class="check-detail">Server/Cloud-Entscheidung, Netzwerk für SmartHubs, NetCo Suite installieren</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Geräte konfigurieren</span> <span class="tag tag-netco">NetCo</span>
+          <div class="check-detail">UserIDs anlegen, Pre-Recording einstellen, Löschfristen konfigurieren, NFC-Karten</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Transparenzhinweise anbringen</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Schilder in Fahrzeugen & Haltestellen, QR-Code zur Datenschutzinfo, Website-Update</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Ladeinfrastruktur aufbauen</span> <span class="tag tag-role">IT</span>
+          <div class="check-detail">SmartHubs in Leitstelle/Depot platzieren, LAN-Verbindung sicherstellen</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase">
+    <div class="phase-header run">
+      <span class="phase-num">3</span>
+      <span class="phase-title">SCHULUNG & LAUNCH</span>
+      <span class="phase-time">Woche 6–7</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Technik-Schulung (alle Pilotteilnehmer)</span> <span class="tag tag-netco">NetCo</span>
+          <div class="check-detail">Bedienung, Ein-/Ausschalten, Pre-Recording, Docking, Troubleshooting</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Rechts-Schulung (alle Pilotteilnehmer)</span> <span class="tag tag-role">DSB</span>
+          <div class="check-detail">DSGVO-Grundlagen, wann aufnehmen, wann nicht, mündliche Ankündigung, Verbotsbereiche</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Taktik-Schulung (Deeskalation)</span> <span class="tag tag-role">Sicherheit</span>
+          <div class="check-detail">Frontdisplay-Nutzung, verbale Ankündigung üben, Eskalationsstufen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Software-Schulung (Supervisoren)</span> <span class="tag tag-netco">NetCo</span>
+          <div class="check-detail">AdminClient, MediaClient, Auswertungen, Export für Strafverfolgung</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Pressearbeit (optional)</span> <span class="tag tag-role">Komm.</span>
+          <div class="check-detail">Pressemitteilung, Lokalpresse informieren, positive Rahmung (Mitarbeiterschutz)</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">GO LIVE — Pilotstart</span>
+          <div class="check-detail">Kameras ausgeben, erste Schicht begleiten, Feedback-Kanal einrichten</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase">
+    <div class="phase-header eval">
+      <span class="phase-num">4</span>
+      <span class="phase-title">PILOTBETRIEB & EVALUATION</span>
+      <span class="phase-time">Woche 8–12</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Wöchentliche Feedback-Runden</span> <span class="tag tag-role">Teamleitung</span>
+          <div class="check-detail">Kurze Stand-ups mit Pilotteilnehmern: Was funktioniert? Was nicht? Technische Probleme?</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Vorfallstatistik führen</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Übergriffe mit/ohne Kamera vergleichen, Deeskalationserfolge dokumentieren</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Technische Logs prüfen</span> <span class="tag tag-role">IT</span>
+          <div class="check-detail">Akkulaufzeit, Upload-Zuverlässigkeit, Speicherauslastung, Löschprotokolle</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Datenschutz-Audit (Mitte Pilot)</span> <span class="tag tag-role">DSB</span>
+          <div class="check-detail">Zugriffsprotokolle prüfen, Löschfristen eingehalten? Beschwerden?</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Betriebsrat-Zwischenbericht</span> <span class="tag tag-role">GF + BR</span>
+          <div class="check-detail">Transparente Kommunikation über Pilotfortschritt, offene Fragen klären</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Mitarbeiterbefragung</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Anonyme Umfrage: Sicherheitsgefühl, Handhabung, Verbesserungsvorschläge</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Abschlussbericht erstellen</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Statistiken, Feedback, Kosten/Nutzen, Empfehlung für/gegen Rollout</div>
+        </div>
+      </li>
+    </ul>
+    <div class="tip-box">
+      <strong>Tipp:</strong> BVG Berlin verzeichnete im Pilotzeitraum −54% Übergriffe auf Sicherheitspersonal. Duisburg: 75% Deeskalation durch Display-Funktion. Diese Zahlen als Benchmark nutzen.
+    </div>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase">
+    <div class="phase-header scale">
+      <span class="phase-num">5</span>
+      <span class="phase-title">ENTSCHEIDUNG & ROLLOUT-PLANUNG</span>
+      <span class="phase-time">Woche 13+</span>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Go/No-Go-Entscheidung</span> <span class="tag tag-role">GF</span>
+          <div class="check-detail">Auf Basis des Abschlussberichts, Kosten-Nutzen-Analyse, Mitarbeiterfeedback</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Rollout-Umfang festlegen</span> <span class="tag tag-role">GF + BR</span>
+          <div class="check-detail">Schrittweise Ausweitung nach Linien/Bereichen, finale Stückzahl bestimmen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">VBG-Förderantrag finalisieren</span> <span class="tag tag-doc">Dokument</span>
+          <div class="check-detail">Pilotergebnisse als Nachweis beifügen, Gesamtinvestition beantragen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Schulungskonzept skalieren</span> <span class="tag tag-role">Teamleitung</span>
+          <div class="check-detail">Train-the-Trainer aus Pilotteilnehmern, Schulungsunterlagen standardisieren</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">NetCo Rollout-Bestellung</span> <span class="tag tag-netco">NetCo</span>
+          <div class="check-detail">Staffelpreise verhandeln, Liefertermine, Infrastruktur-Erweiterung planen</div>
+        </div>
+      </li>
+      <li>
+        <div class="checkbox"></div>
+        <div class="check-text">
+          <span class="check-label">Betriebsvereinbarung für Vollbetrieb anpassen</span> <span class="tag tag-role">GF + BR</span>
+          <div class="check-detail">Piloterkenntnisse einarbeiten, Geltungsbereich erweitern</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Steintor 7, 06484 Quedlinburg · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Wir begleiten Sie durch alle 5 Phasen — von der Bedarfsanalyse bis zum Vollbetrieb.</span>
+    </div>
+    <div class="cta">Pilotberatung anfragen →</div>
+  </div>
+</div>
+
+</body>
+</html>
