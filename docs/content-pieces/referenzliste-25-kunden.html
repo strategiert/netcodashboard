@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetCo Body-Cam — Referenzliste</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+
+    :root {
+      --primary: #003366;
+      --secondary: #ff6600;
+      --surface: #f1f5f9;
+      --muted: #ccd6e0;
+      --text: #1e293b;
+      --text-light: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page {
+      size: A4 portrait;
+      margin: 15mm 15mm 20mm 15mm;
+    }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      color: var(--text);
+      font-size: 9.5pt;
+      line-height: 1.4;
+      background: white;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 15mm;
+      background: white;
+    }
+
+    @media print {
+      .page { padding: 0; margin: 0; width: 100%; min-height: auto; }
+      .page-break { page-break-before: always; }
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8mm;
+      padding-bottom: 4mm;
+      border-bottom: 3px solid var(--secondary);
+    }
+
+    .header-left h1 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 22pt;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+
+    .header-left .subtitle {
+      font-size: 11pt;
+      color: var(--text-light);
+      margin-top: 2mm;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 8pt;
+      color: var(--text-light);
+    }
+
+    .header-right .logo-text {
+      font-family: 'Antonio', sans-serif;
+      font-size: 16pt;
+      color: var(--primary);
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 4mm;
+      margin-bottom: 6mm;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 3mm 4mm;
+      text-align: center;
+    }
+
+    .stat-card .number {
+      font-family: 'Antonio', sans-serif;
+      font-size: 20pt;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .stat-card .label {
+      font-size: 7pt;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 5mm;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 3mm;
+      padding: 2mm 3mm;
+      background: var(--primary);
+      color: white;
+      border-radius: 4px;
+    }
+
+    .section-header .icon {
+      font-size: 11pt;
+      width: 20px;
+      text-align: center;
+    }
+
+    .section-header h2 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 11pt;
+      letter-spacing: 0.5px;
+    }
+
+    .section-header .count {
+      margin-left: auto;
+      background: var(--secondary);
+      color: white;
+      padding: 1mm 3mm;
+      border-radius: 3px;
+      font-size: 8pt;
+      font-weight: 700;
+    }
+
+    /* Customer table */
+    .customer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2mm;
+    }
+
+    .customer-table th {
+      font-size: 7pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-light);
+      text-align: left;
+      padding: 1.5mm 2mm;
+      border-bottom: 1px solid var(--muted);
+    }
+
+    .customer-table td {
+      padding: 2mm 2mm;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    .customer-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .customer-name {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .customer-detail {
+      font-size: 8pt;
+      color: var(--text-light);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 7pt;
+      padding: 0.5mm 2mm;
+      border-radius: 3px;
+      font-weight: 700;
+    }
+
+    .badge-since {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-cameras {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .quote {
+      font-style: italic;
+      font-size: 8pt;
+      color: var(--text-light);
+      padding-left: 3mm;
+      border-left: 2px solid var(--secondary);
+      margin-top: 1mm;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 6mm;
+      padding-top: 3mm;
+      border-top: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.5pt;
+      color: var(--text-light);
+    }
+
+    .footer-cta {
+      background: var(--secondary);
+      color: white;
+      padding: 2mm 5mm;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 9pt;
+    }
+
+    /* Highlight row */
+    .highlight-row td {
+      background: #fffbeb;
+    }
+
+    .result-tag {
+      display: inline-block;
+      font-size: 7pt;
+      padding: 0.5mm 2mm;
+      border-radius: 3px;
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>REFERENZLISTE</h1>
+      <div class="subtitle">NetCo Body-Cam Pro — Unsere Kunden im Überblick</div>
+    </div>
+    <div class="header-right">
+      <div class="logo-text">NETCO</div>
+      <div>Body-Cam Solutions</div>
+      <div>Made in Germany</div>
+      <div style="margin-top:2mm; color: var(--text);">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="number">100+</div>
+      <div class="label">Organisationen</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">8</div>
+      <div class="label">ÖPNV-Betriebe</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">11</div>
+      <div class="label">Kommunen</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">2</div>
+      <div class="label">Polizeibehörden</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">seit 2017</div>
+      <div class="label">Im Einsatz</div>
+    </div>
+  </div>
+
+  <!-- ÖPNV Section -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🚇</span>
+      <h2>ÖPNV & BAHNVERKEHR</h2>
+      <span class="count">8 Kunden</span>
+    </div>
+    <table class="customer-table">
+      <thead>
+        <tr>
+          <th style="width:25%">Organisation</th>
+          <th style="width:15%">Seit</th>
+          <th style="width:20%">Einsatzbereich</th>
+          <th style="width:40%">Ergebnis / Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>
+            <div class="customer-name">Deutsche Bahn</div>
+            <div class="customer-detail">DB Sicherheit & DB Regio</div>
+          </td>
+          <td><span class="badge badge-since">seit 2017</span></td>
+          <td>Bahnsteig, Fahrkartenkontrollen, Servicepersonal</td>
+          <td>
+            <span class="result-tag">75.000+ Angriffe seit 2022</span>
+            <div class="customer-detail" style="margin-top:1mm">Hacker-Test bestanden, zentrale Verwaltung, Produktion in Deutschland</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Berliner Verkehrsbetriebe (BVG)</div>
+            <div class="customer-detail">U-Bahn Berlin</div>
+          </td>
+          <td><span class="badge badge-since">seit 2024</span><br><span class="badge badge-cameras" style="margin-top:1mm">18 Kameras</span></td>
+          <td>U-Bahn U7 & U8, Sicherheitsdienst</td>
+          <td>
+            <span class="result-tag">−54% Übergriffe auf Sicherheitspersonal</span>
+            <div class="customer-detail" style="margin-top:1mm">88 weniger Übergriffsfälle in 2023</div>
+          </td>
+        </tr>
+        <tr class="highlight-row">
+          <td>
+            <div class="customer-name">Kölner Verkehrsbetriebe (KVB)</div>
+            <div class="customer-detail">Straßenbahn & Bus</div>
+          </td>
+          <td><span class="badge badge-since">seit 2022</span><br><span class="badge badge-cameras" style="margin-top:1mm">20 Kameras</span></td>
+          <td>Service, Sicherheit, Fahrausweisprüfung</td>
+          <td>Freiwillige Teilnahme, universelle Einsatzmöglichkeiten in Bus, Bahn & Haltestelle</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Wiener Linien</div>
+            <div class="customer-detail">Wien (Österreich)</div>
+          </td>
+          <td><span class="badge badge-since">seit 2018</span></td>
+          <td>Bahnsteig & Bahn, Security</td>
+          <td>
+            <span class="result-tag">50% Deeskalation durch Display</span>
+            <div class="customer-detail" style="margin-top:1mm">Allein durch Aktivierung des Frontdisplays</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Saarbahn</div>
+            <div class="customer-detail">Saarbrücken</div>
+          </td>
+          <td><span class="badge badge-since">seit 2020</span></td>
+          <td>Alle Sicherheitskräfte in Bus & Bahn</td>
+          <td>
+            <div class="quote">„Schon die Ankündigung schreckt aggressive Fahrgäste ab."</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Nordwestbahn</div>
+            <div class="customer-detail">Bremen/Niedersachsen</div>
+          </td>
+          <td><span class="badge badge-since">seit 2023</span></td>
+          <td>Regio-S-Bahn, 12 Linien, 1.000+ km</td>
+          <td>22 Mio. Fahrgäste/Jahr, Ergänzung zur Videotechnik in Zügen</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">TransRegio (MittelrheinBahn)</div>
+            <div class="customer-detail">Köln–Mainz</div>
+          </td>
+          <td><span class="badge badge-since">seit 2019</span></td>
+          <td>Kundenbetreuung, 185 km, 31 Bahnhöfe</td>
+          <td>
+            <div class="quote">„Ich fühle mich deutlich sicherer mit der Kamera."</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Schwarzwaldbahn</div>
+            <div class="customer-detail">DB Regio Südbaden</div>
+          </td>
+          <td><span class="badge badge-since">seit 2023</span></td>
+          <td>Kundenbetreuung, Pilotprojekt mit Bundespolizei</td>
+          <td>~150 km Streckenlänge, Kooperation mit Bundespolizei Offenburg</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Kommunen Section -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🏛️</span>
+      <h2>KOMMUNALE ORDNUNGSDIENSTE</h2>
+      <span class="count">11 Kommunen</span>
+    </div>
+    <table class="customer-table">
+      <thead>
+        <tr>
+          <th style="width:22%">Kommune</th>
+          <th style="width:12%">Seit</th>
+          <th style="width:12%">Kameras</th>
+          <th style="width:54%">Ergebnis / Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>
+            <div class="customer-name">Stadt Köln</div>
+            <div class="customer-detail">Ordnungsamt</div>
+          </td>
+          <td><span class="badge badge-since">2024</span></td>
+          <td><span class="badge badge-cameras">10</span></td>
+          <td>
+            <span class="result-tag">Deeskalierende Wirkung bestätigt</span>
+            <div class="customer-detail" style="margin-top:1mm">Angesprochene Personen reagieren ruhiger, Innenstadt & Außenbezirke</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Hamm</div>
+            <div class="customer-detail">Ordnungsdienst</div>
+          </td>
+          <td><span class="badge badge-since">2024</span></td>
+          <td><span class="badge badge-cameras">30</span></td>
+          <td>Testlauf 2023, seit 2024 im vollen Einsatz. Pre-Recording & Datenschutz wichtig.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Leverkusen</div>
+            <div class="customer-detail">Ordnungsdienst</div>
+          </td>
+          <td><span class="badge badge-since">2024</span></td>
+          <td><span class="badge badge-cameras">~30</span></td>
+          <td>
+            <div class="quote">„Durch die Body-Cams versprechen wir uns eine zusätzliche Maßnahme gegen Angriffe." — S. Franzkowski, Fachbereichsleiter</div>
+          </td>
+        </tr>
+        <tr class="highlight-row">
+          <td>
+            <div class="customer-name">Stadt Duisburg</div>
+            <div class="customer-detail">Bürger- & Ordnungsamt</div>
+          </td>
+          <td><span class="badge badge-since">2022</span></td>
+          <td><span class="badge badge-cameras">20</span></td>
+          <td>
+            <span class="result-tag">75% Deeskalation (Pilotprojekt)</span>
+            <div class="customer-detail" style="margin-top:1mm">„Feedback der Einsatzkräfte durchweg positiv" — F. van Staa, Abteilungsleiter</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Bochum</div>
+            <div class="customer-detail">Ordnungsamt, 6.000 MA</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td><span class="badge badge-cameras">15</span></td>
+          <td>Ziel: Übergriffe „Richtung Null", Beweismittel für Staatsanwaltschaft</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Münster</div>
+            <div class="customer-detail">Kreisordnungsdienst</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td>—</td>
+          <td>Einsatz in Gebieten mit höherem Konfliktpotenzial, Mitarbeiter optimistisch</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Krefeld</div>
+            <div class="customer-detail">Ordnungsamt</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td>—</td>
+          <td>Entscheidung basierend auf positiven Polizeierfahrungen</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Herne</div>
+            <div class="customer-detail">Ordnungsdienst</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td><span class="badge badge-cameras">7</span></td>
+          <td>Einjährige Pilotphase, automatische Löschung nicht relevanter Aufnahmen</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Moers</div>
+            <div class="customer-detail">Verkehrsraumüberwachung</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td><span class="badge badge-cameras">4</span></td>
+          <td>Testlauf positiv, flächendeckende Einführung geplant</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Siegburg</div>
+            <div class="customer-detail">Ordnungsamt, 700 MA</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td>—</td>
+          <td>Probephase für zukünftigen Dauereinsatz</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Stadt Witten</div>
+            <div class="customer-detail">Außendienst</div>
+          </td>
+          <td><span class="badge badge-since">2023</span></td>
+          <td>—</td>
+          <td>2-jährige Erprobungsphase, politische Unterstützung</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Polizei Section -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🛡️</span>
+      <h2>POLIZEI</h2>
+      <span class="count">2 Behörden</span>
+    </div>
+    <table class="customer-table">
+      <thead>
+        <tr>
+          <th style="width:25%">Behörde</th>
+          <th style="width:12%">Seit</th>
+          <th style="width:18%">Größe</th>
+          <th style="width:45%">Ergebnis / Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="customer-name">Polizei Bremen</div>
+            <div class="customer-detail">Bremen & Bremerhaven</div>
+          </td>
+          <td><span class="badge badge-since">seit 2018</span></td>
+          <td>~2.600 Mitarbeitende</td>
+          <td>Täglicher Einsatz, gutes Gewicht & lange Akkulaufzeit, schnelle Anpassung an Neuregelungen</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="customer-name">Polizei Brandenburg</div>
+            <div class="customer-detail">Land Brandenburg</div>
+          </td>
+          <td><span class="badge badge-since">seit 2022</span></td>
+          <td>~8.000 Mitarbeitende<br><span class="badge badge-cameras">10 Kameras (Pilot)</span></td>
+          <td>Intensive Schulungen (Technik, Software, Recht, Taktik), freiwillige Teilnahme</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Weitere Branchen (Bonus) -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🏥</span>
+      <h2>WEITERE BRANCHEN</h2>
+      <span class="count">Auswahl</span>
+    </div>
+    <table class="customer-table">
+      <thead>
+        <tr>
+          <th style="width:25%">Organisation</th>
+          <th style="width:15%">Branche</th>
+          <th style="width:60%">Einsatzbereich</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="customer-name">Charité Berlin</div></td>
+          <td>Gesundheitswesen</td>
+          <td>Universitätsklinikum, Schutz des Klinikpersonals</td>
+        </tr>
+        <tr>
+          <td><div class="customer-name">Uniklinikum Münster</div></td>
+          <td>Gesundheitswesen</td>
+          <td>Schutz in Notaufnahmen & psychiatrischen Stationen</td>
+        </tr>
+        <tr>
+          <td><div class="customer-name">KR Group / GGS Security</div></td>
+          <td>Sicherheitsdienste</td>
+          <td>Private Sicherheitsunternehmen, Objektschutz & Eventschutz</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Steintor 7, 06484 Quedlinburg<br>
+      Tel: +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com
+    </div>
+    <div class="footer-cta">
+      Demo anfragen →
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

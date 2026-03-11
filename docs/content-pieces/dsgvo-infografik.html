@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSGVO-Compliance auf einen Blick — NetCo Body-Cam</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            netco: { primary: '#003366', secondary: '#ff6600', surface: '#f1f5f9', muted: '#ccd6e0' },
+          },
+          fontFamily: {
+            heading: ['Antonio', 'sans-serif'],
+            body: ['PT Sans', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'PT Sans', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Antonio', sans-serif; }
+
+    .check-icon::before { content: '✓'; color: #16a34a; font-weight: 700; margin-right: 6px; }
+    .cross-icon::before { content: '✗'; color: #dc2626; font-weight: 700; margin-right: 6px; }
+    .arrow-icon::before { content: '→'; color: #003366; font-weight: 700; margin-right: 6px; }
+
+    .phase-connector {
+      position: relative;
+    }
+    .phase-connector::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: -12px;
+      width: 24px;
+      height: 2px;
+      background: #ff6600;
+    }
+    .phase-connector:last-child::after { display: none; }
+
+    @media print {
+      body { font-size: 9pt; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+
+  <!-- Hero -->
+  <header class="bg-netco-primary text-white py-10 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-netco-secondary font-bold text-sm tracking-widest uppercase mb-2">NetCo Body-Cam Pro</p>
+          <h1 class="text-4xl md:text-5xl tracking-tight leading-none mb-3">DSGVO-COMPLIANCE<br>AUF EINEN BLICK</h1>
+          <p class="text-slate-300 text-lg max-w-xl">Ihr Leitfaden für den datenschutzkonformen Einsatz von Body-Cams — von der Rechtsgrundlage bis zur automatischen Löschung.</p>
+        </div>
+        <div class="text-right hidden md:block">
+          <div class="font-heading text-2xl">NETCO</div>
+          <div class="text-xs text-slate-400">Made in Germany</div>
+          <div class="mt-4 bg-netco-secondary text-white text-xs font-bold px-3 py-1.5 rounded">
+            EuGH-konform<br>Stand 03/2026
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <!-- 1. Rechtsgrundlage -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">1</div>
+        <h2 class="text-2xl text-netco-primary">RECHTSGRUNDLAGE</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-blue-800 mb-2">Art. 6 Abs. 1 lit. f DSGVO</h3>
+          <p class="text-sm text-blue-700">Berechtigtes Interesse: Schutz der Beschäftigten vor Übergriffen, Deeskalation und Beweissicherung.</p>
+          <p class="text-xs text-blue-600 mt-2 font-bold">→ Interessenabwägung erforderlich</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-blue-800 mb-2">§ 26 BDSG</h3>
+          <p class="text-sm text-blue-700">Arbeitnehmerdatenschutz: Spezifische Rechtsgrundlage für den Beschäftigtenschutz.</p>
+          <p class="text-xs text-blue-600 mt-2 font-bold">→ KEINE Leistungskontrolle</p>
+        </div>
+        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <h3 class="text-sm font-bold text-orange-800 mb-2">EuGH C-422/24 (12/2025)</h3>
+          <p class="text-sm text-orange-700">Art. 13 DSGVO gilt — Betroffene müssen <strong>unmittelbar bei Aufnahme</strong> informiert werden.</p>
+          <p class="text-xs text-orange-600 mt-2 font-bold">→ Nachträgliche Info reicht NICHT</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Erlaubt / Verboten -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">2</div>
+        <h2 class="text-2xl text-netco-primary">ERLAUBT VS. VERBOTEN</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-green-800 mb-3 uppercase tracking-wide">Erlaubt</h3>
+          <ul class="space-y-2 text-sm">
+            <li class="check-icon">Anlassbezogene Aufnahme bei Konflikt/Gefährdung</li>
+            <li class="check-icon">Schutz vor Übergriffen & Gewalt</li>
+            <li class="check-icon">Beweissicherung bei Straftaten</li>
+            <li class="check-icon">Deeskalation & Prävention</li>
+            <li class="check-icon">Pre-Recording (30–120 s im RAM)</li>
+            <li class="check-icon">Öffentliche Bereiche mit Hinweisschildern</li>
+          </ul>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-red-800 mb-3 uppercase tracking-wide">Verboten</h3>
+          <ul class="space-y-2 text-sm">
+            <li class="cross-icon">Dauerüberwachung ohne konkreten Anlass</li>
+            <li class="cross-icon">Leistungs-/Verhaltenskontrolle (§ 26 BDSG)</li>
+            <li class="cross-icon">Toiletten, Umkleiden, Behandlungsräume</li>
+            <li class="cross-icon">Privatwohnungen ohne Einwilligung</li>
+            <li class="cross-icon">Unbegrenzte Speicherung „für alle Fälle"</li>
+            <li class="cross-icon">Veröffentlichung ohne Einwilligung</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Transparenz -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">3</div>
+        <h2 class="text-2xl text-netco-primary">TRANSPARENZPFLICHT — 2 EBENEN</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="border-2 border-netco-primary rounded-lg p-5 relative">
+          <div class="absolute -top-3 left-4 bg-netco-primary text-white text-xs font-bold px-2 py-0.5 rounded">EBENE 1 — Vor Ort</div>
+          <ul class="space-y-3 mt-2 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">LED</span>
+              <span>Sichtbares <strong>rotes LED-Signal</strong> bei Aufnahme</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">🔊</span>
+              <span><strong>Akustisches Signal</strong> bei Aufnahmebeginn</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">💬</span>
+              <span><strong>Mündliche Ankündigung</strong> durch Einsatzkraft</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="w-6 h-6 rounded-full bg-netco-secondary text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">📺</span>
+              <span><strong>Frontdisplay-Spiegelfunktion</strong> — Gegenüber sieht sich selbst (NetCo-exklusiv)</span>
+            </li>
+          </ul>
+        </div>
+        <div class="border-2 border-slate-300 rounded-lg p-5 relative">
+          <div class="absolute -top-3 left-4 bg-slate-600 text-white text-xs font-bold px-2 py-0.5 rounded">EBENE 2 — Vollständige Info</div>
+          <ul class="space-y-2 mt-2 text-sm">
+            <li class="arrow-icon">Name & Kontaktdaten des Verantwortlichen</li>
+            <li class="arrow-icon">Zweck der Datenverarbeitung</li>
+            <li class="arrow-icon">Rechtsgrundlage</li>
+            <li class="arrow-icon">Empfänger der Daten</li>
+            <li class="arrow-icon">Speicherdauer</li>
+            <li class="arrow-icon">Auskunfts-/Löschungsrechte</li>
+          </ul>
+          <p class="text-xs text-slate-500 mt-3 font-bold">Bereitstellung via QR-Code, Aushang oder Website</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. TOM -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">4</div>
+        <h2 class="text-2xl text-netco-primary">TECHNISCH-ORGANISATORISCHE MASSNAHMEN</h2>
+      </div>
+      <div class="grid md:grid-cols-4 gap-3">
+        <div class="bg-netco-surface rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">🔒</div>
+          <h4 class="text-xs font-bold text-netco-primary mb-1 uppercase">Verschlüsselung</h4>
+          <p class="text-xs text-slate-600">AES-256 auf Kamera, bei Übertragung & Speicherung. Ende-zu-Ende.</p>
+        </div>
+        <div class="bg-netco-surface rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">👤</div>
+          <h4 class="text-xs font-bold text-netco-primary mb-1 uppercase">Zugriffskontrolle</h4>
+          <p class="text-xs text-slate-600">Rollenbasierte Rechte, PIN/NFC-Login, lückenlose Zugriffsprotokolle.</p>
+        </div>
+        <div class="bg-netco-surface rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">🛡️</div>
+          <h4 class="text-xs font-bold text-netco-primary mb-1 uppercase">Manipulationsschutz</h4>
+          <p class="text-xs text-slate-600">Digitale Wasserzeichen, Metadaten (User, GPS, Zeit), .mex-Format.</p>
+        </div>
+        <div class="bg-netco-surface rounded-lg p-4 text-center">
+          <div class="text-3xl mb-2">🇩🇪</div>
+          <h4 class="text-xs font-bold text-netco-primary mb-1 uppercase">Server in DE</h4>
+          <p class="text-xs text-slate-600">Deutsche Server, kein CLOUD Act. On-Prem oder NetCo Cloud.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Speicherdauer & Löschung -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">5</div>
+        <h2 class="text-2xl text-netco-primary">SPEICHERDAUER & LÖSCHUNG</h2>
+      </div>
+      <div class="overflow-hidden rounded-lg border border-slate-200">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-netco-primary text-white">
+              <th class="text-left p-3 font-heading tracking-wide">Szenario</th>
+              <th class="text-left p-3 font-heading tracking-wide">Speicherdauer</th>
+              <th class="text-left p-3 font-heading tracking-wide">Löschung</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-100">
+              <td class="p-3 font-bold">Keine Beweisfunktion</td>
+              <td class="p-3">Max. <strong>72 Stunden</strong></td>
+              <td class="p-3 text-green-700 font-bold">Automatisch</td>
+            </tr>
+            <tr class="border-b border-slate-100 bg-slate-50">
+              <td class="p-3 font-bold">Pre-Recording (ungenutzt)</td>
+              <td class="p-3">Flüchtiger RAM-Speicher</td>
+              <td class="p-3 text-green-700 font-bold">Sofort automatisch</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="p-3 font-bold">Beweissicherung aktiv</td>
+              <td class="p-3">Dauer der Ermittlungen</td>
+              <td class="p-3 text-amber-700 font-bold">Nach Abschluss</td>
+            </tr>
+            <tr class="bg-slate-50">
+              <td class="p-3 font-bold">Zivilrechtliche Ansprüche</td>
+              <td class="p-3">Max. Verjährungsfrist</td>
+              <td class="p-3 text-amber-700 font-bold">Nach Fristablauf</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+        <span class="text-red-600 font-bold text-lg">⚠</span>
+        <p class="text-sm text-red-800">Aufbewahrung „für den Fall der Fälle" ist <strong>NICHT zulässig</strong> — Verstoß gegen Datenminimierung, Bußgeldrisiko!</p>
+      </div>
+    </section>
+
+    <!-- 6. Betriebsvereinbarung -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">6</div>
+        <h2 class="text-2xl text-netco-primary">BETRIEBSVEREINBARUNG & MITBESTIMMUNG</h2>
+      </div>
+      <div class="bg-netco-surface rounded-lg p-5">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-bold text-netco-primary mb-2">Pflichtbestandteile</h4>
+            <ul class="space-y-1.5 text-sm">
+              <li class="arrow-icon">Einsatzzweck & -bereiche definieren</li>
+              <li class="arrow-icon">Speicherdauer & Löschfristen festlegen</li>
+              <li class="arrow-icon">Zugriffsberechtigungen regeln</li>
+              <li class="arrow-icon">Dokumentationspflichten</li>
+              <li class="arrow-icon">Evaluierungszyklen</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-netco-primary mb-2">Mitbestimmung (BetrVG § 87)</h4>
+            <ul class="space-y-1.5 text-sm">
+              <li class="arrow-icon">Betriebsrat <strong>muss</strong> einbezogen werden</li>
+              <li class="arrow-icon">Datenschutzbeauftragter prüft</li>
+              <li class="arrow-icon">Schulung aller Mitarbeitenden</li>
+              <li class="arrow-icon">Regelmäßiger Austausch mit Datenschutzbehörden</li>
+              <li class="arrow-icon">DSFA (Datenschutz-Folgenabschätzung)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Implementierungs-Checkliste -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-netco-primary text-white flex items-center justify-center font-heading text-xl">7</div>
+        <h2 class="text-2xl text-netco-primary">IMPLEMENTIERUNGS-CHECKLISTE</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">1</span>
+          <div><p class="text-sm font-bold">Einsatzkonzept</p><p class="text-xs text-slate-500">Zweck, Bereiche, Regeln schriftlich definieren</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">2</span>
+          <div><p class="text-sm font-bold">Betriebsrat einbeziehen</p><p class="text-xs text-slate-500">Betriebsvereinbarung verhandeln & unterzeichnen</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">3</span>
+          <div><p class="text-sm font-bold">DSFA durchführen</p><p class="text-xs text-slate-500">Risikobewertung, TOM dokumentieren</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">4</span>
+          <div><p class="text-sm font-bold">DSB einbinden</p><p class="text-xs text-slate-500">Datenschutzbeauftragter prüft & berät</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">5</span>
+          <div><p class="text-sm font-bold">Technik konfigurieren</p><p class="text-xs text-slate-500">Verschlüsselung, Löschfristen, Zugriffsrechte</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">6</span>
+          <div><p class="text-sm font-bold">Transparenzhinweise</p><p class="text-xs text-slate-500">Schilder, QR-Codes, Aushang anbringen</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">7</span>
+          <div><p class="text-sm font-bold">Schulungen durchführen</p><p class="text-xs text-slate-500">Alle Einsatzkräfte: Technik, Recht, Taktik</p></div>
+        </div>
+        <div class="flex items-start gap-3 bg-white border border-slate-200 rounded-lg p-3">
+          <span class="w-7 h-7 rounded bg-netco-primary text-white text-xs flex items-center justify-center flex-shrink-0 font-bold">8</span>
+          <div><p class="text-sm font-bold">Regelmäßig evaluieren</p><p class="text-xs text-slate-500">Audits, Protokolle prüfen, Konzept anpassen</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Häufige Fehler -->
+    <section class="mb-10">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg bg-red-600 text-white flex items-center justify-center font-heading text-xl">!</div>
+        <h2 class="text-2xl text-red-700">HÄUFIGE FEHLER — BUSSGELDRISIKO</h2>
+      </div>
+      <div class="grid md:grid-cols-2 gap-3">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Keine Transparenz</p>
+            <p class="text-xs text-red-600">EuGH-Fall Stockholm: 355.000 € Bußgeld</p>
+          </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Daueraufzeichnung ohne Anlass</p>
+            <p class="text-xs text-red-600">Klarer DSGVO-Verstoß</p>
+          </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Leistungskontrolle</p>
+            <p class="text-xs text-red-600">Verstoß gegen § 26 BDSG</p>
+          </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Keine Betriebsvereinbarung</p>
+            <p class="text-xs text-red-600">Mitbestimmung verletzt</p>
+          </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Unbegrenzte Speicherung</p>
+            <p class="text-xs text-red-600">Datenminimierungsprinzip verletzt</p>
+          </div>
+        </div>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+          <span class="text-red-500 font-bold">✗</span>
+          <div>
+            <p class="text-sm font-bold text-red-800">Veröffentlichung ohne Einwilligung</p>
+            <p class="text-xs text-red-600">Recht am eigenen Bild verletzt</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NetCo Lösung -->
+    <section class="mb-8">
+      <div class="bg-netco-primary text-white rounded-lg p-6">
+        <h2 class="font-heading text-2xl mb-4">NETCO BODY-CAM PRO — DSGVO BY DESIGN</h2>
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Verschlüsselung</p>
+            <p class="text-slate-300">AES-256, Ende-zu-Ende, auf Kamera + Server</p>
+          </div>
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Automatische Löschung</p>
+            <p class="text-slate-300">Definierbare Fristen, revisionssicher, Audit-Trail</p>
+          </div>
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Server in Deutschland</p>
+            <p class="text-slate-300">On-Prem oder NetCo Cloud, kein CLOUD Act</p>
+          </div>
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Zugriffskontrolle</p>
+            <p class="text-slate-300">PIN/NFC, rollenbasiert, Protokolle</p>
+          </div>
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Frontdisplay</p>
+            <p class="text-slate-300">Transparenz-Funktion, Deeskalation, EuGH-konform</p>
+          </div>
+          <div>
+            <p class="text-netco-secondary font-bold mb-1">Gerichtsverwertbar</p>
+            <p class="text-slate-300">Wasserzeichen, Metadaten, lückenlose Beweiskette</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="text-center py-6">
+      <div class="inline-block bg-netco-surface rounded-lg p-6">
+        <p class="text-sm text-slate-500 mb-2">Fragen zur DSGVO-konformen Einführung?</p>
+        <p class="font-heading text-xl text-netco-primary mb-1">KOSTENLOSE DATENSCHUTZ-BERATUNG</p>
+        <p class="text-sm text-slate-600 mb-3">Wir prüfen Ihren Use Case und beraten zu Einsatzkonzept, Betriebsvereinbarung & DSFA.</p>
+        <div class="text-sm text-slate-600">
+          <strong>NetCo Professional Services GmbH</strong> · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anbieter-Vergleichsmatrix — Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+
+    :root {
+      --primary: #003366;
+      --secondary: #ff6600;
+      --surface: #f1f5f9;
+      --muted: #ccd6e0;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --green: #16a34a;
+      --amber: #d97706;
+      --red: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page {
+      size: A4 landscape;
+      margin: 12mm;
+    }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      color: var(--text);
+      font-size: 8.5pt;
+      line-height: 1.35;
+      background: white;
+    }
+
+    .page {
+      width: 297mm;
+      min-height: 210mm;
+      margin: 0 auto;
+      padding: 12mm;
+      background: white;
+    }
+
+    @media print {
+      .page { padding: 0; margin: 0; width: 100%; min-height: auto; }
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 5mm;
+      padding-bottom: 3mm;
+      border-bottom: 3px solid var(--secondary);
+    }
+
+    .header h1 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 20pt;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header .subtitle {
+      font-size: 9pt;
+      color: var(--text-light);
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .header-right .logo {
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      color: var(--primary);
+    }
+
+    /* Main comparison table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 5mm;
+    }
+
+    .comparison-table th {
+      font-family: 'Antonio', sans-serif;
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2.5mm 2mm;
+      text-align: left;
+      vertical-align: bottom;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .comparison-table th.feature-col {
+      width: 18%;
+      color: var(--text-light);
+    }
+
+    .comparison-table th.provider-col {
+      width: 16.4%;
+      text-align: center;
+    }
+
+    .comparison-table th.netco-col {
+      background: var(--primary);
+      color: white;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .comparison-table td {
+      padding: 2mm;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+
+    .comparison-table td:first-child {
+      font-weight: 700;
+      font-size: 8pt;
+      color: var(--primary);
+    }
+
+    .comparison-table td.netco-cell {
+      background: #f0f4ff;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .comparison-table td.provider-cell {
+      text-align: center;
+    }
+
+    .comparison-table tr:hover td {
+      background-color: #fafafa;
+    }
+
+    .comparison-table tr:hover td.netco-cell {
+      background-color: #e8eeff;
+    }
+
+    /* Category row */
+    .category-row td {
+      background: var(--surface) !important;
+      font-family: 'Antonio', sans-serif;
+      font-size: 8.5pt;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+      padding: 1.5mm 2mm;
+      border-bottom: 1px solid var(--muted);
+    }
+
+    /* Ratings */
+    .rate-best {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .rate-good {
+      color: var(--primary);
+    }
+
+    .rate-mid {
+      color: var(--amber);
+    }
+
+    .rate-low {
+      color: var(--red);
+    }
+
+    .check { color: var(--green); font-weight: 700; }
+    .partial { color: var(--amber); font-weight: 700; }
+    .cross { color: var(--red); font-weight: 700; }
+
+    /* Bottom section */
+    .bottom-row {
+      display: flex;
+      gap: 5mm;
+      margin-top: 4mm;
+    }
+
+    .legend {
+      flex: 1;
+      display: flex;
+      gap: 4mm;
+      font-size: 7pt;
+      color: var(--text-light);
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 1mm;
+    }
+
+    .usp-bar {
+      flex: 2;
+      background: var(--primary);
+      color: white;
+      border-radius: 4px;
+      padding: 3mm 4mm;
+      display: flex;
+      gap: 4mm;
+      align-items: center;
+    }
+
+    .usp-bar h3 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 9pt;
+      white-space: nowrap;
+    }
+
+    .usp-item {
+      font-size: 7.5pt;
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+    }
+
+    .usp-item .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--secondary);
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 3mm;
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: var(--text-light);
+      border-top: 1px solid var(--muted);
+      padding-top: 2mm;
+    }
+
+    .footer .cta {
+      background: var(--secondary);
+      color: white;
+      padding: 1.5mm 4mm;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 8pt;
+    }
+
+    .provider-sub {
+      font-size: 6.5pt;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>ANBIETER-VERGLEICHSMATRIX</h1>
+      <div class="subtitle">Body-Cam-Systeme im Vergleich — Technik, Datenschutz, Kosten & Service</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div style="font-size:7pt; color:var(--text-light)">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th class="feature-col">Kriterium</th>
+        <th class="provider-col netco-col">NetCo Body-Cam Pro<br><span class="provider-sub" style="color:#ccc">Made in Germany</span></th>
+        <th class="provider-col">Axon Body 4<br><span class="provider-sub">USA</span></th>
+        <th class="provider-col">Motorola V700<br><span class="provider-sub">USA</span></th>
+        <th class="provider-col">Reveal D-Series<br><span class="provider-sub">UK</span></th>
+        <th class="provider-col">No-Name / China<br><span class="provider-sub">Diverse</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- TECHNIK -->
+      <tr class="category-row">
+        <td colspan="6">TECHNIK & HARDWARE</td>
+      </tr>
+      <tr>
+        <td>Auflösung</td>
+        <td class="netco-cell rate-best">Full HD 1080p</td>
+        <td class="provider-cell rate-best">Full HD 1080p</td>
+        <td class="provider-cell rate-best">Full HD 1080p</td>
+        <td class="provider-cell rate-best">Full HD 1080p</td>
+        <td class="provider-cell rate-good">720p–1080p</td>
+      </tr>
+      <tr>
+        <td>Bildwinkel</td>
+        <td class="netco-cell rate-best">165° Weitwinkel</td>
+        <td class="provider-cell rate-good">140°</td>
+        <td class="provider-cell rate-good">130°</td>
+        <td class="provider-cell rate-good">140°</td>
+        <td class="provider-cell rate-mid">120°–140°</td>
+      </tr>
+      <tr>
+        <td>Frontdisplay</td>
+        <td class="netco-cell rate-best">2,65″ TFT (Spiegel-Funktion)</td>
+        <td class="provider-cell rate-mid">Kein Display</td>
+        <td class="provider-cell rate-mid">Kein Display</td>
+        <td class="provider-cell rate-good">2″ Display</td>
+        <td class="provider-cell rate-mid">Kein / Mini-LCD</td>
+      </tr>
+      <tr>
+        <td>Akkulaufzeit (Aufnahme)</td>
+        <td class="netco-cell rate-best">9h Aufnahme / 20h Standby</td>
+        <td class="provider-cell rate-good">6h Aufnahme / 12h Standby</td>
+        <td class="provider-cell rate-good">8h Aufnahme</td>
+        <td class="provider-cell rate-good">8h Aufnahme / 15h Standby</td>
+        <td class="provider-cell rate-low">3–5h Aufnahme</td>
+      </tr>
+      <tr>
+        <td>Gewicht</td>
+        <td class="netco-cell rate-best">162 g</td>
+        <td class="provider-cell rate-mid">186 g</td>
+        <td class="provider-cell rate-mid">175 g</td>
+        <td class="provider-cell rate-good">170 g</td>
+        <td class="provider-cell rate-good">130–200 g</td>
+      </tr>
+      <tr>
+        <td>Schutzklasse</td>
+        <td class="netco-cell rate-best">IP67 / IK06</td>
+        <td class="provider-cell rate-best">IP67 / MIL-STD</td>
+        <td class="provider-cell rate-good">IP67</td>
+        <td class="provider-cell rate-good">IP67</td>
+        <td class="provider-cell rate-low">IP54–IP65</td>
+      </tr>
+      <tr>
+        <td>Pre-Recording</td>
+        <td class="netco-cell rate-best">30–120 s (einstellbar)</td>
+        <td class="provider-cell rate-good">30–120 s</td>
+        <td class="provider-cell rate-good">60–120 s</td>
+        <td class="provider-cell rate-good">30–120 s</td>
+        <td class="provider-cell rate-low">0–30 s</td>
+      </tr>
+      <tr>
+        <td>LTE / Live-Streaming</td>
+        <td class="netco-cell check">✓ Optional (Pro LTE)</td>
+        <td class="provider-cell check">✓ Integriert</td>
+        <td class="provider-cell partial">◐ Nachrüstbar</td>
+        <td class="provider-cell cross">✗ Nicht verfügbar</td>
+        <td class="provider-cell cross">✗ Nicht verfügbar</td>
+      </tr>
+
+      <!-- DATENSCHUTZ -->
+      <tr class="category-row">
+        <td colspan="6">DATENSCHUTZ & COMPLIANCE</td>
+      </tr>
+      <tr>
+        <td>Verschlüsselung</td>
+        <td class="netco-cell rate-best">AES-256, E2E</td>
+        <td class="provider-cell rate-best">AES-256</td>
+        <td class="provider-cell rate-good">AES-256</td>
+        <td class="provider-cell rate-good">AES-256</td>
+        <td class="provider-cell rate-low">Oft keine / AES-128</td>
+      </tr>
+      <tr>
+        <td>Serverstandort</td>
+        <td class="netco-cell rate-best">Deutschland 🇩🇪</td>
+        <td class="provider-cell rate-low">USA (CLOUD Act!) 🇺🇸</td>
+        <td class="provider-cell rate-low">USA (CLOUD Act!) 🇺🇸</td>
+        <td class="provider-cell rate-mid">UK 🇬🇧</td>
+        <td class="provider-cell rate-low">China / unklar 🇨🇳</td>
+      </tr>
+      <tr>
+        <td>On-Premises möglich</td>
+        <td class="netco-cell check">✓ Ja</td>
+        <td class="provider-cell partial">◐ Eingeschränkt</td>
+        <td class="provider-cell partial">◐ Zusatzkosten</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell cross">✗ Nein</td>
+      </tr>
+      <tr>
+        <td>Automatische Löschfristen</td>
+        <td class="netco-cell check">✓ Konfigurierbar</td>
+        <td class="provider-cell check">✓ Evidence.com</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell cross">✗ Manuell</td>
+      </tr>
+      <tr>
+        <td>DSGVO-Konformität</td>
+        <td class="netco-cell rate-best">Vollständig (DE-Recht)</td>
+        <td class="provider-cell rate-mid">Eingeschränkt (US-Recht)</td>
+        <td class="provider-cell rate-mid">Eingeschränkt (US-Recht)</td>
+        <td class="provider-cell rate-good">Gut (UK GDPR)</td>
+        <td class="provider-cell rate-low">Unklar / unzureichend</td>
+      </tr>
+      <tr>
+        <td>Audit-Trail / Beweiskette</td>
+        <td class="netco-cell check">✓ Lückenlos</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell cross">✗ Oft nicht</td>
+      </tr>
+
+      <!-- SOFTWARE -->
+      <tr class="category-row">
+        <td colspan="6">SOFTWARE & VERWALTUNG</td>
+      </tr>
+      <tr>
+        <td>Management-Software</td>
+        <td class="netco-cell rate-best">NetCo Suite (DE)</td>
+        <td class="provider-cell rate-good">Axon Evidence.com</td>
+        <td class="provider-cell rate-good">VideoManager</td>
+        <td class="provider-cell rate-good">DEMS</td>
+        <td class="provider-cell rate-low">Proprietär / keine</td>
+      </tr>
+      <tr>
+        <td>Multi-User (Schichtbetrieb)</td>
+        <td class="netco-cell check">✓ PIN + NFC/RFID</td>
+        <td class="provider-cell check">✓ Ja</td>
+        <td class="provider-cell partial">◐ Eingeschränkt</td>
+        <td class="provider-cell partial">◐ Eingeschränkt</td>
+        <td class="provider-cell cross">✗ Nein</td>
+      </tr>
+      <tr>
+        <td>Gruppen-Aktivierung</td>
+        <td class="netco-cell check">✓ Bluetooth-Trigger</td>
+        <td class="provider-cell check">✓ Signal Sidearm</td>
+        <td class="provider-cell cross">✗ Nein</td>
+        <td class="provider-cell cross">✗ Nein</td>
+        <td class="provider-cell cross">✗ Nein</td>
+      </tr>
+
+      <!-- KOSTEN -->
+      <tr class="category-row">
+        <td colspan="6">KOSTEN & SERVICE</td>
+      </tr>
+      <tr>
+        <td>Preismodell</td>
+        <td class="netco-cell rate-best">Miete ab 50€/Mo ODER Kauf</td>
+        <td class="provider-cell rate-low">Abo-Pflicht (Evidence.com)</td>
+        <td class="provider-cell rate-mid">Kauf + Lizenz</td>
+        <td class="provider-cell rate-good">Kauf oder Miete</td>
+        <td class="provider-cell rate-good">Kauf (günstig)</td>
+      </tr>
+      <tr>
+        <td>VBG-Förderung (40%)</td>
+        <td class="netco-cell rate-best">✓ Alle Kriterien erfüllt</td>
+        <td class="provider-cell rate-mid">◐ Teilweise</td>
+        <td class="provider-cell rate-mid">◐ Teilweise</td>
+        <td class="provider-cell rate-mid">◐ Teilweise</td>
+        <td class="provider-cell rate-low">✗ Meist nicht</td>
+      </tr>
+      <tr>
+        <td>Event-Tarif</td>
+        <td class="netco-cell check">✓ 219€/Woche (4 Cams)</td>
+        <td class="provider-cell cross">✗ Nein</td>
+        <td class="provider-cell cross">✗ Nein</td>
+        <td class="provider-cell cross">✗ Nein</td>
+        <td class="provider-cell cross">✗ Nein</td>
+      </tr>
+      <tr>
+        <td>Support & Schulung</td>
+        <td class="netco-cell rate-best">DE-Support, Vor-Ort-Schulung</td>
+        <td class="provider-cell rate-mid">Englisch, Remote</td>
+        <td class="provider-cell rate-mid">Englisch, Remote</td>
+        <td class="provider-cell rate-good">EN/DE, Remote</td>
+        <td class="provider-cell rate-low">Kaum / keine</td>
+      </tr>
+      <tr>
+        <td>Herkunft / Produktion</td>
+        <td class="netco-cell rate-best">Deutschland 🇩🇪</td>
+        <td class="provider-cell">USA 🇺🇸</td>
+        <td class="provider-cell">USA 🇺🇸 / China 🇨🇳</td>
+        <td class="provider-cell">UK 🇬🇧</td>
+        <td class="provider-cell rate-low">China 🇨🇳</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Bottom bar -->
+  <div class="bottom-row">
+    <div class="legend">
+      <div class="legend-item"><span class="check">✓</span> Ja / Verfügbar</div>
+      <div class="legend-item"><span class="partial">◐</span> Eingeschränkt</div>
+      <div class="legend-item"><span class="cross">✗</span> Nein / Nicht verfügbar</div>
+      <div class="legend-item"><span class="rate-best">■</span> Bestleistung</div>
+      <div class="legend-item"><span class="rate-mid">■</span> Einschränkungen</div>
+      <div class="legend-item"><span class="rate-low">■</span> Schwäche</div>
+    </div>
+    <div class="usp-bar">
+      <h3>NETCO VORTEILE:</h3>
+      <div class="usp-item"><span class="dot"></span>Einziger DE-Hersteller</div>
+      <div class="usp-item"><span class="dot"></span>Deeskalierendes Frontdisplay</div>
+      <div class="usp-item"><span class="dot"></span>Server in Deutschland</div>
+      <div class="usp-item"><span class="dot"></span>Miet- & Eventtarife</div>
+      <div class="usp-item"><span class="dot"></span>VBG-förderbar</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Steintor 7, 06484 Quedlinburg · +49 3946 7099-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Vergleichsdaten basieren auf öffentlich verfügbaren Herstellerangaben (Stand März 2026). Änderungen vorbehalten. Kein Anspruch auf Vollständigkeit.</span>
+    </div>
+    <div class="cta">Kostenlose Demo anfragen →</div>
+  </div>
+</div>
+
+</body>
+</html>
