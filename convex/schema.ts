@@ -33,6 +33,7 @@ export default defineSchema({
     status: v.string(),
     priority: v.optional(v.string()),
     goal: v.optional(v.string()),
+    targetRoles: v.optional(v.array(v.string())),
   })
     .index("by_brand", ["brandId"])
     .index("by_phase", ["phaseId"])
@@ -48,6 +49,8 @@ export default defineSchema({
     gains: v.array(v.string()),
     preferredChannels: v.array(v.string()),
     quote: v.optional(v.string()),
+    buyingCenterRole: v.optional(v.string()),
+    segment: v.optional(v.string()),
   }).index("by_brand", ["brandId"]),
 
   journeys: defineTable({
@@ -57,6 +60,7 @@ export default defineSchema({
     situation: v.string(),
     icon: v.string(),
     color: v.string(),
+    stakeholderId: v.optional(v.id("stakeholders")),
   }).index("by_brand", ["brandId"]),
 
   journeySteps: defineTable({

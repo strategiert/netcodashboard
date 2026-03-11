@@ -57,11 +57,50 @@ export const PROXIMITY_CONFIG = {
   },
 } as const;
 
+export const BUYING_CENTER_ROLES = {
+  Entscheider: {
+    color: "bg-red-500/20",
+    textColor: "text-red-400",
+    borderColor: "border-red-500/30",
+  },
+  Champion: {
+    color: "bg-green-500/20",
+    textColor: "text-green-400",
+    borderColor: "border-green-500/30",
+  },
+  Beeinflusser: {
+    color: "bg-blue-500/20",
+    textColor: "text-blue-400",
+    borderColor: "border-blue-500/30",
+  },
+  Gatekeeper: {
+    color: "bg-amber-500/20",
+    textColor: "text-amber-400",
+    borderColor: "border-amber-500/30",
+  },
+  Anwender: {
+    color: "bg-slate-500/20",
+    textColor: "text-slate-400",
+    borderColor: "border-slate-500/30",
+  },
+} as const;
+
+export const SEGMENTS = [
+  "Alle",
+  "ÖPNV",
+  "Kommune",
+  "Polizei",
+  "Sicherheitsdienste",
+  "Retail",
+  "Versorger",
+  "Gesundheitswesen",
+] as const;
+
 export const NAV_ITEMS = [
   { href: "/[brand]", label: "Dashboard", icon: "LayoutDashboard" },
   { href: "/[brand]/funnel", label: "Funnel", icon: "Filter" },
   { href: "/[brand]/content", label: "Content", icon: "FileText" },
-  { href: "/[brand]/stakeholders", label: "Stakeholder", icon: "Users" },
+  { href: "/[brand]/stakeholders", label: "Buying Center", icon: "Users" },
   { href: "/[brand]/journeys", label: "Journeys", icon: "Route" },
   { href: "/[brand]/seo", label: "SEO Cluster", icon: "Search" },
 ] as const;

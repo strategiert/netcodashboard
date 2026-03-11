@@ -29,8 +29,13 @@ export const getWithSteps = query({
       .withIndex("by_journey", (q) => q.eq("journeyId", args.id))
       .collect();
 
+    const stakeholder = journey.stakeholderId
+      ? await ctx.db.get(journey.stakeholderId)
+      : null;
+
     return {
       ...journey,
+      stakeholder,
       steps: steps.sort((a, b) => a.order - b.order),
     };
   },
@@ -44,6 +49,7 @@ export const create = mutation({
     situation: v.string(),
     icon: v.string(),
     color: v.string(),
+    stakeholderId: v.optional(v.id("stakeholders")),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("journeys", args);
@@ -58,6 +64,7 @@ export const update = mutation({
     situation: v.optional(v.string()),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
+    stakeholderId: v.optional(v.id("stakeholders")),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

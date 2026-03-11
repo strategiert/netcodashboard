@@ -29,6 +29,8 @@ export const create = mutation({
     gains: v.array(v.string()),
     preferredChannels: v.array(v.string()),
     quote: v.optional(v.string()),
+    buyingCenterRole: v.optional(v.string()),
+    segment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("stakeholders", args);
@@ -46,6 +48,8 @@ export const update = mutation({
     gains: v.optional(v.array(v.string())),
     preferredChannels: v.optional(v.array(v.string())),
     quote: v.optional(v.string()),
+    buyingCenterRole: v.optional(v.string()),
+    segment: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;

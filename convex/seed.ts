@@ -766,3 +766,321 @@ export const seedAll = mutation({
     };
   },
 });
+
+export const seedBuyingCenterAndJourneys = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // 1. Find bodycam brand
+    const brands = await ctx.db.query("brands").collect();
+    const bodycam = brands.find(b => b.slug === "bodycam");
+    if (!bodycam) return { message: "Brand bodycam not found" };
+
+    // 2. Check if already seeded (look for journeys)
+    const existingJourneys = await ctx.db
+      .query("journeys")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+    if (existingJourneys.length > 0) {
+      return { message: "Buying Center & Journeys already seeded" };
+    }
+
+    // 3. Patch existing stakeholders with buyingCenterRole + segment
+    const stakeholders = await ctx.db
+      .query("stakeholders")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+
+    const roleMap: Record<string, { buyingCenterRole: string; segment: string }> = {
+      "Kontrolleur / Einsatzkraft": { buyingCenterRole: "Anwender", segment: "Alle" },
+      "Teamleitung / Einsatzleitung": { buyingCenterRole: "Champion", segment: "Alle" },
+      "Geschäftsführung": { buyingCenterRole: "Entscheider", segment: "Alle" },
+      "Betriebsrat": { buyingCenterRole: "Beeinflusser", segment: "Alle" },
+      "IT-Leitung": { buyingCenterRole: "Gatekeeper", segment: "Alle" },
+      "Einkauf / Finanzen": { buyingCenterRole: "Gatekeeper", segment: "Alle" },
+    };
+
+    for (const s of stakeholders) {
+      const mapping = roleMap[s.role];
+      if (mapping) {
+        await ctx.db.patch(s._id, mapping);
+      }
+    }
+
+    // 4. Create new branchenspezifische Stakeholder
+    const newStakeholders = [
+      {
+        name: "Ulrich",
+        role: "Datenschutzbeauftragter",
+        type: "Beeinflusser",
+        ageRange: "40-55",
+        painPoints: ["DSGVO-Konformität sicherstellen", "Kameraaufnahmen rechtssicher handhaben", "Mitarbeiterdaten schützen"],
+        gains: ["Rechtssicherheit", "Klare Prozesse", "Auditfähige Dokumentation"],
+        preferredChannels: ["Datenschutz-Fachmedien", "Konferenzen", "Rechtsanwälte"],
+        quote: "Zeigen Sie mir die DSGVO-Konformität",
+        buyingCenterRole: "Beeinflusser",
+        segment: "ÖPNV",
+      },
+      {
+        name: "Karin",
+        role: "Personalrätin",
+        type: "Beeinflusser",
+        ageRange: "40-55",
+        painPoints: ["Überwachungsbedenken der Belegschaft", "Betriebsvereinbarung aushandeln", "Mitarbeiterakzeptanz sichern"],
+        gains: ["Schutz der Mitarbeiter", "Klare Nutzungsregeln", "Mitbestimmung"],
+        preferredChannels: ["Gewerkschaft", "Personalversammlung", "Betriebsratsnetzwerk"],
+        quote: "Die Belegschaft muss das mittragen",
+        buyingCenterRole: "Beeinflusser",
+        segment: "ÖPNV",
+      },
+      {
+        name: "Jörg",
+        role: "Sicherheitsbeauftragter Kommune",
+        type: "Champion",
+        ageRange: "35-50",
+        painPoints: ["Steigende Übergriffe auf Außendienstmitarbeiter", "Fehlende Beweismittel", "Mitarbeiterfluktuation"],
+        gains: ["Messbarer Rückgang von Übergriffen", "Beweissicherung", "Mitarbeiterbindung"],
+        preferredChannels: ["Kommunale Netzwerke", "Fachtagungen", "Kollegen"],
+        quote: "Seit der Einführung trauen sich meine Leute wieder raus",
+        buyingCenterRole: "Champion",
+        segment: "Kommune",
+      },
+      {
+        name: "Petra",
+        role: "Beschaffungsleiterin Ordnungsamt",
+        type: "Gatekeeper",
+        ageRange: "40-55",
+        painPoints: ["Vergaberecht einhalten", "Budget rechtfertigen", "Anbietervergleich"],
+        gains: ["Saubere Ausschreibung", "Wirtschaftlichkeitsnachweis", "Referenzen"],
+        preferredChannels: ["Vergabeplattformen", "Fachzeitschriften", "Verhandlungen"],
+        quote: "Ich brauche eine saubere Leistungsbeschreibung",
+        buyingCenterRole: "Gatekeeper",
+        segment: "Kommune",
+      },
+      {
+        name: "Dr. Hoffmann",
+        role: "Klinikleitung",
+        type: "Entscheider",
+        ageRange: "45-60",
+        painPoints: ["Übergriffe auf Pflegepersonal", "Medienpräsenz", "Fachkräftemangel verschärft durch Gewalt"],
+        gains: ["Sichereres Arbeitsumfeld", "Arbeitgeberattraktivität", "Haftungsschutz"],
+        preferredChannels: ["Klinikmanagement-Kongresse", "Fachverbände", "Persönliche Empfehlungen"],
+        quote: "Wir verlieren gute Leute wegen der Gewalt",
+        buyingCenterRole: "Entscheider",
+        segment: "Gesundheitswesen",
+      },
+      {
+        name: "Markus",
+        role: "Werkschutzleiter",
+        type: "Champion",
+        ageRange: "35-50",
+        painPoints: ["Falschbeschuldigungen gegen Sicherheitspersonal", "Haftungsrisiken", "Personalmangel"],
+        gains: ["Beweissicherung", "Deeskalation", "Professionelles Image"],
+        preferredChannels: ["Security-Fachpresse", "Messen", "Branchennetzwerk"],
+        quote: "Die Kamera schützt meine Leute und unsere Kunden",
+        buyingCenterRole: "Champion",
+        segment: "Sicherheitsdienste",
+      },
+    ];
+
+    for (const s of newStakeholders) {
+      await ctx.db.insert("stakeholders", { brandId: bodycam._id, ...s });
+    }
+
+    // 5. Reload stakeholders to get IDs for journeys
+    const allStakeholders = await ctx.db
+      .query("stakeholders")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+
+    const findStakeholder = (name: string) => allStakeholders.find(s => s.name === name);
+
+    // 6. Get phases
+    const phases = await ctx.db
+      .query("phases")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+    const phaseByOrder = (order: number) => phases.find(p => p.order === order)!;
+
+    // 7. Get content pieces for linking
+    const content = await ctx.db
+      .query("contentPieces")
+      .withIndex("by_brand", q => q.eq("brandId", bodycam._id))
+      .collect();
+    const findContent = (titleFragment: string) => content.find(c => c.title.includes(titleFragment));
+
+    // 8. Create Journeys + Steps
+    // Journey 1: ÖPNV-Entscheider nach Vorfall
+    const thomas = findStakeholder("Thomas");
+    const journey1Id = await ctx.db.insert("journeys", {
+      brandId: bodycam._id,
+      name: "ÖPNV-Entscheider nach Vorfall",
+      role: "GF Verkehrsunternehmen",
+      situation: "Gewaltzwischenfall in der Presse, politischer Druck",
+      icon: "🏢",
+      color: "#ef4444",
+      stakeholderId: thomas?._id,
+    });
+
+    // Journey 1 Steps
+    const dsgvoLeitfaden = findContent("DSGVO Praxisleitfaden");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey1Id,
+      phaseId: phaseByOrder(2)._id,
+      order: 1,
+      trigger: "Presseberichte über Übergriff, Anfragen von Medien und Politik",
+      searchQuery: "bodycam ÖPNV gewalt",
+      contentIds: dsgvoLeitfaden ? [dsgvoLeitfaden._id] : [],
+      insight: "Entscheider reagieren auf externen Druck, nicht auf interne Vorschläge",
+    });
+
+    const betriebsvereinbarung = findContent("Muster-Betriebsvereinbarung");
+    const datenfluss = findContent("Datenfluss");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey1Id,
+      phaseId: phaseByOrder(3)._id,
+      order: 2,
+      trigger: "Interne Task Force gegründet, recherchiert Optionen",
+      searchQuery: "bodycam einführung betriebsvereinbarung",
+      contentIds: [betriebsvereinbarung, datenfluss].filter(Boolean).map(c => c!._id),
+      insight: "Betriebsvereinbarung ist der häufigste Blocker — muss früh adressiert werden",
+    });
+
+    const caseStudy = findContent("Case Study: ÖPNV");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey1Id,
+      phaseId: phaseByOrder(4)._id,
+      order: 3,
+      trigger: "Buying Center vergleicht Anbieter, fordert Referenzen",
+      searchQuery: "bodycam anbieter vergleich DSGVO",
+      contentIds: caseStudy ? [caseStudy._id] : [],
+      insight: "Referenzen aus der gleichen Branche sind entscheidend",
+    });
+
+    const tcoRechner = findContent("TCO-Rechner");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey1Id,
+      phaseId: phaseByOrder(5)._id,
+      order: 4,
+      trigger: "Finale Entscheidung, Budget-Freigabe nötig",
+      contentIds: tcoRechner ? [tcoRechner._id] : [],
+      insight: "Mietmodell senkt die Einstiegshürde erheblich",
+    });
+
+    // Journey 2: IT-Gatekeeper
+    const stefan = findStakeholder("Stefan");
+    const journey2Id = await ctx.db.insert("journeys", {
+      brandId: bodycam._id,
+      name: "IT-Gatekeeper technische Prüfung",
+      role: "IT-Leitung",
+      situation: "Muss technische Machbarkeit und Datenschutz prüfen",
+      icon: "🔒",
+      color: "#3b82f6",
+      stakeholderId: stefan?._id,
+    });
+
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey2Id,
+      phaseId: phaseByOrder(3)._id,
+      order: 1,
+      trigger: "Auftrag von GF: technische Machbarkeit prüfen",
+      searchQuery: "bodycam on-premise cloud datenschutz",
+      contentIds: datenfluss ? [datenfluss._id] : [],
+      insight: "IT will On-Prem-Option sehen, Cloud ist oft Blocker",
+    });
+
+    const techSpec = findContent("Tech Spec PDF");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey2Id,
+      phaseId: phaseByOrder(4)._id,
+      order: 2,
+      trigger: "Technische Detailprüfung, Security-Audit",
+      searchQuery: "bodycam IT sicherheit API integration",
+      contentIds: techSpec ? [techSpec._id] : [],
+      insight: "Deutsche Server und BSI-Konformität sind K.O.-Kriterien",
+    });
+
+    const demoScript = findContent("Demo Script");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey2Id,
+      phaseId: phaseByOrder(5)._id,
+      order: 3,
+      trigger: "IT gibt grünes Licht, Pilot-Setup planen",
+      contentIds: demoScript ? [demoScript._id] : [],
+      insight: "IT muss im Pilotprojekt dabei sein, nicht erst beim Rollout",
+    });
+
+    // Journey 3: Betriebsrat
+    const ralf = findStakeholder("Ralf");
+    const journey3Id = await ctx.db.insert("journeys", {
+      brandId: bodycam._id,
+      name: "Betriebsrat Zustimmungsprozess",
+      role: "Betriebsrat",
+      situation: "Muss Betriebsvereinbarung mit Arbeitgeber aushandeln",
+      icon: "🤝",
+      color: "#f59e0b",
+      stakeholderId: ralf?._id,
+    });
+
+    const dsgvoCheckliste = findContent("Bodycams & DSGVO: Checkliste");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey3Id,
+      phaseId: phaseByOrder(2)._id,
+      order: 1,
+      trigger: "Mitarbeiter fordern Schutzmaßnahmen, GF schlägt Bodycams vor",
+      contentIds: dsgvoCheckliste ? [dsgvoCheckliste._id] : [],
+      insight: "BR braucht neutrale Fakten, keine Verkaufsargumente",
+    });
+
+    const zwanzigFragen = findContent("20 Fragen");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey3Id,
+      phaseId: phaseByOrder(3)._id,
+      order: 2,
+      trigger: "BR-Sitzung: Bodycam-Thema wird formell behandelt",
+      searchQuery: "betriebsrat bodycam mitbestimmung",
+      contentIds: [zwanzigFragen, betriebsvereinbarung].filter(Boolean).map(c => c!._id),
+      insight: "BR will Kontrolle über Nutzungsregeln — Muster-BV gibt Sicherheit",
+    });
+
+    const alltagsVideo = findContent("Video: Alltagseinsatz");
+    await ctx.db.insert("journeySteps", {
+      journeyId: journey3Id,
+      phaseId: phaseByOrder(4)._id,
+      order: 3,
+      trigger: "BR will Praxisbeweis: funktioniert das wirklich?",
+      contentIds: alltagsVideo ? [alltagsVideo._id] : [],
+      insight: "89%-Akzeptanzzahl der Belegschaft überzeugt skeptische BRs",
+    });
+
+    // 9. Add new Phase 3+4 Content Pieces with targetRoles
+    const phase3 = phaseByOrder(3);
+    const phase4 = phaseByOrder(4);
+
+    const newContent = [
+      // Phase 3
+      { phaseId: phase3._id, title: "Branchenvergleich: Bodycam-Einführung in 7 Branchen", format: "PDF", description: "Infografik: Welche Branchen setzen Bodycams ein und wie weit sind sie?", proximity: "nah", status: "planned", priority: "high", targetRoles: ["Entscheider"] },
+      { phaseId: phase3._id, title: "Prozess-Comic: So läuft eine Bodycam-Einführung ab", format: "PDF", description: "8-Panel-Storyboard als Vorlage für Videoproduktion — erklärt den Prozess für Skeptiker", proximity: "nah", status: "planned", targetRoles: ["Anwender", "Champion"] },
+      { phaseId: phase3._id, title: "Ausschreibungstext-Vorlage Bodycam (öffentl. Hand)", format: "PDF", description: "Muster-Leistungsbeschreibung für öffentliche Vergabeverfahren", proximity: "sehr nah", status: "planned", priority: "high", targetRoles: ["Gatekeeper"] },
+      { phaseId: phase3._id, title: "Dienstanweisung Bodycam-Einsatz (Muster)", format: "PDF", description: "Template für HR/Rechtsabteilung zur internen Regelung", proximity: "sehr nah", status: "planned", targetRoles: ["Beeinflusser", "Entscheider"] },
+      { phaseId: phase3._id, title: "Implementierungs-Guide: 90-Tage-Rollout", format: "Guide", description: "Schritt-für-Schritt-Anleitung für Projektverantwortliche", proximity: "sehr nah", status: "planned", priority: "high", targetRoles: ["Champion"] },
+      { phaseId: phase3._id, title: "Schulungskonzept Train-the-Trainer", format: "PDF", description: "Vorlage für interne Multiplikatoren-Schulung", proximity: "nah", status: "planned", targetRoles: ["Anwender"] },
+      { phaseId: phase3._id, title: "Checkliste Pilotprojekt ÖPNV", format: "Checkliste", description: "Branchenspezifische Checkliste: Was vor dem Pilot geklärt sein muss", proximity: "sehr nah", status: "planned", targetRoles: ["Champion"] },
+      { phaseId: phase3._id, title: "Infografik: DSGVO-Compliance auf einen Blick", format: "Poster", description: "Visuelle Zusammenfassung aller rechtlichen Anforderungen für DSB", proximity: "nah", status: "planned", targetRoles: ["Beeinflusser"] },
+      // Phase 4
+      { phaseId: phase4._id, title: "Anbieter-Vergleichsmatrix: NetCo vs. Markt", format: "One-Pager", description: "Objektiver Feature-Vergleich für interne Entscheidungspräsentation", proximity: "sehr nah", status: "planned", priority: "high", targetRoles: ["Entscheider", "Gatekeeper"] },
+      { phaseId: phase4._id, title: "ROI-Rechner mit VBG-Förderung", format: "Rechner", description: "Interaktiver Rechner inkl. VBG-Prämienförderung und Mietmodell", proximity: "sehr nah", status: "planned", priority: "high", targetRoles: ["Entscheider"] },
+      { phaseId: phase4._id, title: "Comic-Storyboard: Gerichtsverfahren mit und ohne Bodycam", format: "PDF", description: "Dramatische Visualisierung des Risikos ohne Beweissicherung", proximity: "nah", status: "planned", targetRoles: ["Entscheider", "Beeinflusser"] },
+      { phaseId: phase4._id, title: "Case Study: Ordnungsamt Köln — 12 Monate Ergebnis", format: "PDF", description: "Branchenspezifische Fallstudie mit messbaren Ergebnissen", proximity: "sehr nah", status: "planned", priority: "high", targetRoles: ["Entscheider"] },
+      { phaseId: phase4._id, title: "IT-Sicherheitskonzept Vorlage (BSI-konform)", format: "PDF", description: "BSI-konforme Vorlage zum Ausfüllen für IT-Abteilungen", proximity: "sehr nah", status: "planned", targetRoles: ["Gatekeeper"] },
+      { phaseId: phase4._id, title: "Referenzliste 25 Kunden (ÖPNV + Kommune)", format: "PDF", description: "Vertrauensaufbau: BVG, DB, KVB, Ordnungsamt Duisburg, Köln etc.", proximity: "sehr nah", status: "planned", targetRoles: ["Entscheider"] },
+      { phaseId: phase4._id, title: "Workshop-Agenda: Pilot intern verkaufen", format: "Workshop", description: "Agenda + Argumentation für interne Champions", proximity: "sehr nah", status: "planned", targetRoles: ["Champion"] },
+      { phaseId: phase4._id, title: "Video-Storyboard: Deeskalation im Alltag", format: "PDF", description: "Storyboard für Videoproduktion — zeigt Deeskalationswirkung im Einsatz", proximity: "sehr nah", status: "planned", targetRoles: ["Anwender", "Champion"] },
+    ];
+
+    for (const c of newContent) {
+      await ctx.db.insert("contentPieces", { brandId: bodycam._id, ...c });
+    }
+
+    return { message: "Buying Center, Journeys & Phase 3+4 Content seeded successfully" };
+  },
+});

@@ -57,6 +57,7 @@ export const create = mutation({
     status: v.string(),
     priority: v.optional(v.string()),
     goal: v.optional(v.string()),
+    targetRoles: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("contentPieces", args);
@@ -74,6 +75,7 @@ export const update = mutation({
     status: v.optional(v.string()),
     priority: v.optional(v.string()),
     goal: v.optional(v.string()),
+    targetRoles: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
