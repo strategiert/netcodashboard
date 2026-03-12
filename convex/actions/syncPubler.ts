@@ -2,44 +2,34 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 
-// Publer Account IDs per Brand — set via Convex env vars
-// To find IDs: GET https://app.publer.io/api/v1/accounts (with valid API key)
-const PUBLER_ACCOUNT_IDS: Record<string, string> = {
-  bodycam:    process.env.PUBLER_ACCOUNT_ID_BODYCAM    ?? "",
-  microvista: process.env.PUBLER_ACCOUNT_ID_MICROVISTA ?? "",
-  bautv:      process.env.PUBLER_ACCOUNT_ID_BAUTV      ?? "",
+// Publer Workspace IDs per brand (from GET /api/v1/workspaces)
+// Body-Cam: 696f3a3bb78f919a25b9305f
+// BauTV+:   696f4dc48e944500a16a52ae
+// Microvista: 696f505084f533b382144900
+const PUBLER_WORKSPACE_IDS: Record<string, string> = {
+  bodycam:    process.env.PUBLER_WORKSPACE_ID_BODYCAM    ?? "696f3a3bb78f919a25b9305f",
+  microvista: process.env.PUBLER_WORKSPACE_ID_MICROVISTA ?? "696f505084f533b382144900",
+  bautv:      process.env.PUBLER_WORKSPACE_ID_BAUTV      ?? "696f4dc48e944500a16a52ae",
 };
 
-// Publer analytics response shape (verified against /api/v1/analytics):
-// {
-//   data: {
-//     reach: number,          // or impressions
-//     engagements: number,    // or engagement
-//     followers: number,
-//     posts_count: number,    // or posts
-//   }
-// }
-// NOTE: Field names use fallbacks — update once API key is valid and response confirmed.
-async function fetchPublerAnalytics(accountId: string, date: string) {
+// Publer API v1: only posts endpoint available (no analytics endpoint)
+// Fetches published post count for a given workspace on a specific date
+async function fetchPublerPosts(workspaceId: string, date: string): Promise<number> {
   const apiKey = process.env.PUBLER_API_KEY;
   if (!apiKey) throw new Error("PUBLER_API_KEY not set");
 
   const res = await fetch(
-    `https://app.publer.io/api/v1/analytics?account_id=${accountId}&start=${date}&end=${date}`,
-    { headers: { Authorization: `Bearer ${apiKey}` } }
+    `https://app.publer.com/api/v1/posts?state=published&from=${date}&to=${date}`,
+    {
+      headers: {
+        Authorization: `Bearer-API ${apiKey}`,
+        "Publer-Workspace-Id": workspaceId,
+      },
+    }
   );
   if (!res.ok) throw new Error(`Publer ${res.status}: ${await res.text()}`);
   const data = await res.json();
-
-  // Handle both flat response and nested { data: {...} } response shapes
-  const d = data.data ?? data;
-
-  return {
-    socialReach:      (d.reach        ?? d.impressions  ?? 0) as number,
-    socialEngagement: (d.engagements  ?? d.engagement   ?? 0) as number,
-    socialFollowers:  (d.followers    ?? 0)                   as number,
-    socialPosts:      (d.posts_count  ?? d.posts        ?? 0) as number,
-  };
+  return (data.total ?? data.posts?.length ?? 0) as number;
 }
 
 export const syncPubler = action({
@@ -52,20 +42,20 @@ export const syncPubler = action({
 
     const results: string[] = [];
     for (const brand of brands) {
-      const accountId = PUBLER_ACCOUNT_IDS[brand.slug];
-      if (!accountId) {
-        results.push(`SKIP ${brand.slug}: no account ID`);
+      const workspaceId = PUBLER_WORKSPACE_IDS[brand.slug];
+      if (!workspaceId) {
+        results.push(`SKIP ${brand.slug}: no workspace ID`);
         continue;
       }
       try {
-        const data = await fetchPublerAnalytics(accountId, date);
+        const socialPosts = await fetchPublerPosts(workspaceId, date);
         await ctx.runMutation(api.kpi.upsertSnapshot, {
           brandId: brand._id,
           date,
           source: "publer",
-          ...data,
+          socialPosts,
         });
-        results.push(`OK ${brand.slug}: reach=${data.socialReach} engagement=${data.socialEngagement} followers=${data.socialFollowers} posts=${data.socialPosts}`);
+        results.push(`OK ${brand.slug}: posts=${socialPosts}`);
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e);
         results.push(`ERROR ${brand.slug}: ${msg}`);
