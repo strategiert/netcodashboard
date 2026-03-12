@@ -12,10 +12,12 @@ import {
   Search,
   Settings,
   Megaphone,
+  BarChart2,
 } from "lucide-react";
 
 const navItems = [
   { href: "", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/kpis", label: "KPIs", icon: BarChart2 },
   { href: "/campaigns", label: "Kampagnen", icon: Megaphone },
   { href: "/funnel", label: "Funnel", icon: Filter },
   { href: "/content", label: "Content", icon: FileText },
