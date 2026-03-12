@@ -8,10 +8,14 @@
  * @module
  */
 
+import type * as actions_syncAds from "../actions/syncAds.js";
+import type * as actions_syncGSC from "../actions/syncGSC.js";
+import type * as actions_syncPubler from "../actions/syncPubler.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as journeys from "../journeys.js";
+import type * as kpi from "../kpi.js";
 import type * as phases from "../phases.js";
 import type * as seed from "../seed.js";
 import type * as seoClusters from "../seoClusters.js";
@@ -24,10 +28,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/syncAds": typeof actions_syncAds;
+  "actions/syncGSC": typeof actions_syncGSC;
+  "actions/syncPubler": typeof actions_syncPubler;
   brands: typeof brands;
   campaigns: typeof campaigns;
   content: typeof content;
   journeys: typeof journeys;
+  kpi: typeof kpi;
   phases: typeof phases;
   seed: typeof seed;
   seoClusters: typeof seoClusters;
