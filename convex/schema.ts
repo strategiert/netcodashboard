@@ -170,6 +170,8 @@ export default defineSchema({
     socialEngagement: v.optional(v.number()),
     socialFollowers: v.optional(v.number()),
     socialPosts: v.optional(v.number()),
+    socialVideoViews: v.optional(v.number()),
+    socialLinkClicks: v.optional(v.number()),
     // Ads fields
     adSpend: v.optional(v.number()),
     adClicks: v.optional(v.number()),
@@ -182,6 +184,60 @@ export default defineSchema({
   })
     .index("by_brand_date", ["brandId", "date"])
     .index("by_brand_source_date", ["brandId", "source", "date"]),
+
+  publerSnapshots: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),           // YYYY-MM-DD
+    accountId: v.string(),      // Publer account ID
+    accountType: v.string(),    // fb_page, ig_business, in_profile, in_page, youtube
+    accountName: v.string(),
+    workspaceId: v.string(),
+    // Growth
+    followers: v.optional(v.number()),
+    connections: v.optional(v.number()),   // LinkedIn connections
+    profileViews: v.optional(v.number()),  // YouTube total views
+    talking: v.optional(v.number()),       // FB people talking about this
+    // Reach
+    reach: v.optional(v.number()),
+    reachRate: v.optional(v.number()),
+    // Engagement
+    engagement: v.optional(v.number()),
+    engagementRate: v.optional(v.number()),
+    // Content
+    videoViews: v.optional(v.number()),
+    linkClicks: v.optional(v.number()),
+    ctr: v.optional(v.number()),
+    posts: v.optional(v.number()),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_account_date", ["accountId", "date"]),
+
+  publerPosts: defineTable({
+    brandId: v.id("brands"),
+    workspaceId: v.string(),
+    publerPostId: v.number(),        // Publer internal post ID
+    accountId: v.string(),
+    accountType: v.string(),
+    accountName: v.string(),
+    publishedAt: v.string(),         // ISO date string
+    postLink: v.optional(v.string()),
+    postType: v.optional(v.string()), // video, image, text, reel
+    text: v.optional(v.string()),
+    thumbnail: v.optional(v.string()),
+    // Metrics
+    reach: v.optional(v.number()),
+    reachRate: v.optional(v.number()),
+    videoViews: v.optional(v.number()),
+    likes: v.optional(v.number()),
+    comments: v.optional(v.number()),
+    shares: v.optional(v.number()),
+    postClicks: v.optional(v.number()),
+    engagementRate: v.optional(v.number()),
+    linkClicks: v.optional(v.number()),
+    ctr: v.optional(v.number()),
+  })
+    .index("by_brand_date", ["brandId", "publishedAt"])
+    .index("by_publer_id", ["publerPostId"]),
 
   kpiTargets: defineTable({
     brandId: v.id("brands"),
