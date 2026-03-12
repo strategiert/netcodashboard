@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Id } from "../../../convex/_generated/dataModel";
+import { KpiStrip } from "@/components/kpi/kpi-strip";
 
 export default function DashboardPage() {
   const params = useParams();
@@ -64,6 +65,8 @@ export default function DashboardPage() {
           Übersicht für {brand.name}
         </p>
       </div>
+
+      {brandId && <KpiStrip brandId={brandId as Id<"brands">} />}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
