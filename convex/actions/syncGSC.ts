@@ -1,6 +1,7 @@
 "use node";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
+import { GoogleAuth } from "google-auth-library";
 
 const GSC_PROPERTIES: Record<string, string> = {
   bodycam: process.env.GSC_PROPERTY_BODYCAM ?? "",
@@ -12,7 +13,6 @@ async function fetchGSCData(property: string, date: string) {
   const serviceAccountJson = process.env.GSC_SERVICE_ACCOUNT_JSON;
   if (!serviceAccountJson) throw new Error("GSC_SERVICE_ACCOUNT_JSON not set");
 
-  const { GoogleAuth } = await import("google-auth-library");
   const auth = new GoogleAuth({
     credentials: JSON.parse(serviceAccountJson),
     scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
