@@ -14,6 +14,7 @@ import type * as actions_syncPubler from "../actions/syncPubler.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
+import type * as crons from "../crons.js";
 import type * as journeys from "../journeys.js";
 import type * as kpi from "../kpi.js";
 import type * as phases from "../phases.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   brands: typeof brands;
   campaigns: typeof campaigns;
   content: typeof content;
+  crons: typeof crons;
   journeys: typeof journeys;
   kpi: typeof kpi;
   phases: typeof phases;
