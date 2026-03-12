@@ -155,4 +155,43 @@ export default defineSchema({
     .index("by_campaign", ["campaignId"])
     .index("by_campaign_status", ["campaignId", "status"])
     .index("by_scenario", ["scenarioId"]),
+
+  kpiSnapshots: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(), // YYYY-MM-DD
+    source: v.union(v.literal("gsc"), v.literal("publer"), v.literal("ads"), v.literal("manual")),
+    // GSC fields
+    clicks: v.optional(v.number()),
+    impressions: v.optional(v.number()),
+    ctr: v.optional(v.number()),
+    avgPosition: v.optional(v.number()),
+    // Publer fields
+    socialReach: v.optional(v.number()),
+    socialEngagement: v.optional(v.number()),
+    socialFollowers: v.optional(v.number()),
+    socialPosts: v.optional(v.number()),
+    // Ads fields
+    adSpend: v.optional(v.number()),
+    adClicks: v.optional(v.number()),
+    adImpressions: v.optional(v.number()),
+    adConversions: v.optional(v.number()),
+    adCpc: v.optional(v.number()),
+    // Manual fields
+    leadsCount: v.optional(v.number()),
+    leadsNote: v.optional(v.string()),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_brand_source_date", ["brandId", "source", "date"]),
+
+  kpiTargets: defineTable({
+    brandId: v.id("brands"),
+    year: v.number(),
+    month: v.number(),
+    targetClicks: v.optional(v.number()),
+    targetLeads: v.optional(v.number()),
+    targetReach: v.optional(v.number()),
+    targetAdSpend: v.optional(v.number()),
+    targetConversions: v.optional(v.number()),
+  })
+    .index("by_brand_year_month", ["brandId", "year", "month"]),
 });
