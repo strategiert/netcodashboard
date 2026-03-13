@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, CartesianGrid,
@@ -481,7 +482,7 @@ export default function ReportPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -495,353 +496,223 @@ export default function ReportPage() {
         />
       </div>
 
-      {/* KPI Summary Cards */}
+      {/* KPI Summary — always visible */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label="Besucher gesamt"  value={fmt(totalVisitors)}  color="#3b82f6" />
-        <KpiCard label="Website-Leads"    value={String(totalLeads)}  color="#22c55e" />
-        <KpiCard label="Werbekosten"      value={eur(totalAdSpend)}   color="#ef4444" />
-        <KpiCard label="CRM Anfragen"     value={String(totalCrmLeads)} color="#8b5cf6" />
-        <KpiCard label="Aufträge erhalten" value={String(ordersWon)} sub={`${Math.round((ordersWon / Math.max(totalCrmLeads, 1)) * 100)} % Conv.`} color="#22c55e" />
-        <KpiCard label="Neukunden"        value={String(newCustomers)} color="#f59e0b" />
+        <KpiCard label="Besucher gesamt"   value={fmt(totalVisitors)}    color="#3b82f6" />
+        <KpiCard label="Website-Leads"     value={String(totalLeads)}    color="#22c55e" />
+        <KpiCard label="Werbekosten"       value={eur(totalAdSpend)}     color="#ef4444" />
+        <KpiCard label="CRM Anfragen"      value={String(totalCrmLeads)} color="#8b5cf6" />
+        <KpiCard label="Aufträge erhalten" value={String(ordersWon)}
+          sub={`${Math.round((ordersWon / Math.max(totalCrmLeads, 1)) * 100)} % Conv.`} color="#22c55e" />
+        <KpiCard label="Neukunden"         value={String(newCustomers)}  color="#f59e0b" />
       </div>
 
-      {/* Traffic by Channel Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Traffic-Kanäle pro KW</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              {Object.entries(CH_COLORS).map(([key, color]) => (
-                <Bar key={key} dataKey={key} stackId="a" fill={color} />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs defaultValue="traffic">
+        <TabsList>
+          <TabsTrigger value="traffic">Traffic &amp; SEO</TabsTrigger>
+          <TabsTrigger value="crm">CRM</TabsTrigger>
+          <TabsTrigger value="ads">Google Ads</TabsTrigger>
+        </TabsList>
 
-      {/* Leads + Ad Spend Row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Website-Leads pro KW</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Leads" fill="#22c55e" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Werbekosten pro KW (€)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Line dataKey="Werbekosten" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Language Distribution */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Besucher nach Sprache</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={langData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              {Object.entries(LANG_COLORS).map(([key, color]) => (
-                <Bar key={key} dataKey={key} stackId="a" fill={color} />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Top Keywords */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Top Keywords (GSC)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {/* Per-KW row */}
-            <div className="overflow-x-auto mb-4">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-2 pr-4 font-medium">KW</th>
-                    <th className="text-left pb-2 font-medium">Top-Keyword</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {reports.filter(r => r.topKeyword).map(r => (
-                    <tr key={r._id} className="hover:bg-muted/30 transition-colors">
-                      <td className="py-1.5 pr-4 text-xs text-muted-foreground tabular-nums">{r.kw}</td>
-                      <td className="py-1.5 text-xs font-mono">{r.topKeyword}</td>
-                    </tr>
+        {/* ── Tab: Traffic & SEO ─────────────────────────────────────────── */}
+        <TabsContent value="traffic" className="space-y-4 mt-4">
+          {/* Traffic by Channel */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Traffic-Kanäle pro KW</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  {Object.entries(CH_COLORS).map(([key, color]) => (
+                    <Bar key={key} dataKey={key} stackId="a" fill={color} />
                   ))}
-                </tbody>
-              </table>
-            </div>
-            {/* Frequency summary */}
-            {topKeywords.length > 0 && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-2 font-medium">Häufigkeit über alle KWs</p>
-                <div className="space-y-1.5">
-                  {topKeywords.map(([kw, { count }]) => (
-                    <div key={kw} className="flex items-center gap-3">
-                      <div className="flex-1 font-mono text-xs truncate">{kw}</div>
-                      <div className="w-32 h-5 rounded bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded bg-primary/60"
-                          style={{ width: `${(count / reports.length) * 100}%` }}
-                        />
-                      </div>
-                      <div className="w-20 text-right text-xs text-muted-foreground tabular-nums">
-                        {count}× ({Math.round((count / reports.length) * 100)} %)
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-      {/* CRM Funnel */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">CRM Pipeline (Gesamt)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CrmFunnel stats={leadsStats ?? { total: 0, offerMade: 0, orderReceived: 0, newCustomer: 0 }} />
-        </CardContent>
-      </Card>
-
-      {/* Google Ads Campaigns Q1 — only when data exists */}
-      {campaigns && campaigns.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Google Ads Kampagnen — Q1 {curYear}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CampaignsTable campaigns={campaigns} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Google Ads Editor — Campaign Stats */}
-      {gadsCampaigns && gadsCampaigns.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              Google Ads — Kampagnen
-              <span className="text-xs font-normal text-muted-foreground border rounded px-1.5 py-0.5">gesamte Laufzeit</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-2 pr-4 font-medium">Kampagne</th>
-                    <th className="text-left pb-2 pr-3 font-medium">Typ</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Budget/Tag</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
-                    <th className="text-right pb-2 pr-3 font-medium">CTR</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Conv.</th>
-                    <th className="text-right pb-2 font-medium">Kosten/Conv.</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {[...gadsCampaigns].sort((a, b) => b.cost - a.cost).map(c => {
-                    const ctr = c.clicks && c.impressions ? (c.clicks / c.impressions * 100) : null;
-                    const cpc = c.conversions > 0 ? c.cost / c.conversions : null;
-                    return (
-                      <tr key={c._id} className="hover:bg-muted/30">
-                        <td className="py-2 pr-4 font-medium text-xs">{c.campaign}</td>
-                        <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{c.campaignType ?? "—"}</Badge></td>
-                        <td className="py-2 pr-3 text-right tabular-nums text-xs">{c.budget ? `${c.budget} €` : "—"}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(c.cost)}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.impressions)}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.clicks)}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
-                        <td className="py-2 pr-3 text-right tabular-nums">{c.conversions.toFixed(1)}</td>
-                        <td className="py-2 text-right tabular-nums font-medium">{eur(cpc)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Ad Group Breakdown */}
-      {gadsAdGroups && gadsAdGroups.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Google Ads — Anzeigengruppen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-2 pr-3 font-medium">Kampagne</th>
-                    <th className="text-left pb-2 pr-4 font-medium">Anzeigengruppe</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
-                    <th className="text-right pb-2 pr-3 font-medium">CTR</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Conv.</th>
-                    <th className="text-right pb-2 pr-3 font-medium">Kosten/Conv.</th>
-                    <th className="text-right pb-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {[...gadsAdGroups]
-                    .filter(ag => ag.clicks > 0)
-                    .sort((a, b) => b.conversions - a.conversions || b.clicks - a.clicks)
-                    .map(ag => {
-                      const ctr = ag.clicks && ag.impressions ? (ag.clicks / ag.impressions * 100) : null;
-                      const cpc = ag.conversions > 0 ? ag.cost / ag.conversions : null;
-                      return (
-                        <tr key={ag._id} className="hover:bg-muted/30">
-                          <td className="py-2 pr-3 text-xs text-muted-foreground">{ag.campaign}</td>
-                          <td className="py-2 pr-4 font-medium text-xs">{ag.adGroup}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums">{eur(ag.cost)}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums">{fmt(ag.clicks)}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums">{ag.conversions.toFixed(1)}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(cpc)}</td>
-                          <td className="py-2 text-right">
-                            <span className={`text-xs ${ag.status === "Enabled" ? "text-green-600" : "text-muted-foreground"}`}>
-                              {ag.status === "Enabled" ? "Aktiv" : "Pausiert"}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Keywords */}
-      {gadsKeywords && gadsKeywords.length > 0 && (() => {
-        const sorted = [...gadsKeywords].sort((a, b) => b.conversions - a.conversions || b.clicks - a.clicks);
-        const topByConv   = sorted.filter(k => k.conversions > 0).slice(0, 20);
-        const topByClicks = [...gadsKeywords].filter(k => k.clicks > 0).sort((a, b) => b.clicks - a.clicks).slice(0, 20);
-        const enabledKws  = gadsKeywords.filter(k => k.status === "Enabled");
-        const qsKws       = enabledKws.filter(k => k.qualityScore != null);
-        const avgQs       = qsKws.length > 0 ? qsKws.reduce((a, k) => a + (k.qualityScore ?? 0), 0) / qsKws.length : null;
-        const qsDist = [1,2,3,4,5,6,7,8,9,10].map(n => ({
-          qs: String(n), count: qsKws.filter(k => k.qualityScore === n).length
-        }));
-
-        return (
-          <>
-            {/* QS Overview */}
+          {/* Leads + AdSpend Row */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Google Ads — Quality Score Übersicht</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base">Website-Leads pro KW</CardTitle></CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-4 mb-4">
-                  <KpiCard label="Keywords gesamt" value={String(gadsKeywords.length)} color="#8b5cf6" />
-                  <KpiCard label="Aktiv" value={String(enabledKws.length)} color="#22c55e" />
-                  <KpiCard label="Mit QS" value={String(qsKws.length)} color="#3b82f6" />
-                  <KpiCard label="Ø Quality Score" value={avgQs != null ? avgQs.toFixed(1) : "—"} color={avgQs && avgQs >= 7 ? "#22c55e" : avgQs && avgQs >= 4 ? "#f59e0b" : "#ef4444"} />
-                </div>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={qsDist} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="qs" tick={{ fontSize: 11 }} label={{ value: "Quality Score", position: "insideBottom", offset: -2, fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="count" name="Keywords" fill="#8b5cf6" radius={[3,3,0,0]} />
+                    <Bar dataKey="Leads" fill="#22c55e" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
-            {/* Top Keywords by Conversions */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Top Keywords — nach Conversions</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base">Werbekosten pro KW (€)</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line dataKey="Werbekosten" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Language Distribution */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">Besucher nach Sprache</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={langData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  {Object.entries(LANG_COLORS).map(([key, color]) => (
+                    <Bar key={key} dataKey={key} stackId="a" fill={color} />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Top Keywords (GSC) */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">Top Keywords (GSC)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {reports.filter(r => r.topKeyword).length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-xs text-muted-foreground">
+                          <th className="text-left pb-2 pr-4 font-medium">KW</th>
+                          <th className="text-left pb-2 font-medium">Top-Keyword</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {reports.filter(r => r.topKeyword).map(r => (
+                          <tr key={r._id} className="hover:bg-muted/30">
+                            <td className="py-1.5 pr-4 text-xs text-muted-foreground tabular-nums">{r.kw}</td>
+                            <td className="py-1.5 text-xs font-mono">{r.topKeyword}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {topKeywords.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Häufigkeit im Zeitraum</p>
+                    <div className="space-y-1.5">
+                      {topKeywords.map(([kw, { count }]) => (
+                        <div key={kw} className="flex items-center gap-3">
+                          <div className="flex-1 font-mono text-xs truncate">{kw}</div>
+                          <div className="w-32 h-5 rounded bg-muted overflow-hidden">
+                            <div className="h-full rounded bg-primary/60"
+                              style={{ width: `${(count / reports.length) * 100}%` }} />
+                          </div>
+                          <div className="w-20 text-right text-xs text-muted-foreground tabular-nums">
+                            {count}× ({Math.round((count / reports.length) * 100)} %)
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {reports.filter(r => r.topKeyword).length === 0 && topKeywords.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Keine Keyword-Daten im gewählten Zeitraum.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Tab: CRM ──────────────────────────────────────────────────────── */}
+        <TabsContent value="crm" className="space-y-4 mt-4">
+          {/* CRM Funnel */}
+          <Card>
+            <CardHeader><CardTitle className="text-base">CRM Pipeline</CardTitle></CardHeader>
+            <CardContent>
+              <CrmFunnel stats={leadsStats ?? { total: 0, offerMade: 0, orderReceived: 0, newCustomer: 0 }} />
+            </CardContent>
+          </Card>
+
+          {/* CRM Leads Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                Anfragen
+                <span className="text-xs font-normal text-muted-foreground">
+                  {totalCrmLeads} gesamt{(leads?.length ?? 0) < totalCrmLeads
+                    ? ` · neueste ${leads?.length ?? 0} angezeigt` : ""}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LeadsTable leads={leads ?? []} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Tab: Google Ads ───────────────────────────────────────────────── */}
+        <TabsContent value="ads" className="space-y-4 mt-4">
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Google Ads Daten sind als Gesamtlaufzeit importiert — Zeitraumfilter hat hier keine Wirkung.
+          </p>
+
+          {/* Campaigns */}
+          {gadsCampaigns && gadsCampaigns.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-base">Kampagnen</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-xs text-muted-foreground">
-                        <th className="text-left pb-2 pr-4 font-medium">Keyword</th>
-                        <th className="text-left pb-2 pr-3 font-medium">Match</th>
-                        <th className="text-left pb-2 pr-3 font-medium">Anzeigengruppe</th>
-                        <th className="text-center pb-2 pr-3 font-medium">QS</th>
-                        <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
-                        <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
-                        <th className="text-right pb-2 pr-3 font-medium">CTR</th>
+                        <th className="text-left pb-2 pr-4 font-medium">Kampagne</th>
+                        <th className="text-left pb-2 pr-3 font-medium">Typ</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Budget/Tag</th>
                         <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
+                        <th className="text-right pb-2 pr-3 font-medium">CTR</th>
                         <th className="text-right pb-2 pr-3 font-medium">Conv.</th>
                         <th className="text-right pb-2 font-medium">Kosten/Conv.</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {topByConv.map((k, i) => {
-                        const ctr = k.clicks && k.impressions ? (k.clicks / k.impressions * 100) : null;
-                        const cpc = k.conversions > 0 ? k.cost / k.conversions : null;
-                        const qs = k.qualityScore;
-                        const qsColor = qs != null ? (qs >= 7 ? "#22c55e" : qs >= 4 ? "#f59e0b" : "#ef4444") : "#94a3b8";
+                      {[...gadsCampaigns].sort((a, b) => b.cost - a.cost).map(c => {
+                        const ctr = c.clicks && c.impressions ? (c.clicks / c.impressions * 100) : null;
+                        const cpc = c.conversions > 0 ? c.cost / c.conversions : null;
                         return (
-                          <tr key={i} className="hover:bg-muted/30">
-                            <td className="py-2 pr-4 font-medium text-xs max-w-[180px] truncate">{k.keyword}</td>
-                            <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{k.matchType}</Badge></td>
-                            <td className="py-2 pr-3 text-xs text-muted-foreground truncate max-w-[120px]">{k.adGroup}</td>
-                            <td className="py-2 pr-3 text-center">
-                              {qs != null ? (
-                                <span className="text-xs font-bold" style={{ color: qsColor }}>{qs}</span>
-                              ) : <span className="text-xs text-muted-foreground">—</span>}
-                            </td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.clicks)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.impressions)}</td>
+                          <tr key={c._id} className="hover:bg-muted/30">
+                            <td className="py-2 pr-4 font-medium text-xs">{c.campaign}</td>
+                            <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{c.campaignType ?? "—"}</Badge></td>
+                            <td className="py-2 pr-3 text-right tabular-nums text-xs">{c.budget ? `${c.budget} €` : "—"}</td>
+                            <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(c.cost)}</td>
+                            <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.impressions)}</td>
+                            <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.clicks)}</td>
                             <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{eur(k.cost)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums font-medium">{k.conversions.toFixed(1)}</td>
-                            <td className="py-2 text-right tabular-nums">{eur(cpc)}</td>
+                            <td className="py-2 pr-3 text-right tabular-nums">{c.conversions.toFixed(1)}</td>
+                            <td className="py-2 text-right tabular-nums font-medium">{eur(cpc)}</td>
                           </tr>
                         );
                       })}
@@ -850,78 +721,200 @@ export default function ReportPage() {
                 </div>
               </CardContent>
             </Card>
+          )}
 
-            {/* Top Keywords by Clicks */}
+          {/* Ad Groups */}
+          {gadsAdGroups && gadsAdGroups.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Top Keywords — nach Klicks</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base">Anzeigengruppen</CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b text-xs text-muted-foreground">
-                        <th className="text-left pb-2 pr-4 font-medium">Keyword</th>
-                        <th className="text-left pb-2 pr-3 font-medium">Match</th>
-                        <th className="text-center pb-2 pr-3 font-medium">QS</th>
-                        <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
-                        <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
-                        <th className="text-right pb-2 pr-3 font-medium">CTR</th>
-                        <th className="text-right pb-2 pr-3 font-medium">Ø CPC</th>
+                        <th className="text-left pb-2 pr-3 font-medium">Kampagne</th>
+                        <th className="text-left pb-2 pr-4 font-medium">Anzeigengruppe</th>
                         <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
+                        <th className="text-right pb-2 pr-3 font-medium">CTR</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Conv.</th>
+                        <th className="text-right pb-2 pr-3 font-medium">Kosten/Conv.</th>
                         <th className="text-right pb-2 font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {topByClicks.map((k, i) => {
-                        const ctr = k.clicks && k.impressions ? (k.clicks / k.impressions * 100) : null;
-                        const qs = k.qualityScore;
-                        const qsColor = qs != null ? (qs >= 7 ? "#22c55e" : qs >= 4 ? "#f59e0b" : "#ef4444") : "#94a3b8";
-                        return (
-                          <tr key={i} className="hover:bg-muted/30">
-                            <td className="py-2 pr-4 font-medium text-xs max-w-[200px] truncate">{k.keyword}</td>
-                            <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{k.matchType}</Badge></td>
-                            <td className="py-2 pr-3 text-center">
-                              {qs != null ? (
-                                <span className="text-xs font-bold" style={{ color: qsColor }}>{qs}</span>
-                              ) : <span className="text-xs text-muted-foreground">—</span>}
-                            </td>
-                            <td className="py-2 pr-3 text-right tabular-nums font-medium">{fmt(k.clicks)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.impressions)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{eur(k.avgCpc)}</td>
-                            <td className="py-2 pr-3 text-right tabular-nums">{eur(k.cost)}</td>
-                            <td className="py-2 text-right">
-                              <span className={`text-xs ${k.status === "Enabled" ? "text-green-600" : "text-muted-foreground"}`}>
-                                {k.status === "Enabled" ? "Aktiv" : "Pausiert"}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {[...gadsAdGroups]
+                        .filter(ag => ag.clicks > 0)
+                        .sort((a, b) => b.conversions - a.conversions || b.clicks - a.clicks)
+                        .map(ag => {
+                          const ctr = ag.clicks && ag.impressions ? (ag.clicks / ag.impressions * 100) : null;
+                          const cpc = ag.conversions > 0 ? ag.cost / ag.conversions : null;
+                          return (
+                            <tr key={ag._id} className="hover:bg-muted/30">
+                              <td className="py-2 pr-3 text-xs text-muted-foreground">{ag.campaign}</td>
+                              <td className="py-2 pr-4 font-medium text-xs">{ag.adGroup}</td>
+                              <td className="py-2 pr-3 text-right tabular-nums">{eur(ag.cost)}</td>
+                              <td className="py-2 pr-3 text-right tabular-nums">{fmt(ag.clicks)}</td>
+                              <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
+                              <td className="py-2 pr-3 text-right tabular-nums">{ag.conversions.toFixed(1)}</td>
+                              <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(cpc)}</td>
+                              <td className="py-2 text-right">
+                                <span className={`text-xs ${ag.status === "Enabled" ? "text-green-600" : "text-muted-foreground"}`}>
+                                  {ag.status === "Enabled" ? "Aktiv" : "Pausiert"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
               </CardContent>
             </Card>
-          </>
-        );
-      })()}
+          )}
 
-      {/* CRM Leads Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            CRM Anfragen
-            <span className="text-xs font-normal text-muted-foreground">
-              {totalCrmLeads} gesamt{(leads?.length ?? 0) < totalCrmLeads ? ` · letzte ${leads?.length ?? 0} angezeigt` : ""}
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <LeadsTable leads={leads ?? []} />
-        </CardContent>
-      </Card>
+          {/* Keywords */}
+          {gadsKeywords && gadsKeywords.length > 0 && (() => {
+            const sorted      = [...gadsKeywords].sort((a, b) => b.conversions - a.conversions || b.clicks - a.clicks);
+            const topByConv   = sorted.filter(k => k.conversions > 0).slice(0, 20);
+            const topByClicks = [...gadsKeywords].filter(k => k.clicks > 0).sort((a, b) => b.clicks - a.clicks).slice(0, 20);
+            const enabledKws  = gadsKeywords.filter(k => k.status === "Enabled");
+            const qsKws       = enabledKws.filter(k => k.qualityScore != null);
+            const avgQs       = qsKws.length > 0 ? qsKws.reduce((a, k) => a + (k.qualityScore ?? 0), 0) / qsKws.length : null;
+            const qsDist      = [1,2,3,4,5,6,7,8,9,10].map(n => ({
+              qs: String(n), count: qsKws.filter(k => k.qualityScore === n).length,
+            }));
+            return (
+              <>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Quality Score Übersicht</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-4 mb-4">
+                      <KpiCard label="Keywords gesamt" value={String(gadsKeywords.length)} color="#8b5cf6" />
+                      <KpiCard label="Aktiv"           value={String(enabledKws.length)}  color="#22c55e" />
+                      <KpiCard label="Mit QS"          value={String(qsKws.length)}        color="#3b82f6" />
+                      <KpiCard label="Ø Quality Score" value={avgQs != null ? avgQs.toFixed(1) : "—"}
+                        color={avgQs && avgQs >= 7 ? "#22c55e" : avgQs && avgQs >= 4 ? "#f59e0b" : "#ef4444"} />
+                    </div>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={qsDist} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis dataKey="qs" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="count" name="Keywords" fill="#8b5cf6" radius={[3,3,0,0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Top Keywords — nach Conversions</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-xs text-muted-foreground">
+                            <th className="text-left pb-2 pr-4 font-medium">Keyword</th>
+                            <th className="text-left pb-2 pr-3 font-medium">Match</th>
+                            <th className="text-left pb-2 pr-3 font-medium">Anzeigengruppe</th>
+                            <th className="text-center pb-2 pr-3 font-medium">QS</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
+                            <th className="text-right pb-2 pr-3 font-medium">CTR</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Conv.</th>
+                            <th className="text-right pb-2 font-medium">Kosten/Conv.</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {topByConv.map((k, i) => {
+                            const ctr = k.clicks && k.impressions ? (k.clicks / k.impressions * 100) : null;
+                            const cpc = k.conversions > 0 ? k.cost / k.conversions : null;
+                            const qs  = k.qualityScore;
+                            const qsColor = qs != null ? (qs >= 7 ? "#22c55e" : qs >= 4 ? "#f59e0b" : "#ef4444") : "#94a3b8";
+                            return (
+                              <tr key={i} className="hover:bg-muted/30">
+                                <td className="py-2 pr-4 font-medium text-xs max-w-[180px] truncate">{k.keyword}</td>
+                                <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{k.matchType}</Badge></td>
+                                <td className="py-2 pr-3 text-xs text-muted-foreground truncate max-w-[120px]">{k.adGroup}</td>
+                                <td className="py-2 pr-3 text-center">
+                                  {qs != null ? <span className="text-xs font-bold" style={{ color: qsColor }}>{qs}</span>
+                                    : <span className="text-xs text-muted-foreground">—</span>}
+                                </td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.clicks)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.impressions)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{eur(k.cost)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums font-medium">{k.conversions.toFixed(1)}</td>
+                                <td className="py-2 text-right tabular-nums">{eur(cpc)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Top Keywords — nach Klicks</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-xs text-muted-foreground">
+                            <th className="text-left pb-2 pr-4 font-medium">Keyword</th>
+                            <th className="text-left pb-2 pr-3 font-medium">Match</th>
+                            <th className="text-center pb-2 pr-3 font-medium">QS</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Impr.</th>
+                            <th className="text-right pb-2 pr-3 font-medium">CTR</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Ø CPC</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
+                            <th className="text-right pb-2 font-medium">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {topByClicks.map((k, i) => {
+                            const ctr = k.clicks && k.impressions ? (k.clicks / k.impressions * 100) : null;
+                            const qs  = k.qualityScore;
+                            const qsColor = qs != null ? (qs >= 7 ? "#22c55e" : qs >= 4 ? "#f59e0b" : "#ef4444") : "#94a3b8";
+                            return (
+                              <tr key={i} className="hover:bg-muted/30">
+                                <td className="py-2 pr-4 font-medium text-xs max-w-[200px] truncate">{k.keyword}</td>
+                                <td className="py-2 pr-3"><Badge variant="outline" className="text-xs">{k.matchType}</Badge></td>
+                                <td className="py-2 pr-3 text-center">
+                                  {qs != null ? <span className="text-xs font-bold" style={{ color: qsColor }}>{qs}</span>
+                                    : <span className="text-xs text-muted-foreground">—</span>}
+                                </td>
+                                <td className="py-2 pr-3 text-right tabular-nums font-medium">{fmt(k.clicks)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{fmt(k.impressions)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{pct(ctr)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{eur(k.avgCpc)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums">{eur(k.cost)}</td>
+                                <td className="py-2 text-right">
+                                  <span className={`text-xs ${k.status === "Enabled" ? "text-green-600" : "text-muted-foreground"}`}>
+                                    {k.status === "Enabled" ? "Aktiv" : "Pausiert"}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            );
+          })()}
+
+          {(!gadsCampaigns || gadsCampaigns.length === 0) && (!gadsAdGroups || gadsAdGroups.length === 0) && (
+            <p className="text-sm text-muted-foreground">Keine Google Ads Daten vorhanden.</p>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
