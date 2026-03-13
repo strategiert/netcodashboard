@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
@@ -237,13 +238,16 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+const AVAILABLE_YEARS = [2024, 2025, 2026];
+
 export default function ReportPage() {
   const { brand } = useParams<{ brand: string }>();
+  const [selectedYear, setSelectedYear] = useState(2026);
   const brandData = useQuery(api.brands.getBySlug, { slug: brand });
 
   const reports = useQuery(
     api.reports.getWeeklyReports,
-    brandData ? { brandId: brandData._id, year: 2026 } : "skip"
+    brandData ? { brandId: brandData._id, year: selectedYear } : "skip"
   );
   const leads = useQuery(
     api.reports.getCrmLeads,
@@ -251,7 +255,7 @@ export default function ReportPage() {
   );
   const campaigns = useQuery(
     api.reports.getAdsCampaigns,
-    brandData ? { brandId: brandData._id, period: "Q1 2026" } : "skip"
+    brandData ? { brandId: brandData._id, period: `Q1 ${selectedYear}` } : "skip"
   );
   const gadsCampaigns = useQuery(
     api.gads.getCampaignStats,
@@ -280,8 +284,18 @@ export default function ReportPage() {
   const ordersWon     = leads?.filter(l => l.orderReceived).length ?? 0;
   const newCustomers  = leads?.filter(l => l.newCustomer).length ?? 0;
 
+  // ── KW Range ────────────────────────────────────────────────────────────────
+  const kwNums = reports.map(r => parseInt(r.kw.replace("KW ", ""))).filter(n => !isNaN(n));
+  const kwMin = kwNums.length ? Math.min(...kwNums) : 1;
+  const kwMax = kwNums.length ? Math.max(...kwNums) : 52;
+  const kwRange = kwNums.length ? `KW ${kwMin} – KW ${kwMax}` : "Keine Daten";
+
   // ── Weekly Chart Data ──────────────────────────────────────────────────────
-  const weeklyData = reports.map(r => ({
+  const weeklyData = [...reports].sort((a, b) => {
+    const na = parseInt(a.kw.replace("KW ", "")) || 0;
+    const nb = parseInt(b.kw.replace("KW ", "")) || 0;
+    return na - nb;
+  }).map(r => ({
     name:    r.kw,
     Ads:     r.chAds ?? 0,
     SEO:     r.chSeo ?? 0,
@@ -330,9 +344,26 @@ export default function ReportPage() {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Wochenbericht Q1 2026</h1>
-        <p className="text-muted-foreground">{brandData.name} · KW 1 – KW 11</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Wochenbericht {selectedYear}</h1>
+          <p className="text-muted-foreground">{brandData.name} · {kwRange}</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
+          {AVAILABLE_YEARS.map(y => (
+            <button
+              key={y}
+              onClick={() => setSelectedYear(y)}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                y === selectedYear
+                  ? "bg-background shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* KPI Summary Cards */}
@@ -490,7 +521,7 @@ export default function ReportPage() {
       {campaigns && campaigns.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Google Ads Kampagnen — Q1 2026</CardTitle>
+            <CardTitle className="text-base">Google Ads Kampagnen — Q1 {selectedYear}</CardTitle>
           </CardHeader>
           <CardContent>
             <CampaignsTable campaigns={campaigns} />
