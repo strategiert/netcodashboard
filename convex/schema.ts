@@ -300,6 +300,52 @@ export default defineSchema({
     .index("by_brand_date", ["brandId", "publishedAt"])
     .index("by_publer_id", ["publerPostId"]),
 
+  gadsKeywords: defineTable({
+    brandId: v.id("brands"),
+    period: v.string(),           // "all-time", "Q1 2026", etc.
+    campaign: v.string(),
+    adGroup: v.string(),
+    keyword: v.string(),
+    matchType: v.optional(v.string()),   // Phrase, Exact, Broad
+    qualityScore: v.optional(v.number()),
+    status: v.string(),                  // Enabled, Paused
+    clicks: v.number(),
+    cost: v.number(),
+    impressions: v.number(),
+    conversions: v.number(),
+    avgCpc: v.optional(v.number()),
+  })
+    .index("by_brand_period", ["brandId", "period"])
+    .index("by_brand_campaign", ["brandId", "campaign"]),
+
+  gadsCampaignStats: defineTable({
+    brandId: v.id("brands"),
+    period: v.string(),
+    campaign: v.string(),
+    campaignType: v.optional(v.string()),
+    budget: v.optional(v.number()),
+    status: v.string(),
+    clicks: v.number(),
+    cost: v.number(),
+    impressions: v.number(),
+    conversions: v.number(),
+  })
+    .index("by_brand_period", ["brandId", "period"]),
+
+  gadsAdGroups: defineTable({
+    brandId: v.id("brands"),
+    period: v.string(),
+    campaign: v.string(),
+    adGroup: v.string(),
+    status: v.string(),
+    clicks: v.number(),
+    cost: v.number(),
+    impressions: v.number(),
+    conversions: v.number(),
+  })
+    .index("by_brand_period", ["brandId", "period"])
+    .index("by_brand_campaign", ["brandId", "campaign"]),
+
   kpiTargets: defineTable({
     brandId: v.id("brands"),
     year: v.number(),

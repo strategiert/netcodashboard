@@ -9,6 +9,7 @@
  */
 
 import type * as actions_backfill from "../actions/backfill.js";
+import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
 import type * as actions_seedMicrovistaReport from "../actions/seedMicrovistaReport.js";
 import type * as actions_syncAds from "../actions/syncAds.js";
 import type * as actions_syncGSC from "../actions/syncGSC.js";
@@ -19,6 +20,7 @@ import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as crons from "../crons.js";
+import type * as gads from "../gads.js";
 import type * as journeys from "../journeys.js";
 import type * as kpi from "../kpi.js";
 import type * as phases from "../phases.js";
@@ -36,6 +38,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/backfill": typeof actions_backfill;
+  "actions/seedGadsKeywords": typeof actions_seedGadsKeywords;
   "actions/seedMicrovistaReport": typeof actions_seedMicrovistaReport;
   "actions/syncAds": typeof actions_syncAds;
   "actions/syncGSC": typeof actions_syncGSC;
@@ -46,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   campaigns: typeof campaigns;
   content: typeof content;
   crons: typeof crons;
+  gads: typeof gads;
   journeys: typeof journeys;
   kpi: typeof kpi;
   phases: typeof phases;
