@@ -106,6 +106,7 @@ export const getWeeklyReports = query({
   },
 });
 
+// Returns latest 300 leads for the table view
 export const getCrmLeads = query({
   args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
   handler: async (ctx, { brandId, from, to }) => {
@@ -115,7 +116,26 @@ export const getCrmLeads = query({
         q.eq("brandId", brandId).gte("date", from).lte("date", to)
       )
       .order("desc")
+      .take(300);
+  },
+});
+
+// Aggregated stats without returning all documents (for KPI cards + funnel)
+export const getCrmLeadsStats = query({
+  args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
+  handler: async (ctx, { brandId, from, to }) => {
+    const leads = await ctx.db
+      .query("crmLeads")
+      .withIndex("by_brand_date", (q) =>
+        q.eq("brandId", brandId).gte("date", from).lte("date", to)
+      )
       .collect();
+    return {
+      total:       leads.length,
+      offerMade:   leads.filter(l => l.offerMade).length,
+      orderReceived: leads.filter(l => l.orderReceived).length,
+      newCustomer: leads.filter(l => l.newCustomer).length,
+    };
   },
 });
 

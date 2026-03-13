@@ -65,11 +65,11 @@ function StatusBadge({ status }: { status?: string }) {
 
 // ── CRM Funnel ────────────────────────────────────────────────────────────────
 
-function CrmFunnel({ leads }: { leads: any[] }) {
-  const total     = leads.length;
-  const offers    = leads.filter(l => l.offerMade).length;
-  const orders    = leads.filter(l => l.orderReceived).length;
-  const newCusts  = leads.filter(l => l.newCustomer).length;
+function CrmFunnel({ stats }: { stats: { total: number; offerMade: number; orderReceived: number; newCustomer: number } }) {
+  const total    = stats.total;
+  const offers   = stats.offerMade;
+  const orders   = stats.orderReceived;
+  const newCusts = stats.newCustomer;
 
   const steps = [
     { label: "Anfragen",      count: total,    color: "#8b5cf6" },
@@ -392,6 +392,10 @@ export default function ReportPage() {
     api.reports.getCrmLeads,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
+  const leadsStats = useQuery(
+    api.reports.getCrmLeadsStats,
+    brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
+  );
   const campaigns = useQuery(
     api.reports.getAdsCampaigns,
     brandData ? { brandId: brandData._id, period: `Q1 ${curYear}` } : "skip"
@@ -417,9 +421,9 @@ export default function ReportPage() {
   const totalVisitors = reports.reduce((a, r) => a + (r.visitors ?? 0), 0);
   const totalLeads    = reports.reduce((a, r) => a + (r.leads ?? 0), 0);
   const totalAdSpend  = reports.reduce((a, r) => a + (r.adSpend ?? 0), 0);
-  const totalCrmLeads = leads?.length ?? 0;
-  const ordersWon     = leads?.filter(l => l.orderReceived).length ?? 0;
-  const newCustomers  = leads?.filter(l => l.newCustomer).length ?? 0;
+  const totalCrmLeads = leadsStats?.total ?? 0;
+  const ordersWon     = leadsStats?.orderReceived ?? 0;
+  const newCustomers  = leadsStats?.newCustomer ?? 0;
 
   // ── KW Range subtitle ───────────────────────────────────────────────────────
   const fmtShort = (s: string) => new Date(s + "T12:00:00Z").toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
@@ -638,7 +642,7 @@ export default function ReportPage() {
           <CardTitle className="text-base">CRM Pipeline (Gesamt)</CardTitle>
         </CardHeader>
         <CardContent>
-          <CrmFunnel leads={leads ?? []} />
+          <CrmFunnel stats={leadsStats ?? { total: 0, offerMade: 0, orderReceived: 0, newCustomer: 0 }} />
         </CardContent>
       </Card>
 
@@ -909,7 +913,9 @@ export default function ReportPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             CRM Anfragen
-            <span className="text-xs font-normal text-muted-foreground">{(leads ?? []).length} Einträge</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              {totalCrmLeads} gesamt{(leads?.length ?? 0) < totalCrmLeads ? ` · letzte ${leads?.length ?? 0} angezeigt` : ""}
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
