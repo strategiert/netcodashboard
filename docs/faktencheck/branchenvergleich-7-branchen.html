@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Branchenvergleich: Bodycam-Einführung in 7 Branchen — NetCo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --muted: #ccd6e0; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 12mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 8.5pt; line-height: 1.35; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 12mm; }
+    @media print { .page { padding: 0; margin: 0; width: 100%; min-height: auto; } }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 3px solid var(--secondary); }
+    .header h1 { font-family: 'Antonio', sans-serif; font-size: 20pt; color: var(--primary); line-height: 1.1; }
+    .header .subtitle { font-size: 9pt; color: var(--text-light); margin-top: 1mm; }
+    .header-right { text-align: right; }
+    .header-right .logo { font-family: 'Antonio', sans-serif; font-size: 14pt; color: var(--primary); }
+
+    .intro { background: var(--surface); border-radius: 4px; padding: 3mm 4mm; margin-bottom: 5mm; font-size: 8.5pt; }
+    .intro strong { color: var(--primary); }
+
+    /* Branch cards */
+    .branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-bottom: 4mm; }
+    .branch-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 3mm; background: white; }
+    .branch-card.full-width { grid-column: 1 / -1; }
+    .branch-header { display: flex; align-items: center; gap: 2mm; margin-bottom: 2mm; padding-bottom: 1.5mm; border-bottom: 2px solid var(--secondary); }
+    .branch-icon { font-size: 14pt; width: 22px; text-align: center; }
+    .branch-name { font-family: 'Antonio', sans-serif; font-size: 11pt; color: var(--primary); flex: 1; }
+    .branch-count { font-size: 7pt; font-weight: 700; background: var(--primary); color: white; padding: 0.5mm 2.5mm; border-radius: 3px; }
+
+    .branch-stats { display: flex; gap: 2mm; margin-bottom: 2mm; }
+    .branch-stat { flex: 1; background: var(--surface); border-radius: 3px; padding: 1.5mm 2mm; text-align: center; }
+    .branch-stat .num { font-family: 'Antonio', sans-serif; font-size: 11pt; color: var(--primary); line-height: 1; }
+    .branch-stat .lbl { font-size: 6pt; color: var(--text-light); text-transform: uppercase; }
+
+    .branch-details { font-size: 7.5pt; }
+    .branch-details dt { font-weight: 700; color: var(--primary); display: inline; }
+    .branch-details dd { display: inline; margin: 0; color: var(--text-light); }
+    .branch-details .row { margin-bottom: 1mm; }
+
+    .tag { display: inline-block; font-size: 6pt; padding: 0.3mm 2mm; border-radius: 2px; font-weight: 700; }
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-amber { background: #fef3c7; color: #92400e; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+
+    /* Comparison table */
+    .compare-table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; font-size: 7.5pt; }
+    .compare-table th { font-family: 'Antonio', sans-serif; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.5px; padding: 2mm 1.5mm; background: var(--primary); color: white; text-align: center; }
+    .compare-table th:first-child { text-align: left; }
+    .compare-table td { padding: 1.5mm; border-bottom: 1px solid #e2e8f0; text-align: center; }
+    .compare-table td:first-child { text-align: left; font-weight: 700; color: var(--primary); }
+    .dot-full { color: #16a34a; } .dot-half { color: #d97706; } .dot-empty { color: #e2e8f0; }
+
+    .footer { margin-top: 3mm; padding-top: 2mm; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; font-size: 7pt; color: var(--text-light); }
+    .footer .cta { background: var(--secondary); color: white; padding: 1.5mm 4mm; border-radius: 3px; font-weight: 700; font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>BRANCHENVERGLEICH<br>BODYCAM-EINFÜHRUNG</h1>
+      <div class="subtitle">7 Branchen, 7 Herausforderungen — ein Leitfaden für Ihre Branche</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div style="font-size:7pt; color:var(--text-light)">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    Body-Cams schützen Mitarbeitende branchenübergreifend — aber jede Branche hat eigene Anforderungen an <strong>Datenschutz</strong>, <strong>Einsatzkonzepte</strong> und <strong>Genehmigungsprozesse</strong>. Dieser Vergleich zeigt die Besonderheiten pro Branche auf einen Blick.
+  </div>
+
+  <div class="branch-grid">
+    <!-- ÖPNV -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🚇</span>
+        <span class="branch-name">ÖPNV</span>
+        <span class="branch-count">8+ NetCo-Kunden</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Hoch</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">3–6 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">−60%</div><div class="lbl">Übergriffe (KVB Köln)</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Fahrkartenkontrolle, Sicherheitsdienst, Bahnsteig</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Schichtbetrieb → Multi-User-Login (NFC), VBG-förderfähig</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Betriebsrat, Fahrgast-Akzeptanz, Akkuleistung Langschicht</dd></div>
+        <div class="row"><dt>Referenzen:</dt> <dd>DB, BVG, KVB, Wiener Linien, Saarbahn, Nordwestbahn</dd></div>
+      </div>
+    </div>
+
+    <!-- Kommune -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🏛️</span>
+        <span class="branch-name">KOMMUNE</span>
+        <span class="branch-count">11+ Kommunen</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Mittel</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">2–4 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">−56%</div><div class="lbl">Übergriffe</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Ordnungsamt Außendienst, Verkehrsüberwachung</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Öffentliche Vergabe, politischer Beschluss nötig, NRW als Vorreiter</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Datenschutzbeauftragte, Bürgerproteste, Kommunalpolitik</dd></div>
+        <div class="row"><dt>Referenzen:</dt> <dd>Köln, Duisburg, Bochum, Hamm, Leverkusen, Münster</dd></div>
+      </div>
+    </div>
+
+    <!-- Polizei -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🛡️</span>
+        <span class="branch-name">POLIZEI</span>
+        <span class="branch-count">2+ Behörden</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Sehr hoch</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">6–12 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">Pflicht</div><div class="lbl">Polizeigesetz</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Streifendienst, Einsatzkräfte, Konfliktsituationen</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Landespolizeigesetz als Rechtsgrundlage, Holster-Trigger, Gruppen-Aktivierung</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Lange Beschaffungszyklen, Ausschreibungspflicht, MIL-STD</dd></div>
+        <div class="row"><dt>Referenzen:</dt> <dd>Polizei Bremen, Polizei Brandenburg</dd></div>
+      </div>
+    </div>
+
+    <!-- Sicherheitsdienste -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🔒</span>
+        <span class="branch-name">SICHERHEITSDIENSTE</span>
+        <span class="branch-count">Wachsend</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Hoch</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">1–2 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">40%</div><div class="lbl">VBG-Förderung</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Objektschutz, Eventschutz, Einzelhandel, Flüchtlingsunterkünfte</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Schnelle Einführung, Event-Tarif (219€/Wo), hohe Fluktuation → Multi-User</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Wechselnde Einsatzorte, Schulungsbedarf bei Personalwechsel</dd></div>
+        <div class="row"><dt>Referenzen:</dt> <dd>KR Group, GGS Security, SHS Sicherheit</dd></div>
+      </div>
+    </div>
+
+    <!-- Gesundheitswesen -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🏥</span>
+        <span class="branch-name">GESUNDHEITSWESEN</span>
+        <span class="branch-count">Pilotphase</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Hoch</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">4–8 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">Sensibel</div><div class="lbl">Patientendaten</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Notaufnahme, Psychiatrie, Sicherheitsdienst Klinik</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Höchste Datenschutzanforderungen, Patientenschutz, Ethikkommission</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Behandlungsräume verboten, Tonaufnahme-Einschränkungen, Patientenrechte</dd></div>
+        <div class="row"><dt>Referenzen:</dt> <dd>Charité Berlin, Uniklinikum Münster</dd></div>
+      </div>
+    </div>
+
+    <!-- Retail -->
+    <div class="branch-card">
+      <div class="branch-header">
+        <span class="branch-icon">🛒</span>
+        <span class="branch-name">RETAIL & EINZELHANDEL</span>
+        <span class="branch-count">Emerging</span>
+      </div>
+      <div class="branch-stats">
+        <div class="branch-stat"><div class="num">Mittel</div><div class="lbl">Gefährdung</div></div>
+        <div class="branch-stat"><div class="num">1–3 Mo</div><div class="lbl">Einführung</div></div>
+        <div class="branch-stat"><div class="num">Abschreckung</div><div class="lbl">Diebstahl</div></div>
+      </div>
+      <div class="branch-details">
+        <div class="row"><dt>Einsatz:</dt> <dd>Ladendetektive, Kassenbereich, Filialleitung bei Konflikten</dd></div>
+        <div class="row"><dt>Besonderheit:</dt> <dd>Doppelter Nutzen: Mitarbeiterschutz + Diebstahlprävention</dd></div>
+        <div class="row"><dt>Herausforderung:</dt> <dd>Kundenakzeptanz, Privatsphäre in Umkleiden, Kassenbereich-Datenschutz</dd></div>
+        <div class="row"><dt>Trend:</dt> <dd>Zunahme von Übergriffen auf Kassierer und Servicekräfte</dd></div>
+      </div>
+    </div>
+
+    <!-- Versorger -->
+    <div class="branch-card full-width">
+      <div class="branch-header">
+        <span class="branch-icon">⚡</span>
+        <span class="branch-name">VERSORGER & STADTWERKE</span>
+        <span class="branch-count">Potenzial</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:3mm">
+        <div>
+          <div class="branch-stats">
+            <div class="branch-stat"><div class="num">Mittel</div><div class="lbl">Gefährdung</div></div>
+            <div class="branch-stat"><div class="num">2–4 Mo</div><div class="lbl">Einführung</div></div>
+            <div class="branch-stat"><div class="num">Ableser</div><div class="lbl">Hauptgruppe</div></div>
+          </div>
+          <div class="branch-details">
+            <div class="row"><dt>Einsatz:</dt> <dd>Zählerableser, Sperrmaßnahmen, Kundendienst vor Ort</dd></div>
+            <div class="row"><dt>Besonderheit:</dt> <dd>Allein-Außendienst, unangekündigte Besuche, Privatwohnungen (Einwilligung!)</dd></div>
+          </div>
+        </div>
+        <div class="branch-details">
+          <div class="row"><dt>Herausforderung:</dt> <dd>Privatwohnungs-Regelung, GPS bei Einzeleinsätzen, LTE für Livestream an Leitstelle</dd></div>
+          <div class="row"><dt>Empfehlung:</dt> <dd>NetCo Pro LTE für Echtzeit-Absicherung, ChargeHub für mobilen Einsatz (Auto-Laden)</dd></div>
+          <div class="row"><dt>Trend:</dt> <dd>Zunehmende Gewalt bei Sperrmaßnahmen (Gas/Strom), VBG-Förderung anwendbar</dd></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison table -->
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="width:16%">Kriterium</th>
+        <th>ÖPNV</th>
+        <th>Kommune</th>
+        <th>Polizei</th>
+        <th>Sicherheit</th>
+        <th>Gesundheit</th>
+        <th>Retail</th>
+        <th>Versorger</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Genehmigungskomplexität</td>
+        <td><span class="tag tag-amber">Mittel</span></td>
+        <td><span class="tag tag-amber">Mittel</span></td>
+        <td><span class="tag tag-red">Hoch</span></td>
+        <td><span class="tag tag-green">Gering</span></td>
+        <td><span class="tag tag-red">Hoch</span></td>
+        <td><span class="tag tag-green">Gering</span></td>
+        <td><span class="tag tag-amber">Mittel</span></td>
+      </tr>
+      <tr>
+        <td>VBG-Förderung</td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-full">●</span></td>
+      </tr>
+      <tr>
+        <td>Betriebsrat nötig</td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-full">●</span></td>
+      </tr>
+      <tr>
+        <td>Empfohlenes Modell</td>
+        <td>Standard</td>
+        <td>Standard</td>
+        <td>LTE</td>
+        <td>Standard</td>
+        <td>Standard</td>
+        <td>Standard</td>
+        <td>LTE</td>
+      </tr>
+      <tr>
+        <td>Event-Tarif sinnvoll</td>
+        <td><span class="dot-empty">○</span></td>
+        <td><span class="dot-empty">○</span></td>
+        <td><span class="dot-empty">○</span></td>
+        <td><span class="dot-full">●</span></td>
+        <td><span class="dot-empty">○</span></td>
+        <td><span class="dot-half">◐</span></td>
+        <td><span class="dot-empty">○</span></td>
+      </tr>
+      <tr>
+        <td>Typische Pilotgröße</td>
+        <td>10–20</td>
+        <td>10–15</td>
+        <td>10–50</td>
+        <td>4–10</td>
+        <td>4–8</td>
+        <td>4–8</td>
+        <td>5–15</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Am Mönchenfelde 13, 38889 Blankenburg (Harz) · +49 3944 950-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Wir beraten branchenspezifisch — von der DSFA bis zur Betriebsvereinbarung.</span>
+    </div>
+    <div class="cta">Branchenberatung anfragen →</div>
+  </div>
+</div>
+</body>
+</html>

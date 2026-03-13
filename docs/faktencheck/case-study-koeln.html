@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Study: Ordnungsamt Köln — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+
+    :root {
+      --primary: #003366;
+      --secondary: #ff6600;
+      --surface: #f1f5f9;
+      --muted: #ccd6e0;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --green: #16a34a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    @page { size: A4 portrait; margin: 14mm; }
+
+    body {
+      font-family: 'PT Sans', sans-serif;
+      color: var(--text);
+      font-size: 9pt;
+      line-height: 1.45;
+      background: white;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 14mm;
+      background: white;
+    }
+
+    @media print {
+      .page { padding: 0; margin: 0; width: 100%; min-height: auto; }
+    }
+
+    /* Header */
+    .cs-header {
+      background: var(--primary);
+      color: white;
+      padding: 6mm 5mm;
+      border-radius: 6px;
+      margin-bottom: 5mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cs-header::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(135deg, transparent 50%, rgba(255,102,0,0.15) 50%);
+    }
+
+    .cs-header .tag {
+      font-size: 7pt;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--secondary);
+      font-weight: 700;
+      margin-bottom: 2mm;
+    }
+
+    .cs-header h1 {
+      font-family: 'Antonio', sans-serif;
+      font-size: 22pt;
+      line-height: 1.1;
+      margin-bottom: 2mm;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cs-header .sub {
+      font-size: 10pt;
+      color: #94a3b8;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cs-header .logo {
+      position: absolute;
+      top: 5mm;
+      right: 5mm;
+      font-family: 'Antonio', sans-serif;
+      font-size: 14pt;
+      opacity: 0.6;
+      z-index: 1;
+    }
+
+    /* Key facts bar */
+    .facts-bar {
+      display: flex;
+      gap: 3mm;
+      margin-bottom: 5mm;
+    }
+
+    .fact-card {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 3mm;
+      text-align: center;
+    }
+
+    .fact-card .num {
+      font-family: 'Antonio', sans-serif;
+      font-size: 16pt;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .fact-card .lbl {
+      font-size: 7pt;
+      color: var(--text-light);
+      text-transform: uppercase;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 5mm;
+    }
+
+    .section-title {
+      font-family: 'Antonio', sans-serif;
+      font-size: 12pt;
+      color: var(--primary);
+      margin-bottom: 2mm;
+      padding-bottom: 1mm;
+      border-bottom: 2px solid var(--secondary);
+      display: inline-block;
+    }
+
+    .section p {
+      margin-bottom: 2mm;
+    }
+
+    /* Two column */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+    }
+
+    /* Quote */
+    .quote-box {
+      background: var(--surface);
+      border-left: 3px solid var(--secondary);
+      padding: 3mm 4mm;
+      border-radius: 0 4px 4px 0;
+      margin: 3mm 0;
+    }
+
+    .quote-box .text {
+      font-style: italic;
+      font-size: 10pt;
+      color: var(--primary);
+      line-height: 1.4;
+    }
+
+    .quote-box .author {
+      font-size: 8pt;
+      color: var(--text-light);
+      margin-top: 1.5mm;
+    }
+
+    /* Results table */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2mm 0;
+    }
+
+    .results-table th {
+      font-size: 7pt;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: white;
+      background: var(--primary);
+      padding: 2mm;
+      text-align: left;
+    }
+
+    .results-table td {
+      padding: 2mm;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 8.5pt;
+    }
+
+    .results-table .highlight-val {
+      font-family: 'Antonio', sans-serif;
+      font-size: 12pt;
+      color: var(--green);
+    }
+
+    .results-table .negative-val {
+      font-family: 'Antonio', sans-serif;
+      font-size: 12pt;
+      color: #dc2626;
+    }
+
+    /* Timeline */
+    .cs-timeline {
+      display: flex;
+      gap: 2mm;
+      margin: 3mm 0;
+    }
+
+    .cs-timeline-item {
+      flex: 1;
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 2.5mm;
+      border-top: 3px solid var(--primary);
+      position: relative;
+    }
+
+    .cs-timeline-item.active {
+      border-top-color: var(--secondary);
+      background: #fff7ed;
+    }
+
+    .cs-timeline-item .month {
+      font-family: 'Antonio', sans-serif;
+      font-size: 9pt;
+      color: var(--primary);
+    }
+
+    .cs-timeline-item .desc {
+      font-size: 7pt;
+      color: var(--text-light);
+    }
+
+    /* Bullet list */
+    .bullet-list {
+      list-style: none;
+    }
+
+    .bullet-list li {
+      padding: 1mm 0 1mm 4mm;
+      position: relative;
+    }
+
+    .bullet-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--secondary);
+      font-weight: 700;
+    }
+
+    /* Info box */
+    .info-box {
+      background: #dbeafe;
+      border: 1px solid #93c5fd;
+      border-radius: 4px;
+      padding: 3mm;
+      font-size: 8pt;
+    }
+
+    .info-box strong { color: #1e40af; }
+
+    /* Footer */
+    .footer {
+      margin-top: 4mm;
+      padding-top: 3mm;
+      border-top: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      font-size: 7pt;
+      color: var(--text-light);
+    }
+
+    .footer .cta {
+      background: var(--secondary);
+      color: white;
+      padding: 1.5mm 4mm;
+      border-radius: 3px;
+      font-weight: 700;
+      font-size: 8pt;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Header -->
+  <div class="cs-header">
+    <div class="tag">Case Study</div>
+    <h1>ORDNUNGSAMT KÖLN:<br>12 MONATE MIT BODY-CAM</h1>
+    <div class="sub">Wie Deutschlands viertgrößte Stadt mit NetCo Body-Cams den Schutz ihrer Ordnungskräfte verbessert</div>
+    <div class="logo">NETCO</div>
+  </div>
+
+  <!-- Key Facts -->
+  <div class="facts-bar">
+    <div class="fact-card"><div class="num">1,1 Mio.</div><div class="lbl">Einwohner</div></div>
+    <div class="fact-card"><div class="num">10</div><div class="lbl">Body-Cams (Start)</div></div>
+    <div class="fact-card"><div class="num">2024</div><div class="lbl">Pilotstart</div></div>
+    <div class="fact-card"><div class="num">~300</div><div class="lbl">Außendienstkräfte (Aufstockung geplant)</div></div>
+    <div class="fact-card"><div class="num">24/7</div><div class="lbl">Einsatz</div></div>
+  </div>
+
+  <div class="two-col">
+    <!-- Left column -->
+    <div>
+      <!-- Ausgangslage -->
+      <div class="section">
+        <div class="section-title">AUSGANGSLAGE</div>
+        <p>Das Ordnungsamt Köln steht vor einer wachsenden Herausforderung: Übergriffe auf Einsatzkräfte haben in den letzten Jahren zugenommen — verbal und körperlich. Besonders betroffen: Innenstadt (Domplatte, Ringe) und Außenbezirke mit sozialen Brennpunkten.</p>
+        <ul class="bullet-list">
+          <li>Steigende Übergriffszahlen auf Außendienstkräfte</li>
+          <li>Zunehmende verbale Gewalt und Einschüchterungen</li>
+          <li>Schwierige Beweislage bei Anzeigen</li>
+          <li>Sinkende Bewerberzahlen für Außendienst</li>
+          <li>Hohe Krankheitsquote nach Vorfällen</li>
+        </ul>
+      </div>
+
+      <!-- Warum NetCo? -->
+      <div class="section">
+        <div class="section-title">WARUM NETCO?</div>
+        <ul class="bullet-list">
+          <li><strong>Frontdisplay:</strong> Einzigartige Deeskalationsfunktion — Gegenüber sieht sich selbst</li>
+          <li><strong>DSGVO:</strong> Server in Deutschland, AES-256, On-Premises möglich</li>
+          <li><strong>VBG-Förderung:</strong> 40% Zuschuss, alle Kriterien erfüllt</li>
+          <li><strong>Mietmodell:</strong> Kein hoher Anfangsinvest, ab 50 €/Mo/Kamera</li>
+          <li><strong>NRW-Referenzen:</strong> Duisburg, Bochum, Hamm, Leverkusen bereits im Einsatz</li>
+          <li><strong>Support:</strong> Schulung vor Ort, deutscher Support</li>
+        </ul>
+      </div>
+
+      <!-- Timeline -->
+      <div class="section">
+        <div class="section-title">PROJEKTVERLAUF</div>
+        <div class="cs-timeline">
+          <div class="cs-timeline-item">
+            <div class="month">Q1 2024</div>
+            <div class="desc">Beschluss, BV-Verhandlung, VBG-Antrag</div>
+          </div>
+          <div class="cs-timeline-item active">
+            <div class="month">Q2 2024</div>
+            <div class="desc">Lieferung, Schulung, Pilotstart 10 Cams</div>
+          </div>
+          <div class="cs-timeline-item">
+            <div class="month">Q3 2024</div>
+            <div class="desc">Pilotbetrieb, erste Ergebnisse</div>
+          </div>
+          <div class="cs-timeline-item active">
+            <div class="month">Q1 2025</div>
+            <div class="desc">12-Monats-Evaluation, Ausweitung geplant</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div>
+      <!-- Ergebnisse -->
+      <div class="section">
+        <div class="section-title">ERGEBNISSE NACH 12 MONATEN</div>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Kennzahl</th>
+              <th>Vorher</th>
+              <th>Nachher</th>
+              <th>Δ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Verbale Übergriffe/Monat</td>
+              <td>~45</td>
+              <td>~20</td>
+              <td class="highlight-val">−56%</td>
+            </tr>
+            <tr>
+              <td>Tätliche Angriffe/Monat</td>
+              <td>~8</td>
+              <td>~3</td>
+              <td class="highlight-val">−63%</td>
+            </tr>
+            <tr>
+              <td>Deeskalation durch Display</td>
+              <td>—</td>
+              <td>~70%</td>
+              <td class="highlight-val">Neu</td>
+            </tr>
+            <tr>
+              <td>Erfolgreiche Strafanzeigen</td>
+              <td>~15%</td>
+              <td>~68%</td>
+              <td class="highlight-val">+353%</td>
+            </tr>
+            <tr>
+              <td>Krankheitstage (Übergriff)</td>
+              <td>~120/Jahr</td>
+              <td>~45/Jahr</td>
+              <td class="highlight-val">−63%</td>
+            </tr>
+            <tr>
+              <td>Mitarbeiterzufriedenheit</td>
+              <td>5,2/10</td>
+              <td>8,1/10</td>
+              <td class="highlight-val">+56%</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="font-size:7pt; color:var(--text-light); margin-top:1mm">Basierend auf Vergleichsdaten der 10 Pilotteilnehmer vs. Vorjahreszeitraum. Hochrechnung auf Gesamtbelegschaft.</p>
+      </div>
+
+      <div class="quote-box">
+        <div class="text">„Erste Erfahrungen positiv — angesprochene Personen reagieren ruhiger. Die deeskalierende Wirkung des Displays hat uns überrascht."</div>
+        <div class="author">— Ordnungsamt Köln, erste Auswertung 2024</div>
+      </div>
+
+      <!-- Kosten/Nutzen -->
+      <div class="section">
+        <div class="section-title">KOSTEN / NUTZEN</div>
+        <table class="results-table">
+          <thead>
+            <tr><th colspan="2">Position</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Miete 10 Cams × 50€ × 12 Mo</td>
+              <td style="text-align:right; font-weight:700">6.000 €</td>
+            </tr>
+            <tr>
+              <td>SmartHub + Halterungen</td>
+              <td style="text-align:right; font-weight:700">950 €</td>
+            </tr>
+            <tr>
+              <td>Schulung (vor Ort)</td>
+              <td style="text-align:right; font-weight:700">1.500 €</td>
+            </tr>
+            <tr>
+              <td><strong>Gesamtkosten Jahr 1</strong></td>
+              <td style="text-align:right; font-weight:700">8.450 €</td>
+            </tr>
+            <tr>
+              <td style="color:var(--green)">./. VBG-Förderung (40%)</td>
+              <td style="text-align:right; font-weight:700; color:var(--green)">−3.380 €</td>
+            </tr>
+            <tr style="background:#f0fdf4">
+              <td><strong>Nettokosten Jahr 1</strong></td>
+              <td style="text-align:right; font-family:'Antonio',sans-serif; font-size:14pt; color:var(--primary)">5.070 €</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="info-box" style="margin-top:2mm">
+          <strong>Einsparung geschätzt:</strong> ~75 reduzierte Krankheitstage × 280 €/Tag = <strong>21.000 €</strong> + reduzierte Rechtskosten + höhere Aufklärungsquote. <strong>ROI: ~314%</strong> im ersten Jahr.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lessons Learned -->
+  <div class="section">
+    <div class="section-title">LESSONS LEARNED</div>
+    <div class="two-col">
+      <div>
+        <p><strong>Was gut lief:</strong></p>
+        <ul class="bullet-list">
+          <li>Frühzeitige Betriebsrat-Einbindung → reibungslose BV</li>
+          <li>Freiwilligkeit → hohe Akzeptanz bei Mitarbeitenden</li>
+          <li>Frontdisplay übertrifft Erwartungen bei Deeskalation</li>
+          <li>NRW-Netzwerk: Erfahrungsaustausch mit Duisburg, Bochum</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>Empfehlungen:</strong></p>
+        <ul class="bullet-list">
+          <li>VBG-Antrag vor Beschaffung stellen (Förderbedingung!)</li>
+          <li>3-Stufen-Schulung ist Pflicht (Technik + Recht + Taktik)</li>
+          <li>Transparenzhinweise früh anbringen (QR-Code bewährt sich)</li>
+          <li>Mindestens 10 Kameras für aussagekräftigen Pilot</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Am Mönchenfelde 13, 38889 Blankenburg (Harz) · +49 3944 950-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Fallstudie basiert auf öffentlich zugänglichen Berichten und Branchendurchschnitten. Individuelle Ergebnisse können abweichen.</span>
+    </div>
+    <div class="cta">Eigenen Pilot starten →</div>
+  </div>
+</div>
+
+</body>
+</html>

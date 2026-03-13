@@ -1,0 +1,129 @@
+<h2>Brand Dashboard — KPIs eingebettet</h2>
+<p class="subtitle">So würde die Startseite je Marke aussehen. Oben KPI-Leiste (Management), darunter Marketing-Team-Übersicht. Welche Variante passt besser?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:12px;font-size:11px;color:#e2e8f0">
+      <!-- Variante A: KPI-Leiste oben, kompakt -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:600;font-size:13px">Body-Cam <span style="color:#64748b;font-weight:400">/ Dashboard</span></div>
+        <div style="display:flex;gap:6px">
+          <span style="background:#1e293b;border-radius:4px;padding:2px 8px;font-size:10px;color:#94a3b8">Heute</span>
+          <span style="background:#1e293b;border-radius:4px;padding:2px 8px;font-size:10px;color:#94a3b8">MTD</span>
+          <span style="background:#003366;border-radius:4px;padding:2px 8px;font-size:10px;color:#93c5fd">30T</span>
+        </div>
+      </div>
+      <!-- KPI-Streifen -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px">
+        <div style="background:#1e293b;border-radius:6px;padding:8px;border-left:3px solid #22c55e">
+          <div style="color:#64748b;font-size:9px;margin-bottom:2px">GSC KLICKS</div>
+          <div style="font-size:16px;font-weight:700">284</div>
+          <div style="font-size:9px;color:#22c55e">↑ 12%</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px;border-left:3px solid #3b82f6">
+          <div style="color:#64748b;font-size:9px;margin-bottom:2px">IMPRESSIONEN</div>
+          <div style="font-size:16px;font-weight:700">4.120</div>
+          <div style="font-size:9px;color:#22c55e">↑ 8%</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px;border-left:3px solid #8b5cf6">
+          <div style="color:#64748b;font-size:9px;margin-bottom:2px">CTR</div>
+          <div style="font-size:16px;font-weight:700">1,4%</div>
+          <div style="font-size:9px;color:#ef4444">↓ 3%</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px;border-left:3px solid #f59e0b">
+          <div style="color:#64748b;font-size:9px;margin-bottom:2px">SOCIAL REACH</div>
+          <div style="font-size:16px;font-weight:700">1.820</div>
+          <div style="font-size:9px;color:#22c55e">↑ 5%</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px;border-left:3px solid #ff6600">
+          <div style="color:#64748b;font-size:9px;margin-bottom:2px">ANFRAGEN</div>
+          <div style="font-size:16px;font-weight:700">3</div>
+          <div style="font-size:9px;color:#94a3b8">heute</div>
+        </div>
+      </div>
+      <!-- Marketing Stats darunter -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">Content Pieces</div>
+          <div style="font-size:14px;font-weight:600">34</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">In Arbeit</div>
+          <div style="font-size:14px;font-weight:600;color:#f59e0b">12</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">Priorität 🔴</div>
+          <div style="font-size:14px;font-weight:600;color:#ef4444">5</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — KPI-Karten oben, kompakt</h3>
+      <p>5 KPI-Karten in einer Zeile mit farbigen Linien. Zeitraum-Filter (Heute / MTD / 30T). Darunter Marketing-Stats.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f172a;padding:12px;font-size:11px;color:#e2e8f0">
+      <!-- Variante B: KPI-Block mit Verlauf -->
+      <div style="font-weight:600;font-size:13px;margin-bottom:10px">Body-Cam <span style="color:#64748b;font-weight:400">/ Dashboard</span></div>
+      <!-- Zwei Zeilen: Primär-KPIs groß, dann Details klein -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="background:#1e293b;border-radius:6px;padding:10px">
+          <div style="color:#64748b;font-size:9px;margin-bottom:4px">ANFRAGEN (MTD)</div>
+          <div style="font-size:22px;font-weight:700;color:#ff6600">47</div>
+          <div style="font-size:9px;color:#22c55e">↑ 15% vs. Vormonat</div>
+          <div style="margin-top:6px;height:2px;background:#1e3a5f;border-radius:1px">
+            <div style="width:78%;height:2px;background:#ff6600;border-radius:1px"></div>
+          </div>
+          <div style="font-size:9px;color:#64748b;margin-top:2px">Ziel: 60</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:10px">
+          <div style="color:#64748b;font-size:9px;margin-bottom:4px">GSC KLICKS (MTD)</div>
+          <div style="font-size:22px;font-weight:700;color:#3b82f6">6.240</div>
+          <div style="font-size:9px;color:#22c55e">↑ 8% vs. Vormonat</div>
+          <div style="margin-top:6px;height:2px;background:#1e3a5f;border-radius:1px">
+            <div style="width:62%;height:2px;background:#3b82f6;border-radius:1px"></div>
+          </div>
+          <div style="font-size:9px;color:#64748b;margin-top:2px">Ziel: 10.000</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">
+        <div style="background:#1e293b;border-radius:6px;padding:7px;text-align:center">
+          <div style="color:#64748b;font-size:9px">CTR</div>
+          <div style="font-size:13px;font-weight:600">1,4%</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px;text-align:center">
+          <div style="color:#64748b;font-size:9px">Ø Position</div>
+          <div style="font-size:13px;font-weight:600">10,2</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:7px;text-align:center">
+          <div style="color:#64748b;font-size:9px">Reach Social</div>
+          <div style="font-size:13px;font-weight:600">1.820</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">Content</div>
+          <div style="font-size:13px;font-weight:600">34</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">In Arbeit</div>
+          <div style="font-size:13px;font-weight:600;color:#f59e0b">12</div>
+        </div>
+        <div style="background:#1e293b;border-radius:6px;padding:8px">
+          <div style="color:#64748b;font-size:9px">Prio 🔴</div>
+          <div style="font-size:13px;font-weight:600;color:#ef4444">5</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Anfragen &amp; Klicks prominent, mit Ziel-Balken</h3>
+      <p>Die 2 wichtigsten KPIs groß mit Fortschrittsbalken zum Monatsziel. Sekundär-KPIs darunter klein. Marketing-Stats am Ende.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">Klick auf eine Variante oder sag mir was dir gefällt/fehlt.</p>

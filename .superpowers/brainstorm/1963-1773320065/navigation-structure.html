@@ -1,0 +1,103 @@
+<h2>Wie soll das NetCo Dashboard aufgebaut sein?</h2>
+<p class="subtitle">Wir haben zwei Welten zusammenzuführen: Marketing-Team (Content, Kampagnen, Strategie) und Management (KPIs, Zahlen, Berichte). Wie trennen wir das?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Zwei Modi — ein Umschalter</h3>
+      <p>Oben rechts ein Toggle: <strong>„Marketing" / „Management"</strong>. Gleiche Sidebar, aber je nach Modus andere Menüpunkte. Marketing sieht Content, Funnel, Kampagnen. Management sieht KPIs, Analytics, Reports.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Vorschau</div>
+        <div class="mockup-body" style="padding:0">
+          <div style="display:flex;height:160px">
+            <div class="mock-sidebar" style="width:140px;font-size:11px;padding:10px 8px">
+              <div style="background:#1e293b;border-radius:4px;padding:4px 8px;margin-bottom:8px;font-size:10px;color:#94a3b8">
+                ● Marketing &nbsp;&nbsp; ○ Management
+              </div>
+              <div style="color:#e2e8f0;padding:3px 0">📊 Dashboard</div>
+              <div style="color:#64748b;padding:3px 0">🔵 Funnel</div>
+              <div style="color:#64748b;padding:3px 0">📄 Content</div>
+              <div style="color:#64748b;padding:3px 0">👥 Buying Center</div>
+              <div style="color:#64748b;padding:3px 0">🗺 Journeys</div>
+            </div>
+            <div class="mock-content" style="flex:1;padding:12px;font-size:11px">
+              <div style="color:#94a3b8;margin-bottom:8px">Microvista › Dashboard</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">Content Pieces</div><div style="font-size:18px;font-weight:bold;color:#e2e8f0">34</div></div>
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">In Arbeit</div><div style="font-size:18px;font-weight:bold;color:#f59e0b">12</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Getrennte Top-Ebenen in der Sidebar</h3>
+      <p>Die Sidebar hat zwei Blöcke: <strong>„Marketing-Team"</strong> (Content, Funnel, Kampagnen…) und <strong>„Management"</strong> (KPIs, Analytics, Reports). Alles immer sichtbar, kein Toggle.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Vorschau</div>
+        <div class="mockup-body" style="padding:0">
+          <div style="display:flex;height:160px">
+            <div class="mock-sidebar" style="width:140px;font-size:11px;padding:10px 8px">
+              <div style="color:#64748b;font-size:9px;text-transform:uppercase;margin-bottom:4px">Marketing-Team</div>
+              <div style="color:#e2e8f0;padding:3px 0">📊 Dashboard</div>
+              <div style="color:#64748b;padding:3px 0">🔵 Funnel</div>
+              <div style="color:#64748b;padding:3px 0">📄 Content</div>
+              <div style="color:#64748b;padding:3px 0;margin-bottom:8px">🗓 Kampagnen</div>
+              <div style="color:#64748b;font-size:9px;text-transform:uppercase;margin-bottom:4px">Management</div>
+              <div style="color:#64748b;padding:3px 0">📈 KPIs</div>
+              <div style="color:#64748b;padding:3px 0">📋 Reports</div>
+            </div>
+            <div class="mock-content" style="flex:1;padding:12px;font-size:11px">
+              <div style="color:#94a3b8;margin-bottom:8px">Microvista › KPIs</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">Visitors</div><div style="font-size:18px;font-weight:bold;color:#e2e8f0">8.220</div><div style="font-size:9px;color:#22c55e">↑ 12%</div></div>
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">Leads</div><div style="font-size:18px;font-weight:bold;color:#e2e8f0">37</div><div style="font-size:9px;color:#ef4444">↓ 3%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>KPIs direkt in den Brand-Dashboard eingebettet</h3>
+      <p>Keine Trennung. Das Brand-Dashboard (die Startseite je Marke) zeigt <strong>oben die Management-Zahlen</strong> (KPI-Leiste) und darunter die Marketing-Team-Bereiche. Management schaut auf diese eine Seite.</p>
+      <div class="mockup" style="margin-top:12px">
+        <div class="mockup-header">Vorschau</div>
+        <div class="mockup-body" style="padding:0">
+          <div style="display:flex;height:160px">
+            <div class="mock-sidebar" style="width:140px;font-size:11px;padding:10px 8px">
+              <div style="color:#e2e8f0;padding:3px 0">📊 Dashboard</div>
+              <div style="color:#64748b;padding:3px 0">🔵 Funnel</div>
+              <div style="color:#64748b;padding:3px 0">📄 Content</div>
+              <div style="color:#64748b;padding:3px 0">👥 Buying Center</div>
+              <div style="color:#64748b;padding:3px 0">🗺 Journeys</div>
+              <div style="color:#64748b;padding:3px 0">🗓 Kampagnen</div>
+            </div>
+            <div class="mock-content" style="flex:1;padding:12px;font-size:11px">
+              <div style="display:flex;gap:4px;margin-bottom:8px">
+                <div style="background:#003366;border-radius:3px;padding:4px 6px;font-size:10px;color:white;flex:1;text-align:center"><div style="color:#93c5fd">Visitors</div><div style="font-weight:bold">8.220</div></div>
+                <div style="background:#003366;border-radius:3px;padding:4px 6px;font-size:10px;color:white;flex:1;text-align:center"><div style="color:#93c5fd">Leads</div><div style="font-weight:bold">37</div></div>
+                <div style="background:#003366;border-radius:3px;padding:4px 6px;font-size:10px;color:white;flex:1;text-align:center"><div style="color:#93c5fd">CTR</div><div style="font-weight:bold">0,5%</div></div>
+                <div style="background:#003366;border-radius:3px;padding:4px 6px;font-size:10px;color:white;flex:1;text-align:center"><div style="color:#93c5fd">Pos.</div><div style="font-weight:bold">22,5</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">Content Pieces</div><div style="font-size:14px;font-weight:bold;color:#e2e8f0">34</div></div>
+                <div style="background:#1e293b;border-radius:4px;padding:8px"><div style="color:#64748b;font-size:10px">Priorität 🔴</div><div style="font-size:14px;font-weight:bold;color:#f59e0b">5</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

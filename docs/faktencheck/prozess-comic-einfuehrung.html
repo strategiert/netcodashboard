@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>So läuft eine Bodycam-Einführung ab — NetCo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 10mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 8.5pt; line-height: 1.35; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 10mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } }
+
+    .header { text-align: center; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 3px solid var(--secondary); }
+    .header h1 { font-family: 'Antonio', sans-serif; font-size: 22pt; color: var(--primary); }
+    .header .sub { font-size: 9pt; color: var(--text-light); }
+
+    /* Comic strip layout */
+    .comic-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+    .panel { border: 2px solid var(--primary); border-radius: 8px; padding: 3mm; background: white; position: relative; overflow: hidden; }
+    .panel.highlight { border-color: var(--secondary); background: #fff7ed; }
+    .panel.full { grid-column: 1 / -1; }
+
+    .panel-num { position: absolute; top: 0; left: 0; background: var(--primary); color: white; font-family: 'Antonio', sans-serif; font-size: 14pt; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 6px 0; }
+    .panel.highlight .panel-num { background: var(--secondary); }
+
+    .panel-scene { display: flex; gap: 3mm; margin-top: 3mm; }
+    .panel-visual { width: 50px; flex-shrink: 0; text-align: center; font-size: 28pt; line-height: 1; padding-top: 2mm; }
+    .panel-content { flex: 1; }
+    .panel-title { font-family: 'Antonio', sans-serif; font-size: 10pt; color: var(--primary); margin-bottom: 1mm; }
+    .panel.highlight .panel-title { color: #9a3412; }
+    .panel-text { font-size: 8pt; color: var(--text-light); margin-bottom: 1.5mm; }
+
+    /* Speech bubble */
+    .bubble { background: var(--surface); border-radius: 8px; padding: 2mm 3mm; font-size: 7.5pt; font-style: italic; position: relative; margin-top: 1.5mm; }
+    .bubble::before { content: ''; position: absolute; top: -4px; left: 15px; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid var(--surface); }
+    .bubble .speaker { font-weight: 700; font-style: normal; color: var(--primary); }
+
+    /* Role tags */
+    .roles { display: flex; gap: 1mm; flex-wrap: wrap; margin-top: 1mm; }
+    .role { font-size: 6pt; padding: 0.3mm 2mm; border-radius: 2px; font-weight: 700; }
+    .role-gf { background: #fee2e2; color: #991b1b; }
+    .role-br { background: #dbeafe; color: #1e40af; }
+    .role-it { background: #e0e7ff; color: #3730a3; }
+    .role-dsb { background: #fef3c7; color: #92400e; }
+    .role-team { background: #dcfce7; color: #166534; }
+    .role-netco { background: #ffe0cc; color: #9a3412; }
+
+    .arrow-connector { text-align: center; font-size: 16pt; color: var(--secondary); line-height: 1; padding: 1mm 0; }
+
+    .footer { margin-top: 3mm; padding-top: 2mm; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; font-size: 7pt; color: var(--text-light); }
+    .footer .cta { background: var(--secondary); color: white; padding: 1.5mm 4mm; border-radius: 3px; font-weight: 700; font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>SO LÄUFT EINE BODYCAM-EINFÜHRUNG AB</h1>
+    <div class="sub">Storyboard-Guide: Vom ersten Gedanken bis zum geschützten Mitarbeitenden — in 10 Schritten</div>
+  </div>
+
+  <div class="comic-grid">
+    <!-- Panel 1 -->
+    <div class="panel">
+      <div class="panel-num">1</div>
+      <div class="panel-scene">
+        <div class="panel-visual">😰</div>
+        <div class="panel-content">
+          <div class="panel-title">DER AUSLÖSER</div>
+          <div class="panel-text">Ein Mitarbeitender wird im Außendienst angegriffen. Nicht zum ersten Mal. Die Teamleitung schlägt Alarm.</div>
+          <div class="bubble"><span class="speaker">Sandra (Teamleitung):</span> „So kann es nicht weitergehen. Wir brauchen eine Lösung."</div>
+          <div class="roles"><span class="role role-team">Teamleitung</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2 -->
+    <div class="panel">
+      <div class="panel-num">2</div>
+      <div class="panel-scene">
+        <div class="panel-visual">🔍</div>
+        <div class="panel-content">
+          <div class="panel-title">RECHERCHE</div>
+          <div class="panel-text">Die GF recherchiert: Body-Cams haben sich bei DB, BVG und Kommunen bewährt. −60% Angriffe bei der KVB Köln!</div>
+          <div class="bubble"><span class="speaker">Thomas (GF):</span> „Duisburg, Köln, Bochum — alle machen es. Warum wir nicht?"</div>
+          <div class="roles"><span class="role role-gf">Entscheider</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3 -->
+    <div class="panel highlight">
+      <div class="panel-num">3</div>
+      <div class="panel-scene">
+        <div class="panel-visual">🤝</div>
+        <div class="panel-content">
+          <div class="panel-title">BETRIEBSRAT INS BOOT</div>
+          <div class="panel-text">Frühzeitig den Betriebsrat einbeziehen — nicht als Gegner, sondern als Partner für Mitarbeiterschutz.</div>
+          <div class="bubble"><span class="speaker">Ralf (Betriebsrat):</span> „Schutz ja — aber keine Überwachung. Zeigt mir das Einsatzkonzept."</div>
+          <div class="roles"><span class="role role-br">Betriebsrat</span><span class="role role-gf">GF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4 -->
+    <div class="panel">
+      <div class="panel-num">4</div>
+      <div class="panel-scene">
+        <div class="panel-visual">📋</div>
+        <div class="panel-content">
+          <div class="panel-title">DSGVO & EINSATZKONZEPT</div>
+          <div class="panel-text">DSB prüft Rechtsgrundlage, erstellt DSFA. Einsatzkonzept definiert: Wann, wo, wie lange wird aufgezeichnet.</div>
+          <div class="bubble"><span class="speaker">DSB:</span> „Art. 6 DSGVO: berechtigtes Interesse. Pre-Recording max. 120s. Löschung nach 72h."</div>
+          <div class="roles"><span class="role role-dsb">DSB</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 5 -->
+    <div class="panel">
+      <div class="panel-num">5</div>
+      <div class="panel-scene">
+        <div class="panel-visual">💰</div>
+        <div class="panel-content">
+          <div class="panel-title">VBG-FÖRDERUNG BEANTRAGEN</div>
+          <div class="panel-text">40% Zuschuss auf Geräte, Software und Schulung! Antrag muss VOR der Beschaffung gestellt werden.</div>
+          <div class="bubble"><span class="speaker">Frank (Einkauf):</span> „40% von der VBG zurück? Das rechnet sich ab Tag 1."</div>
+          <div class="roles"><span class="role role-gf">Einkauf</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 6 -->
+    <div class="panel highlight">
+      <div class="panel-num">6</div>
+      <div class="panel-scene">
+        <div class="panel-visual">📦</div>
+        <div class="panel-content">
+          <div class="panel-title">NETCO LIEFERT</div>
+          <div class="panel-text">Kameras kommen konfiguriert an. SmartHubs aufstellen, NFC-Karten programmieren, NetCo Suite installieren.</div>
+          <div class="bubble"><span class="speaker">Stefan (IT):</span> „Server steht in Deutschland, AES-256. Passt in unsere Infrastruktur."</div>
+          <div class="roles"><span class="role role-it">IT</span><span class="role role-netco">NetCo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 7 -->
+    <div class="panel">
+      <div class="panel-num">7</div>
+      <div class="panel-scene">
+        <div class="panel-visual">🎓</div>
+        <div class="panel-content">
+          <div class="panel-title">3-STUFEN-SCHULUNG</div>
+          <div class="panel-text"><strong>Technik</strong> (Bedienung, Docking) + <strong>Recht</strong> (DSGVO, Ankündigung) + <strong>Taktik</strong> (Deeskalation, Display).</div>
+          <div class="bubble"><span class="speaker">Klaus (Kontrolleur):</span> „Das Display zeigt dem Typen sein eigenes Gesicht? Das ist genial."</div>
+          <div class="roles"><span class="role role-netco">NetCo</span><span class="role role-dsb">DSB</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 8 -->
+    <div class="panel highlight">
+      <div class="panel-num">8</div>
+      <div class="panel-scene">
+        <div class="panel-visual">🚀</div>
+        <div class="panel-content">
+          <div class="panel-title">GO LIVE!</div>
+          <div class="panel-text">Erste Schicht mit Body-Cam. Schilder hängen, QR-Codes sind gedruckt. Feedback-Kanal ist eingerichtet.</div>
+          <div class="bubble"><span class="speaker">Sandra:</span> „Mein Team fühlt sich zum ersten Mal wirklich geschützt."</div>
+          <div class="roles"><span class="role role-team">Team</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 9 -->
+    <div class="panel">
+      <div class="panel-num">9</div>
+      <div class="panel-scene">
+        <div class="panel-visual">📊</div>
+        <div class="panel-content">
+          <div class="panel-title">ERGEBNISSE NACH 3 MONATEN</div>
+          <div class="panel-text">Übergriffe runter, Krankheitstage gesunken, Beweissicherung funktioniert, Mitarbeiterzufriedenheit steigt.</div>
+          <div class="bubble"><span class="speaker">Thomas (GF):</span> „−60% Angriffe. Die Investition hat sich schnell amortisiert."</div>
+          <div class="roles"><span class="role role-gf">GF</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 10 -->
+    <div class="panel highlight">
+      <div class="panel-num">10</div>
+      <div class="panel-scene">
+        <div class="panel-visual">🎯</div>
+        <div class="panel-content">
+          <div class="panel-title">VOLLROLLOUT</div>
+          <div class="panel-text">Pilot erfolgreich → Skalierung auf alle Außendienst-Teams. Train-the-Trainer aus der Pilotgruppe. Betriebsvereinbarung erweitert.</div>
+          <div class="bubble"><span class="speaker">Ralf (BR):</span> „Mitarbeiterschutz UND Datenschutz — so geht's richtig."</div>
+          <div class="roles"><span class="role role-gf">GF</span><span class="role role-br">BR</span><span class="role role-netco">NetCo</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · Am Mönchenfelde 13, 38889 Blankenburg (Harz) · +49 3944 950-0 · info@netco.de · www.netco-bodycam.com
+    </div>
+    <div class="cta">Ihre Einführung starten →</div>
+  </div>
+</div>
+</body>
+</html>

@@ -185,6 +185,67 @@ export default defineSchema({
     .index("by_brand_date", ["brandId", "date"])
     .index("by_brand_source_date", ["brandId", "source", "date"]),
 
+  weeklyReports: defineTable({
+    brandId: v.id("brands"),
+    kw: v.string(),          // "KW 1", "KW 2" etc.
+    weekStart: v.string(),   // YYYY-MM-DD (Monday)
+    year: v.number(),
+    // Website traffic
+    visitors: v.optional(v.number()),
+    sessions: v.optional(v.number()),
+    pageviews: v.optional(v.number()),
+    bounceRate: v.optional(v.number()),
+    avgVisitDuration: v.optional(v.string()),
+    // Traffic by channel
+    chAds: v.optional(v.number()),
+    chSeo: v.optional(v.number()),
+    chDirect: v.optional(v.number()),
+    chSocial: v.optional(v.number()),
+    chReferral: v.optional(v.number()),
+    chOther: v.optional(v.number()),
+    // Visitors by language
+    visitorsDE: v.optional(v.number()),
+    visitorsEN: v.optional(v.number()),
+    visitorsFR: v.optional(v.number()),
+    visitorsIT: v.optional(v.number()),
+    // KPIs
+    leads: v.optional(v.number()),
+    adSpend: v.optional(v.number()),
+    topKeyword: v.optional(v.string()),
+  })
+    .index("by_brand_year", ["brandId", "year"]),
+
+  crmLeads: defineTable({
+    brandId: v.id("brands"),
+    kw: v.number(),
+    date: v.string(),        // YYYY-MM-DD
+    company: v.string(),
+    contactChannel: v.optional(v.string()),
+    leadType: v.optional(v.string()),  // Lead | Stammkunde
+    description: v.optional(v.string()),
+    offerMade: v.optional(v.boolean()),
+    orderReceived: v.optional(v.boolean()),
+    newCustomer: v.optional(v.boolean()),
+    status: v.optional(v.string()),
+    note: v.optional(v.string()),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_brand_kw", ["brandId", "kw"]),
+
+  adsCampaigns: defineTable({
+    brandId: v.id("brands"),
+    period: v.string(),      // "Q1 2026" etc.
+    campaignName: v.string(),
+    campaignType: v.optional(v.string()),
+    budgetPerDay: v.optional(v.number()),
+    spend: v.optional(v.number()),
+    impressions: v.optional(v.number()),
+    clicks: v.optional(v.number()),
+    ctr: v.optional(v.number()),
+    conversions: v.optional(v.number()),
+  })
+    .index("by_brand_period", ["brandId", "period"]),
+
   publerSnapshots: defineTable({
     brandId: v.id("brands"),
     date: v.string(),           // YYYY-MM-DD

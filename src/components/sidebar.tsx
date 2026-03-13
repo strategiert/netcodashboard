@@ -14,12 +14,14 @@ import {
   Megaphone,
   BarChart2,
   Share2,
+  ClipboardList,
 } from "lucide-react";
 
 const navItems = [
   { href: "", label: "Dashboard", icon: LayoutDashboard },
   { href: "/kpis", label: "KPIs", icon: BarChart2 },
   { href: "/social", label: "Social", icon: Share2 },
+  { href: "/report", label: "Bericht", icon: ClipboardList },
   { href: "/campaigns", label: "Kampagnen", icon: Megaphone },
   { href: "/funnel", label: "Funnel", icon: Filter },
   { href: "/content", label: "Content", icon: FileText },

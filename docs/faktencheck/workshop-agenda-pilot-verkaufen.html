@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop-Agenda: Pilot intern verkaufen — NetCo Body-Cam</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=PT+Sans:wght@400;700&display=swap');
+    :root { --primary: #003366; --secondary: #ff6600; --surface: #f1f5f9; --text: #1e293b; --text-light: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @page { size: A4 portrait; margin: 12mm; }
+    body { font-family: 'PT Sans', sans-serif; color: var(--text); font-size: 9pt; line-height: 1.4; background: white; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 12mm; }
+    @media print { .page { padding: 0; width: 100%; min-height: auto; } }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5mm; padding-bottom: 3mm; border-bottom: 3px solid var(--secondary); }
+    .header h1 { font-family: 'Antonio', sans-serif; font-size: 20pt; color: var(--primary); line-height: 1.1; }
+    .header .subtitle { font-size: 9pt; color: var(--text-light); margin-top: 1mm; }
+    .header-right .logo { font-family: 'Antonio', sans-serif; font-size: 14pt; color: var(--primary); }
+
+    .meta-bar { background: var(--surface); border-radius: 4px; padding: 3mm 4mm; margin-bottom: 5mm; display: flex; gap: 5mm; font-size: 8.5pt; }
+    .meta-item { flex: 1; }
+    .meta-item strong { color: var(--primary); display: block; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Agenda blocks */
+    .agenda-item { margin-bottom: 3mm; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+    .agenda-header { display: flex; align-items: center; gap: 2mm; padding: 2.5mm 3mm; }
+    .agenda-header.intro { background: #dbeafe; }
+    .agenda-header.problem { background: #fee2e2; }
+    .agenda-header.solution { background: #dcfce7; }
+    .agenda-header.demo { background: #fff7ed; }
+    .agenda-header.objection { background: #fef3c7; }
+    .agenda-header.next { background: var(--primary); color: white; }
+    .agenda-time { font-family: 'Antonio', sans-serif; font-size: 10pt; width: 45px; text-align: center; flex-shrink: 0; }
+    .agenda-title { font-family: 'Antonio', sans-serif; font-size: 10pt; color: var(--primary); flex: 1; }
+    .agenda-header.next .agenda-title { color: white; }
+    .agenda-duration { font-size: 7pt; font-weight: 700; background: rgba(0,0,0,0.1); padding: 0.5mm 2.5mm; border-radius: 3px; }
+
+    .agenda-body { padding: 2.5mm 3mm; display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+    .agenda-body.single { grid-template-columns: 1fr; }
+
+    .ab-section h4 { font-size: 7.5pt; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 1mm; }
+    .ab-list { list-style: none; font-size: 8pt; }
+    .ab-list li { padding: 0.5mm 0 0.5mm 3mm; position: relative; }
+    .ab-list li::before { content: '→'; position: absolute; left: 0; color: var(--secondary); font-weight: 700; }
+
+    .speaker-tag { display: inline-block; font-size: 6.5pt; padding: 0.3mm 2mm; border-radius: 2px; font-weight: 700; background: #dbeafe; color: #1e40af; }
+    .material-tag { display: inline-block; font-size: 6.5pt; padding: 0.3mm 2mm; border-radius: 2px; font-weight: 700; background: #fef3c7; color: #92400e; }
+
+    .tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 2mm 3mm; font-size: 7.5pt; margin-top: 1mm; }
+    .tip strong { color: #166534; }
+
+    /* Objection cards */
+    .objection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm; }
+    .objection-card { background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 2mm 3mm; }
+    .objection-q { font-weight: 700; font-size: 8pt; color: #92400e; margin-bottom: 1mm; }
+    .objection-a { font-size: 7.5pt; color: var(--text-light); }
+
+    .footer { margin-top: 3mm; padding-top: 2mm; border-top: 2px solid var(--primary); display: flex; justify-content: space-between; font-size: 7pt; color: var(--text-light); }
+    .footer .cta { background: var(--secondary); color: white; padding: 1.5mm 4mm; border-radius: 3px; font-weight: 700; font-size: 8pt; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>WORKSHOP-AGENDA<br>PILOT INTERN VERKAUFEN</h1>
+      <div class="subtitle">So überzeugen Sie Geschäftsführung, Betriebsrat und Stakeholder vom Body-Cam-Projekt</div>
+    </div>
+    <div class="header-right">
+      <div class="logo">NETCO</div>
+      <div style="font-size:7pt; color:var(--text-light)">Stand: März 2026</div>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="meta-item"><strong>Dauer</strong>90 Minuten</div>
+    <div class="meta-item"><strong>Teilnehmer</strong>GF, Betriebsrat, DSB, IT-Leitung, Teamleitung</div>
+    <div class="meta-item"><strong>Moderator</strong>Champion / Projektverantwortliche:r</div>
+    <div class="meta-item"><strong>Ziel</strong>Go-Beschluss für Pilotprojekt</div>
+  </div>
+
+  <!-- Block 1: Intro -->
+  <div class="agenda-item">
+    <div class="agenda-header intro">
+      <span class="agenda-time">0:00</span>
+      <span class="agenda-title">BEGRÜSSUNG & KONTEXT</span>
+      <span class="agenda-duration">10 min</span>
+    </div>
+    <div class="agenda-body">
+      <div class="ab-section">
+        <h4>Inhalt</h4>
+        <ul class="ab-list">
+          <li>Warum sind wir heute hier? (Anlass / Vorfall)</li>
+          <li>Was wollen wir erreichen? (Mitarbeiterschutz)</li>
+          <li>Wer macht es schon? (Referenzen: DB, BVG, Köln, Duisburg)</li>
+        </ul>
+      </div>
+      <div class="ab-section">
+        <h4>Material</h4>
+        <ul class="ab-list">
+          <li><span class="material-tag">PDF</span> Referenzliste 25 Kunden</li>
+          <li><span class="material-tag">PDF</span> Branchenvergleich 7 Branchen</li>
+          <li>Eigene Übergriffszahlen der letzten 12 Monate</li>
+        </ul>
+        <span class="speaker-tag">Champion</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 2: Problem -->
+  <div class="agenda-item">
+    <div class="agenda-header problem">
+      <span class="agenda-time">0:10</span>
+      <span class="agenda-title">PROBLEMDARSTELLUNG — WARUM HANDELN?</span>
+      <span class="agenda-duration">15 min</span>
+    </div>
+    <div class="agenda-body">
+      <div class="ab-section">
+        <h4>Zahlen & Fakten</h4>
+        <ul class="ab-list">
+          <li>Übergriffe letzte 12 Monate (eigene Daten)</li>
+          <li>Krankheitstage durch Übergriffe (HR-Daten)</li>
+          <li>Kosten: Ausfallzeit + Rechtskosten + Fluktuation</li>
+          <li>DB: ~3.000 Angriffe pro Jahr auf Bahn-Personal (Deutsche Bahn)</li>
+          <li>Trend: Übergriffe steigen bundesweit</li>
+        </ul>
+      </div>
+      <div class="ab-section">
+        <h4>Emotionaler Anker</h4>
+        <ul class="ab-list">
+          <li>1–2 konkrete Vorfälle anonymisiert schildern</li>
+          <li>Zitat eines betroffenen Mitarbeiters (anonym)</li>
+          <li>Fürsorgepflicht des Arbeitgebers betonen</li>
+        </ul>
+        <div class="tip"><strong>Tipp:</strong> Nicht mit Technik starten, sondern mit Menschen. Die GF muss das Problem fühlen, bevor sie die Lösung hören will.</div>
+        <span class="speaker-tag">Champion + HR</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 3: Solution -->
+  <div class="agenda-item">
+    <div class="agenda-header solution">
+      <span class="agenda-time">0:25</span>
+      <span class="agenda-title">LÖSUNG — BODY-CAM ALS SCHUTZINSTRUMENT</span>
+      <span class="agenda-duration">20 min</span>
+    </div>
+    <div class="agenda-body">
+      <div class="ab-section">
+        <h4>Was Body-Cams leisten</h4>
+        <ul class="ab-list">
+          <li>Prävention: −60% Übergriffe (KVB Köln), 75% Deeskalation (Duisburg)</li>
+          <li>Beweissicherung: Verurteilungsquote von 15% auf 68%</li>
+          <li>Mitarbeiterschutz: Sicherheitsgefühl steigt messbar</li>
+          <li>ROI: Typisch 200–400% im ersten Jahr</li>
+        </ul>
+        <span class="material-tag">PDF</span> Case Study Köln
+      </div>
+      <div class="ab-section">
+        <h4>Warum NetCo?</h4>
+        <ul class="ab-list">
+          <li>Einziger deutscher Hersteller</li>
+          <li>Frontdisplay = einzigartige Deeskalation</li>
+          <li>Server in Deutschland, DSGVO by Design</li>
+          <li>VBG-Förderung: 40% Zuschuss</li>
+          <li>Flexibel: Miete ab 50€/Mo oder Kauf</li>
+        </ul>
+        <span class="material-tag">PDF</span> Anbieter-Vergleichsmatrix<br>
+        <span class="material-tag">HTML</span> ROI-Rechner (live vorrechnen!)
+        <span class="speaker-tag">Champion</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 4: Demo/Video -->
+  <div class="agenda-item">
+    <div class="agenda-header demo">
+      <span class="agenda-time">0:45</span>
+      <span class="agenda-title">LIVE-DEMO ODER VIDEO</span>
+      <span class="agenda-duration">10 min</span>
+    </div>
+    <div class="agenda-body single">
+      <div class="ab-section">
+        <ul class="ab-list">
+          <li><strong>Option A:</strong> NetCo Demo-Kit vor Ort — Kamera herumreichen, Frontdisplay zeigen, Pre-Recording demonstrieren</li>
+          <li><strong>Option B:</strong> NetCo Produktvideo (3 min) + Deeskalations-Storyboard</li>
+          <li>ROI-Rechner live am Beamer durchrechnen (eigene Zahlen einsetzen)</li>
+        </ul>
+        <div class="tip"><strong>Tipp:</strong> Das Display-Erlebnis überzeugt. Wenn ein Vorstandsmitglied sich selbst im Display sieht, ist der „Wow-Effekt" da.</div>
+        <span class="material-tag">PDF</span> Storyboard Deeskalation · <span class="speaker-tag">Champion / NetCo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block 5: Objections -->
+  <div class="agenda-item">
+    <div class="agenda-header objection">
+      <span class="agenda-time">0:55</span>
+      <span class="agenda-title">EINWAND-BEHANDLUNG</span>
+      <span class="agenda-duration">20 min</span>
+    </div>
+    <div class="agenda-body single">
+      <div class="objection-grid">
+        <div class="objection-card">
+          <div class="objection-q">„Das ist doch Überwachung!"</div>
+          <div class="objection-a">Nein — anlassbezogen, freiwillig, keine Leistungskontrolle. Einsatzkonzept + BV regeln das klar. EuGH: Transparenzpflicht erfüllt durch Display + Ankündigung.</div>
+        </div>
+        <div class="objection-card">
+          <div class="objection-q">„DSGVO-Risiko zu hoch"</div>
+          <div class="objection-a">NetCo ist DSGVO by Design: AES-256, automatische Löschung, Server DE, Audit-Trail. DSFA wird vor Start erstellt. → DSGVO-Infografik zeigen.</div>
+        </div>
+        <div class="objection-card">
+          <div class="objection-q">„Zu teuer"</div>
+          <div class="objection-a">Ab 50€/Mo/Kamera. VBG-Förderung: 40%. ROI typisch 200–400%. Kosten eines Übergriffs: ~3.500€. → ROI-Rechner live vorrechnen.</div>
+        </div>
+        <div class="objection-card">
+          <div class="objection-q">„Betriebsrat macht nicht mit"</div>
+          <div class="objection-a">BR frühzeitig einbinden = Partner statt Gegner. Fokus auf Mitarbeiterschutz. Muster-BV vorhanden. NRW: Alle BRs haben zugestimmt.</div>
+        </div>
+        <div class="objection-card">
+          <div class="objection-q">„Wir warten auf gesetzliche Regelung"</div>
+          <div class="objection-a">Art. 6 DSGVO + EuGH C-422/24 = Rechtsgrundlage steht (§ 26 BDSG nach EuGH C-34/21 nicht mehr eigenständig anwendbar). DB seit 2017 im Einsatz. Abwarten kostet Mitarbeitersicherheit.</div>
+        </div>
+        <div class="objection-card">
+          <div class="objection-q">„IT-Aufwand zu hoch"</div>
+          <div class="objection-a">SmartHub = Plug & Play (LAN-Kabel). Cloud-Option: kein eigener Server nötig. NetCo übernimmt Setup + Schulung. → IT-Sicherheitskonzept-Vorlage.</div>
+        </div>
+      </div>
+      <span class="speaker-tag">Alle</span> <span class="material-tag">PDF</span> DSGVO-Infografik · <span class="material-tag">HTML</span> ROI-Rechner
+    </div>
+  </div>
+
+  <!-- Block 6: Next Steps -->
+  <div class="agenda-item">
+    <div class="agenda-header next">
+      <span class="agenda-time">1:15</span>
+      <span class="agenda-title">NÄCHSTE SCHRITTE & BESCHLUSS</span>
+      <span class="agenda-duration">15 min</span>
+    </div>
+    <div class="agenda-body">
+      <div class="ab-section">
+        <h4>Entscheidungsfrage</h4>
+        <ul class="ab-list">
+          <li>„Starten wir einen 90-Tage-Pilot mit 10–20 Kameras?"</li>
+          <li>Budget: ~5.000–10.000 € netto (nach VBG) für 12 Monate</li>
+          <li>Risiko: Minimal (Mietmodell = jederzeit kündbar)</li>
+        </ul>
+      </div>
+      <div class="ab-section">
+        <h4>Bei Go-Beschluss</h4>
+        <ul class="ab-list">
+          <li>VBG-Förderantrag stellen (VOR Beschaffung!)</li>
+          <li>NetCo Demo-Termin vereinbaren</li>
+          <li>Pilotteam benennen (freiwillige Teilnehmer)</li>
+          <li>BV-Verhandlung starten</li>
+          <li>DSFA initiieren</li>
+        </ul>
+        <span class="material-tag">PDF</span> Checkliste Pilotprojekt · <span class="material-tag">PDF</span> 90-Tage-Guide
+        <span class="speaker-tag">GF</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <strong>NetCo Professional Services GmbH</strong> · +49 3944 950-0 · info@netco.de · www.netco-bodycam.com<br>
+      <span style="font-size:6pt">Wir unterstützen Sie bei der internen Präsentation — Demo-Kit, Materialien, Vor-Ort-Begleitung auf Anfrage.</span>
+    </div>
+    <div class="cta">Workshop-Support anfragen →</div>
+  </div>
+</div>
+</body>
+</html>
