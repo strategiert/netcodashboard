@@ -421,19 +421,17 @@ export default function ReportPage() {
   const ordersWon     = leads?.filter(l => l.orderReceived).length ?? 0;
   const newCustomers  = leads?.filter(l => l.newCustomer).length ?? 0;
 
-  // ── KW Range ────────────────────────────────────────────────────────────────
-  const kwNums = reports.map(r => parseInt(r.kw.replace("KW ", ""))).filter(n => !isNaN(n));
-  const kwMin = kwNums.length ? Math.min(...kwNums) : 1;
-  const kwMax = kwNums.length ? Math.max(...kwNums) : 52;
-  const kwRange = kwNums.length ? `KW ${kwMin} – KW ${kwMax}` : "Keine Daten";
+  // ── KW Range subtitle ───────────────────────────────────────────────────────
+  const fmtShort = (s: string) => new Date(s + "T12:00:00Z").toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
+  const kwRange = reports.length
+    ? `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${reports.length} Wochen`
+    : `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · Keine Daten`;
 
-  // ── Weekly Chart Data ──────────────────────────────────────────────────────
-  const weeklyData = [...reports].sort((a, b) => {
-    const na = parseInt(a.kw.replace("KW ", "")) || 0;
-    const nb = parseInt(b.kw.replace("KW ", "")) || 0;
-    return na - nb;
-  }).map(r => ({
-    name:    r.kw,
+  // ── Weekly Chart Data — sorted by weekStart date ────────────────────────────
+  const multiYear = dateFrom.slice(0, 4) !== dateTo.slice(0, 4);
+  const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+  const weeklyData = sortedReports.map(r => ({
+    name:    multiYear ? `${r.year} ${r.kw}` : r.kw,
     Ads:     r.chAds ?? 0,
     SEO:     r.chSeo ?? 0,
     "Type-in": r.chDirect ?? 0,
@@ -456,8 +454,8 @@ export default function ReportPage() {
     .slice(0, 10);
 
   // ── Language Data ──────────────────────────────────────────────────────────
-  const langData = reports.map(r => ({
-    name: r.kw,
+  const langData = sortedReports.map(r => ({
+    name: multiYear ? `${r.year} ${r.kw}` : r.kw,
     DE: r.visitorsDE ?? 0,
     EN: r.visitorsEN ?? 0,
     FR: r.visitorsFR ?? 0,
@@ -660,7 +658,10 @@ export default function ReportPage() {
       {gadsCampaigns && gadsCampaigns.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Google Ads — Kampagnen (Gesamt)</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              Google Ads — Kampagnen
+              <span className="text-xs font-normal text-muted-foreground border rounded px-1.5 py-0.5">gesamte Laufzeit</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
