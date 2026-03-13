@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as actions_aggregateBautvWeekly from "../actions/aggregateBautvWeekly.js";
 import type * as actions_backfill from "../actions/backfill.js";
 import type * as actions_seedBautvGsc from "../actions/seedBautvGsc.js";
 import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
@@ -38,6 +39,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/aggregateBautvWeekly": typeof actions_aggregateBautvWeekly;
   "actions/backfill": typeof actions_backfill;
   "actions/seedBautvGsc": typeof actions_seedBautvGsc;
   "actions/seedGadsKeywords": typeof actions_seedGadsKeywords;
