@@ -273,7 +273,9 @@ export default function ReportPage() {
   // ── KPI Summaries ──────────────────────────────────────────────────────────
   const totalVisitors = reports.reduce((a, r) => a + (r.visitors ?? 0), 0);
   const totalLeads    = reports.reduce((a, r) => a + (r.leads ?? 0), 0);
-  const totalAdSpend  = reports.reduce((a, r) => a + (r.adSpend ?? 0), 0);
+  const totalAdSpendWeekly = reports.reduce((a, r) => a + (r.adSpend ?? 0), 0);
+  const totalAdSpendGads   = gadsCampaigns?.reduce((a, c) => a + (c.cost ?? 0), 0) ?? 0;
+  const totalAdSpend = totalAdSpendWeekly > 0 ? totalAdSpendWeekly : totalAdSpendGads;
   const totalCrmLeads = leads?.length ?? 0;
   const ordersWon     = leads?.filter(l => l.orderReceived).length ?? 0;
   const newCustomers  = leads?.filter(l => l.newCustomer).length ?? 0;
@@ -484,15 +486,17 @@ export default function ReportPage() {
         </CardContent>
       </Card>
 
-      {/* Google Ads Campaigns */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Google Ads Kampagnen — Q1 2026</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CampaignsTable campaigns={campaigns ?? []} />
-        </CardContent>
-      </Card>
+      {/* Google Ads Campaigns Q1 — only when data exists */}
+      {campaigns && campaigns.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Google Ads Kampagnen — Q1 2026</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CampaignsTable campaigns={campaigns} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Google Ads Editor — Campaign Stats */}
       {gadsCampaigns && gadsCampaigns.length > 0 && (
