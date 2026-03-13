@@ -6,7 +6,7 @@ const data = require("../data/bautvGscImport.json") as { brand: string; gsc: Arr
 
 export const seedBautvGsc = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<string> => {
     const brands = await ctx.runQuery(api.brands.list);
     const brand = (brands as any[]).find((b) => b.slug === data.brand);
     if (!brand) throw new Error(`Brand '${data.brand}' not found`);
