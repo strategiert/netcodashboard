@@ -121,26 +121,32 @@ function CampaignsTable({ campaigns }: { campaigns: any[] }) {
             <th className="text-right pb-2 pr-3 font-medium">Impressionen</th>
             <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
             <th className="text-right pb-2 pr-3 font-medium">CTR</th>
-            <th className="text-right pb-2 font-medium">Konvers.</th>
+            <th className="text-right pb-2 pr-3 font-medium">Konvers.</th>
+            <th className="text-right pb-2 font-medium">Kosten/Conv.</th>
           </tr>
         </thead>
         <tbody className="divide-y">
-          {sorted.map(c => (
-            <tr key={c._id} className="hover:bg-muted/30 transition-colors">
-              <td className="py-2 pr-4 font-medium text-xs">{c.campaignName}</td>
-              <td className="py-2 pr-3">
-                {c.campaignType && (
-                  <Badge variant="outline" className="text-xs">{c.campaignType}</Badge>
-                )}
-              </td>
-              <td className="py-2 pr-3 text-right tabular-nums">{c.budgetPerDay != null ? `${c.budgetPerDay} €` : "—"}</td>
-              <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(c.spend)}</td>
-              <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.impressions)}</td>
-              <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.clicks)}</td>
-              <td className="py-2 pr-3 text-right tabular-nums">{pct(c.ctr)}</td>
-              <td className="py-2 text-right tabular-nums">{c.conversions ?? "—"}</td>
-            </tr>
-          ))}
+          {sorted.map(c => {
+            const costPerConv = c.conversions && c.conversions > 0 && c.spend != null
+              ? c.spend / c.conversions : null;
+            return (
+              <tr key={c._id} className="hover:bg-muted/30 transition-colors">
+                <td className="py-2 pr-4 font-medium text-xs">{c.campaignName}</td>
+                <td className="py-2 pr-3">
+                  {c.campaignType && (
+                    <Badge variant="outline" className="text-xs">{c.campaignType}</Badge>
+                  )}
+                </td>
+                <td className="py-2 pr-3 text-right tabular-nums">{c.budgetPerDay != null ? `${c.budgetPerDay} €` : "—"}</td>
+                <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(c.spend)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.impressions)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.clicks)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{pct(c.ctr)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{c.conversions ?? "—"}</td>
+                <td className="py-2 text-right tabular-nums font-medium">{eur(costPerConv)}</td>
+              </tr>
+            );
+          })}
         </tbody>
         <tfoot>
           <tr className="border-t font-semibold text-xs">
@@ -149,7 +155,12 @@ function CampaignsTable({ campaigns }: { campaigns: any[] }) {
             <td className="pt-2 pr-3 text-right tabular-nums">{fmt(sorted.reduce((a, c) => a + (c.impressions ?? 0), 0))}</td>
             <td className="pt-2 pr-3 text-right tabular-nums">{fmt(sorted.reduce((a, c) => a + (c.clicks ?? 0), 0))}</td>
             <td className="pt-2 pr-3"></td>
-            <td className="pt-2 text-right tabular-nums">{sorted.reduce((a, c) => a + (c.conversions ?? 0), 0).toFixed(2)}</td>
+            <td className="pt-2 pr-3 text-right tabular-nums">{sorted.reduce((a, c) => a + (c.conversions ?? 0), 0).toFixed(2)}</td>
+            {(() => {
+              const totalSpend = sorted.reduce((a, c) => a + (c.spend ?? 0), 0);
+              const totalConv  = sorted.reduce((a, c) => a + (c.conversions ?? 0), 0);
+              return <td className="pt-2 text-right tabular-nums">{totalConv > 0 ? eur(totalSpend / totalConv) : "—"}</td>;
+            })()}
           </tr>
         </tfoot>
       </table>
@@ -266,6 +277,18 @@ export default function ReportPage() {
     Leads:   r.leads ?? 0,
     "Werbekosten": r.adSpend ?? 0,
   }));
+
+  // ── Top Keywords ───────────────────────────────────────────────────────────
+  const kwFreq: Record<string, { count: number; lastSeen: string }> = {};
+  for (const r of reports) {
+    if (!r.topKeyword) continue;
+    if (!kwFreq[r.topKeyword]) kwFreq[r.topKeyword] = { count: 0, lastSeen: r.kw };
+    kwFreq[r.topKeyword].count++;
+    kwFreq[r.topKeyword].lastSeen = r.kw;
+  }
+  const topKeywords = Object.entries(kwFreq)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 10);
 
   // ── Language Data ──────────────────────────────────────────────────────────
   const langData = reports.map(r => ({
@@ -384,6 +407,58 @@ export default function ReportPage() {
               ))}
             </BarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Top Keywords */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Top Keywords (GSC)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {/* Per-KW row */}
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-xs text-muted-foreground">
+                    <th className="text-left pb-2 pr-4 font-medium">KW</th>
+                    <th className="text-left pb-2 font-medium">Top-Keyword</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {reports.filter(r => r.topKeyword).map(r => (
+                    <tr key={r._id} className="hover:bg-muted/30 transition-colors">
+                      <td className="py-1.5 pr-4 text-xs text-muted-foreground tabular-nums">{r.kw}</td>
+                      <td className="py-1.5 text-xs font-mono">{r.topKeyword}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Frequency summary */}
+            {topKeywords.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Häufigkeit über alle KWs</p>
+                <div className="space-y-1.5">
+                  {topKeywords.map(([kw, { count }]) => (
+                    <div key={kw} className="flex items-center gap-3">
+                      <div className="flex-1 font-mono text-xs truncate">{kw}</div>
+                      <div className="w-32 h-5 rounded bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded bg-primary/60"
+                          style={{ width: `${(count / reports.length) * 100}%` }}
+                        />
+                      </div>
+                      <div className="w-20 text-right text-xs text-muted-foreground tabular-nums">
+                        {count}× ({Math.round((count / reports.length) * 100)} %)
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
