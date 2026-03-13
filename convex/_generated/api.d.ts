@@ -11,6 +11,7 @@
 import type * as actions_aggregateBautvWeekly from "../actions/aggregateBautvWeekly.js";
 import type * as actions_backfill from "../actions/backfill.js";
 import type * as actions_seedBautvGsc from "../actions/seedBautvGsc.js";
+import type * as actions_seedBautvLeads from "../actions/seedBautvLeads.js";
 import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
 import type * as actions_seedMicrovistaReport from "../actions/seedMicrovistaReport.js";
 import type * as actions_syncAds from "../actions/syncAds.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "actions/aggregateBautvWeekly": typeof actions_aggregateBautvWeekly;
   "actions/backfill": typeof actions_backfill;
   "actions/seedBautvGsc": typeof actions_seedBautvGsc;
+  "actions/seedBautvLeads": typeof actions_seedBautvLeads;
   "actions/seedGadsKeywords": typeof actions_seedGadsKeywords;
   "actions/seedMicrovistaReport": typeof actions_seedMicrovistaReport;
   "actions/syncAds": typeof actions_syncAds;
