@@ -269,7 +269,7 @@ function DateRangePicker({ from, to, onChange }: {
   const [open, setOpen] = useState(false);
   const [customFrom, setCustomFrom] = useState(from);
   const [customTo,   setCustomTo]   = useState(to);
-  const [activePreset, setActivePreset] = useState<string | null>("Dieses Jahr");
+  const [activePreset, setActivePreset] = useState<string | null>("Gesamte Zeit");
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -380,7 +380,7 @@ function DateRangePicker({ from, to, onChange }: {
 export default function ReportPage() {
   const { brand } = useParams<{ brand: string }>();
   const curYear = new Date().getFullYear();
-  const [dateFrom, setDateFrom] = useState(() => startOfYear(curYear));
+  const [dateFrom, setDateFrom] = useState(() => "2013-01-01");
   const [dateTo,   setDateTo]   = useState(() => today());
   const brandData = useQuery(api.brands.getBySlug, { slug: brand });
 
