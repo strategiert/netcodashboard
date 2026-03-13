@@ -120,22 +120,28 @@ export const getCrmLeads = query({
   },
 });
 
-// Aggregated stats without returning all documents (for KPI cards + funnel)
+// Aggregated stats — iterates year by year to stay under Convex's 8192-doc limit
 export const getCrmLeadsStats = query({
   args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
   handler: async (ctx, { brandId, from, to }) => {
-    const leads = await ctx.db
-      .query("crmLeads")
-      .withIndex("by_brand_date", (q) =>
-        q.eq("brandId", brandId).gte("date", from).lte("date", to)
-      )
-      .collect();
-    return {
-      total:       leads.length,
-      offerMade:   leads.filter(l => l.offerMade).length,
-      orderReceived: leads.filter(l => l.orderReceived).length,
-      newCustomer: leads.filter(l => l.newCustomer).length,
-    };
+    const fromYear = parseInt(from.slice(0, 4));
+    const toYear   = parseInt(to.slice(0, 4));
+    let total = 0, offerMade = 0, orderReceived = 0, newCustomer = 0;
+    for (let y = fromYear; y <= toYear; y++) {
+      const yFrom = y === fromYear ? from : `${y}-01-01`;
+      const yTo   = y === toYear   ? to   : `${y}-12-31`;
+      const rows = await ctx.db
+        .query("crmLeads")
+        .withIndex("by_brand_date", (q) =>
+          q.eq("brandId", brandId).gte("date", yFrom).lte("date", yTo)
+        )
+        .collect();
+      total         += rows.length;
+      offerMade     += rows.filter(l => l.offerMade).length;
+      orderReceived += rows.filter(l => l.orderReceived).length;
+      newCustomer   += rows.filter(l => l.newCustomer).length;
+    }
+    return { total, offerMade, orderReceived, newCustomer };
   },
 });
 
