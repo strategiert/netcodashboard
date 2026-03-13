@@ -99,11 +99,15 @@ export const getWeeklyReports = query({
 });
 
 export const getCrmLeads = query({
-  args: { brandId: v.id("brands") },
-  handler: async (ctx, { brandId }) => {
+  args: { brandId: v.id("brands"), year: v.optional(v.number()) },
+  handler: async (ctx, { brandId, year }) => {
+    const from = year ? `${year}-01-01` : "2000-01-01";
+    const to   = year ? `${year}-12-31` : "2099-12-31";
     return await ctx.db
       .query("crmLeads")
-      .withIndex("by_brand_date", (q) => q.eq("brandId", brandId))
+      .withIndex("by_brand_date", (q) =>
+        q.eq("brandId", brandId).gte("date", from).lte("date", to)
+      )
       .order("desc")
       .collect();
   },

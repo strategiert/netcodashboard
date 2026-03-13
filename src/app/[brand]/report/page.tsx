@@ -251,7 +251,7 @@ export default function ReportPage() {
   );
   const leads = useQuery(
     api.reports.getCrmLeads,
-    brandData ? { brandId: brandData._id } : "skip"
+    brandData ? { brandId: brandData._id, year: selectedYear } : "skip"
   );
   const campaigns = useQuery(
     api.reports.getAdsCampaigns,
