@@ -88,21 +88,27 @@ export const upsertAdsCampaign = mutation({
 });
 
 export const getWeeklyReports = query({
-  args: { brandId: v.id("brands"), year: v.number() },
-  handler: async (ctx, { brandId, year }) => {
-    return await ctx.db
-      .query("weeklyReports")
-      .withIndex("by_brand_year", (q) => q.eq("brandId", brandId).eq("year", year))
-      .order("asc")
-      .collect();
+  args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
+  handler: async (ctx, { brandId, from, to }) => {
+    const fromYear = parseInt(from.slice(0, 4));
+    const toYear   = parseInt(to.slice(0, 4));
+    const rows = [];
+    for (let y = fromYear; y <= toYear; y++) {
+      const yearRows = await ctx.db
+        .query("weeklyReports")
+        .withIndex("by_brand_year", (q) => q.eq("brandId", brandId).eq("year", y))
+        .collect();
+      rows.push(...yearRows);
+    }
+    return rows
+      .filter(r => r.weekStart >= from && r.weekStart <= to)
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
   },
 });
 
 export const getCrmLeads = query({
-  args: { brandId: v.id("brands"), year: v.optional(v.number()) },
-  handler: async (ctx, { brandId, year }) => {
-    const from = year ? `${year}-01-01` : "2000-01-01";
-    const to   = year ? `${year}-12-31` : "2099-12-31";
+  args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
+  handler: async (ctx, { brandId, from, to }) => {
     return await ctx.db
       .query("crmLeads")
       .withIndex("by_brand_date", (q) =>
