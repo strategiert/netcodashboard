@@ -378,16 +378,89 @@ function DateRangePicker({ from, to, onChange }: {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+// ── Granularity Toggle ────────────────────────────────────────────────────────
+
+type Granularity = "daily" | "weekly" | "monthly";
+
+function GranularityToggle({ value, onChange }: { value: Granularity; onChange: (g: Granularity) => void }) {
+  const opts: { key: Granularity; label: string }[] = [
+    { key: "daily",   label: "Täglich" },
+    { key: "weekly",  label: "Wöchentlich" },
+    { key: "monthly", label: "Monatlich" },
+  ];
+  return (
+    <div className="inline-flex rounded-lg border bg-muted/30 p-0.5">
+      {opts.map(o => (
+        <button
+          key={o.key}
+          onClick={() => onChange(o.key)}
+          className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+            value === o.key
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Aggregation helpers ──────────────────────────────────────────────────────
+
+type ChartRow = { name: string; Ads: number; SEO: number; "Type-in": number; Social: number; Referral: number; Leads: number; Werbekosten: number };
+type LangRow  = { name: string; DE: number; EN: number; FR: number; IT: number };
+
+function aggregateMonthly(reports: any[], multiYear: boolean): { chart: ChartRow[]; lang: LangRow[] } {
+  const months: Record<string, { ch: ChartRow; lg: LangRow }> = {};
+  for (const r of reports) {
+    const m = r.weekStart.slice(0, 7); // YYYY-MM
+    const label = multiYear ? m : new Date(r.weekStart + "T12:00:00Z").toLocaleDateString("de-DE", { month: "short" });
+    if (!months[m]) {
+      months[m] = {
+        ch: { name: label, Ads: 0, SEO: 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0 },
+        lg: { name: label, DE: 0, EN: 0, FR: 0, IT: 0 },
+      };
+    }
+    const c = months[m].ch;
+    c.Ads += r.chAds ?? 0; c.SEO += r.chSeo ?? 0; c["Type-in"] += r.chDirect ?? 0;
+    c.Social += r.chSocial ?? 0; c.Referral += r.chReferral ?? 0;
+    c.Leads += r.leads ?? 0; c.Werbekosten += r.adSpend ?? 0;
+    const l = months[m].lg;
+    l.DE += r.visitorsDE ?? 0; l.EN += r.visitorsEN ?? 0;
+    l.FR += r.visitorsFR ?? 0; l.IT += r.visitorsIT ?? 0;
+  }
+  const sorted = Object.entries(months).sort(([a], [b]) => a.localeCompare(b));
+  return { chart: sorted.map(([, v]) => v.ch), lang: sorted.map(([, v]) => v.lg) };
+}
+
+function dailyToChartData(snapshots: any[]): { chart: ChartRow[]; lang: LangRow[] } {
+  const chart: ChartRow[] = snapshots.map(s => ({
+    name: s.date.slice(5), // MM-DD
+    Ads: 0, SEO: s.clicks ?? 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0,
+  }));
+  const lang: LangRow[] = snapshots.map(s => ({ name: s.date.slice(5), DE: 0, EN: 0, FR: 0, IT: 0 }));
+  return { chart, lang };
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function ReportPage() {
   const { brand } = useParams<{ brand: string }>();
   const curYear = new Date().getFullYear();
   const [dateFrom, setDateFrom] = useState(() => "2013-01-01");
   const [dateTo,   setDateTo]   = useState(() => today());
+  const [granularity, setGranularity] = useState<Granularity>("weekly");
   const brandData = useQuery(api.brands.getBySlug, { slug: brand });
 
   const reports = useQuery(
     api.reports.getWeeklyReports,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
+  );
+  const dailySnapshots = useQuery(
+    api.kpi.getGscByDateRange,
+    brandData && granularity === "daily" ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
   const leads = useQuery(
     api.reports.getCrmLeads,
@@ -426,25 +499,49 @@ export default function ReportPage() {
   const ordersWon     = leadsStats?.orderReceived ?? 0;
   const newCustomers  = leadsStats?.newCustomer ?? 0;
 
-  // ── KW Range subtitle ───────────────────────────────────────────────────────
+  // ── Subtitle ──────────────────────────────────────────────────────────────
   const fmtShort = (s: string) => new Date(s + "T12:00:00Z").toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
-  const kwRange = reports.length
-    ? `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${reports.length} Wochen`
-    : `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · Keine Daten`;
-
-  // ── Weekly Chart Data — sorted by weekStart date ────────────────────────────
+  const granLabel = granularity === "daily" ? "Tage" : granularity === "weekly" ? "Wochen" : "Monate";
   const multiYear = dateFrom.slice(0, 4) !== dateTo.slice(0, 4);
-  const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
-  const weeklyData = sortedReports.map(r => ({
-    name:    multiYear ? `${r.year} ${r.kw}` : r.kw,
-    Ads:     r.chAds ?? 0,
-    SEO:     r.chSeo ?? 0,
-    "Type-in": r.chDirect ?? 0,
-    Social:  r.chSocial ?? 0,
-    Referral: r.chReferral ?? 0,
-    Leads:   r.leads ?? 0,
-    "Werbekosten": r.adSpend ?? 0,
-  }));
+
+  // ── Chart Data based on granularity ─────────────────────────────────────────
+  let chartData: ChartRow[] = [];
+  let langData: LangRow[] = [];
+  let dataCount = 0;
+
+  if (granularity === "daily") {
+    if (dailySnapshots) {
+      const d = dailyToChartData(dailySnapshots);
+      chartData = d.chart; langData = d.lang;
+      dataCount = dailySnapshots.length;
+    }
+  } else if (granularity === "monthly") {
+    const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+    const m = aggregateMonthly(sortedReports, multiYear);
+    chartData = m.chart; langData = m.lang;
+    dataCount = m.chart.length;
+  } else {
+    // weekly (default)
+    const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+    chartData = sortedReports.map(r => ({
+      name:    multiYear ? `${r.year} ${r.kw}` : r.kw,
+      Ads:     r.chAds ?? 0,
+      SEO:     r.chSeo ?? 0,
+      "Type-in": r.chDirect ?? 0,
+      Social:  r.chSocial ?? 0,
+      Referral: r.chReferral ?? 0,
+      Leads:   r.leads ?? 0,
+      Werbekosten: r.adSpend ?? 0,
+    }));
+    langData = sortedReports.map(r => ({
+      name: multiYear ? `${r.year} ${r.kw}` : r.kw,
+      DE: r.visitorsDE ?? 0, EN: r.visitorsEN ?? 0,
+      FR: r.visitorsFR ?? 0, IT: r.visitorsIT ?? 0,
+    }));
+    dataCount = reports.length;
+  }
+
+  const subtitle = `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${dataCount} ${granLabel}`;
 
   // ── Top Keywords ───────────────────────────────────────────────────────────
   const kwFreq: Record<string, { count: number; lastSeen: string }> = {};
@@ -457,15 +554,6 @@ export default function ReportPage() {
   const topKeywords = Object.entries(kwFreq)
     .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 10);
-
-  // ── Language Data ──────────────────────────────────────────────────────────
-  const langData = sortedReports.map(r => ({
-    name: multiYear ? `${r.year} ${r.kw}` : r.kw,
-    DE: r.visitorsDE ?? 0,
-    EN: r.visitorsEN ?? 0,
-    FR: r.visitorsFR ?? 0,
-    IT: r.visitorsIT ?? 0,
-  }));
 
   const CH_COLORS: Record<string, string> = {
     Ads:      "#ef4444",
@@ -487,13 +575,16 @@ export default function ReportPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Bericht</h1>
-          <p className="text-muted-foreground">{brandData.name} · {kwRange}</p>
+          <p className="text-muted-foreground">{brandData.name} · {subtitle}</p>
         </div>
-        <DateRangePicker
-          from={dateFrom}
-          to={dateTo}
-          onChange={(f, t) => { setDateFrom(f); setDateTo(t); }}
-        />
+        <div className="flex items-center gap-3 flex-wrap">
+          <GranularityToggle value={granularity} onChange={setGranularity} />
+          <DateRangePicker
+            from={dateFrom}
+            to={dateTo}
+            onChange={(f, t) => { setDateFrom(f); setDateTo(t); }}
+          />
+        </div>
       </div>
 
       {/* KPI Summary — always visible */}
@@ -524,7 +615,7 @@ export default function ReportPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
@@ -544,7 +635,7 @@ export default function ReportPage() {
               <CardHeader><CardTitle className="text-base">Website-Leads pro KW</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                  <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
@@ -558,7 +649,7 @@ export default function ReportPage() {
               <CardHeader><CardTitle className="text-base">Werbekosten pro KW (€)</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={weeklyData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                  <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
