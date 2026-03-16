@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { BrandSelector } from "@/components/brand-selector";
+import { GlobalFilterBar } from "@/components/filters/global-filter-bar";
 import { Camera, HardHat, Microscope } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -35,6 +36,7 @@ export default function BrandLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Suspense><GlobalFilterBar /></Suspense>
           <BrandSelector />
         </div>
       </header>
