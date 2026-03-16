@@ -48,22 +48,30 @@ export const syncGSC = action({
   args: {},
   handler: async (ctx) => {
     const brands = await ctx.runQuery(api.brands.list);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const date = yesterday.toISOString().slice(0, 10);
+    // GSC has ~3 day delay — fetch last 5 days to catch newly available data
+    const dates: string[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().slice(0, 10));
+    }
 
     const results: string[] = [];
     for (const brand of brands) {
       const property = GSC_PROPERTIES[brand.slug];
       if (!property) { results.push(`SKIP ${brand.slug}: no property`); continue; }
-      try {
-        const data = await fetchGSCData(property, date);
-        if (!data) { results.push(`SKIP ${brand.slug}: no data for ${date}`); continue; }
-        await ctx.runMutation(api.kpi.upsertSnapshot, { brandId: brand._id, date, source: "gsc", ...data });
-        results.push(`OK ${brand.slug}: clicks=${data.clicks}`);
-      } catch (e: any) {
-        results.push(`ERROR ${brand.slug}: ${e.message}`);
+      let saved = 0;
+      for (const date of dates) {
+        try {
+          const data = await fetchGSCData(property, date);
+          if (!data) continue;
+          await ctx.runMutation(api.kpi.upsertSnapshot, { brandId: brand._id, date, source: "gsc", ...data });
+          saved++;
+        } catch (e: any) {
+          results.push(`ERROR ${brand.slug} ${date}: ${e.message}`);
+        }
       }
+      results.push(`OK ${brand.slug}: ${saved} days (${dates[dates.length - 1]} → ${dates[0]})`);
     }
     return results;
   },
