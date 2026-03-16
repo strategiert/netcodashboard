@@ -281,7 +281,7 @@ function dailyToChartData(snapshots: any[]): { chart: ChartRow[]; lang: LangRow[
     name: date.slice(5),
     SEO: src.gsc?.clicks ?? 0,
     Ads: src.ads?.adClicks ?? 0,
-    Social: src.publer?.socialLinkClicks ?? 0,
+    Social: src.publer?.socialReach ?? 0,
     "Type-in": 0,
     Referral: 0,
     Leads: src.manual?.leadsCount ?? 0,
