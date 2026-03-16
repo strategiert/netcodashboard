@@ -13,6 +13,7 @@ import type * as actions_backfill from "../actions/backfill.js";
 import type * as actions_seedBautvGsc from "../actions/seedBautvGsc.js";
 import type * as actions_seedBautvLeads from "../actions/seedBautvLeads.js";
 import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
+import type * as actions_seedMicrovistaKeywords from "../actions/seedMicrovistaKeywords.js";
 import type * as actions_seedMicrovistaReport from "../actions/seedMicrovistaReport.js";
 import type * as actions_syncAds from "../actions/syncAds.js";
 import type * as actions_syncGSC from "../actions/syncGSC.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   "actions/seedBautvGsc": typeof actions_seedBautvGsc;
   "actions/seedBautvLeads": typeof actions_seedBautvLeads;
   "actions/seedGadsKeywords": typeof actions_seedGadsKeywords;
+  "actions/seedMicrovistaKeywords": typeof actions_seedMicrovistaKeywords;
   "actions/seedMicrovistaReport": typeof actions_seedMicrovistaReport;
   "actions/syncAds": typeof actions_syncAds;
   "actions/syncGSC": typeof actions_syncGSC;
