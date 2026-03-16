@@ -270,11 +270,24 @@ function aggregateMonthly(reports: any[], multiYear: boolean): { chart: ChartRow
 }
 
 function dailyToChartData(snapshots: any[]): { chart: ChartRow[]; lang: LangRow[] } {
-  const chart: ChartRow[] = snapshots.map(s => ({
-    name: s.date.slice(5), // MM-DD
-    Ads: 0, SEO: s.clicks ?? 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0,
+  // Group all source snapshots by date
+  const byDate: Record<string, { gsc: any; publer: any; ads: any; manual: any }> = {};
+  for (const s of snapshots) {
+    if (!byDate[s.date]) byDate[s.date] = { gsc: null, publer: null, ads: null, manual: null };
+    byDate[s.date][s.source as keyof typeof byDate[string]] = s;
+  }
+  const sorted = Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b));
+  const chart: ChartRow[] = sorted.map(([date, src]) => ({
+    name: date.slice(5),
+    SEO: src.gsc?.clicks ?? 0,
+    Ads: src.ads?.adClicks ?? 0,
+    Social: src.publer?.socialLinkClicks ?? 0,
+    "Type-in": 0,
+    Referral: 0,
+    Leads: src.manual?.leadsCount ?? 0,
+    Werbekosten: src.ads?.adSpend ?? 0,
   }));
-  const lang: LangRow[] = snapshots.map(s => ({ name: s.date.slice(5), DE: 0, EN: 0, FR: 0, IT: 0 }));
+  const lang: LangRow[] = sorted.map(([date]) => ({ name: date.slice(5), DE: 0, EN: 0, FR: 0, IT: 0 }));
   return { chart, lang };
 }
 
@@ -291,7 +304,7 @@ export default function ReportPage() {
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
   const dailySnapshots = useQuery(
-    api.kpi.getGscByDateRange,
+    api.kpi.getAllByDateRange,
     brandData && granularity === "daily" ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
   const leads = useQuery(

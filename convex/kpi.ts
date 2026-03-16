@@ -73,6 +73,19 @@ export const getGscByDateRange = query({
   },
 });
 
+export const getAllByDateRange = query({
+  args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
+  handler: async (ctx, { brandId, from, to }) => {
+    return await ctx.db
+      .query("kpiSnapshots")
+      .withIndex("by_brand_date", (q) =>
+        q.eq("brandId", brandId).gte("date", from).lte("date", to)
+      )
+      .order("asc")
+      .collect();
+  },
+});
+
 export const getAllBrandsLatest = query({
   args: {},
   handler: async (ctx) => {
