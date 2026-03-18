@@ -535,24 +535,6 @@ export default function ReportPage() {
             </Card>
           </div>
 
-          {/* Language Distribution */}
-          <Card>
-            <CardHeader><CardTitle className="text-base">Besucher nach Sprache</CardTitle></CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={langData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  {Object.entries(LANG_COLORS).map(([key, color]) => (
-                    <Bar key={key} dataKey={key} stackId="a" fill={color} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
 
           {/* Top Keywords (GSC) */}
           <Card>
