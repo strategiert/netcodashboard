@@ -7,6 +7,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LeadEntryForm } from "@/components/kpi/lead-entry-form";
 import { KpiCard } from "@/components/kpi/kpi-card";
+import { SyncButton } from "@/components/kpi/sync-button";
 
 export default function KpisPage() {
   const { brand: brandSlug } = useParams() as { brand: string };
@@ -29,9 +30,12 @@ export default function KpisPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">KPIs</h1>
-        <p className="text-muted-foreground">{brand.name} — Metriken & Ziele</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">KPIs</h1>
+          <p className="text-muted-foreground">{brand.name} — Metriken & Ziele</p>
+        </div>
+        <SyncButton />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

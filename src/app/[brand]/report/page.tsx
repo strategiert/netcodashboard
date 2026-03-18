@@ -11,6 +11,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, CartesianGrid,
 } from "recharts";
+import { SyncButton } from "@/components/kpi/sync-button";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
 
@@ -457,6 +458,7 @@ export default function ReportPage() {
           <h1 className="text-3xl font-bold tracking-tight">Bericht</h1>
           <p className="text-muted-foreground">{brandData.name} · {subtitle}</p>
         </div>
+        <SyncButton />
       </div>
 
       {/* KPI Summary — always visible */}
