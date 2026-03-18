@@ -356,45 +356,28 @@ export default function ReportPage() {
   let dataCount = 0;
 
   if (granularity === "daily") {
-    // Use weekly reports plotted by weekStart date, supplemented with daily kpiSnapshots
-    const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+    // Daily view: ONLY use kpiSnapshots — no weekly reports (avoids fake daily data points)
     const fmtDate = (s: string) => s.slice(5); // MM-DD
+    const byDate: Record<string, { ch: ChartRow }> = {};
 
-    // Build base from weekly reports (all channels available)
-    const byDate: Record<string, { ch: ChartRow; lg: LangRow }> = {};
-    for (const r of sortedReports) {
-      const key = r.weekStart;
-      const label = fmtDate(key);
-      byDate[key] = {
-        ch: {
-          name: label, Ads: r.chAds ?? 0, SEO: r.chSeo ?? 0,
-          "Type-in": r.chDirect ?? 0, Social: r.chSocial ?? 0, Referral: r.chReferral ?? 0,
-          Leads: r.leads ?? 0, Werbekosten: r.adSpend ?? 0,
-        },
-        lg: { name: label, DE: r.visitorsDE ?? 0, EN: r.visitorsEN ?? 0, FR: r.visitorsFR ?? 0, IT: r.visitorsIT ?? 0 },
-      };
-    }
-
-    // Overlay daily kpiSnapshots (fills in days between weekly data points)
     if (dailySnapshots) {
       for (const s of dailySnapshots) {
         if (!byDate[s.date]) {
           byDate[s.date] = {
             ch: { name: fmtDate(s.date), Ads: 0, SEO: 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0 },
-            lg: { name: fmtDate(s.date), DE: 0, EN: 0, FR: 0, IT: 0 },
           };
         }
         const c = byDate[s.date].ch;
-        if (s.source === "gsc")    { c.SEO = Math.max(c.SEO, s.clicks ?? 0); }
-        if (s.source === "publer") { c.Social = Math.max(c.Social, s.socialReach ?? 0); }
-        if (s.source === "ads")    { c.Ads = Math.max(c.Ads, s.adClicks ?? 0); c.Werbekosten = Math.max(c.Werbekosten, s.adSpend ?? 0); }
-        if (s.source === "manual") { c.Leads = Math.max(c.Leads, s.leadsCount ?? 0); }
+        if (s.source === "gsc")    { c.SEO += s.clicks ?? 0; }
+        if (s.source === "publer") { c.Social += s.socialReach ?? 0; }
+        if (s.source === "ads")    { c.Ads += s.adClicks ?? 0; c.Werbekosten += s.adSpend ?? 0; }
+        if (s.source === "manual") { c.Leads += s.leadsCount ?? 0; }
       }
     }
 
     const sorted = Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b));
     chartData = sorted.map(([, v]) => v.ch);
-    langData = sorted.map(([, v]) => v.lg);
+    langData = [];
     dataCount = sorted.length;
   } else if (granularity === "monthly") {
     const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
