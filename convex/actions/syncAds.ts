@@ -4,9 +4,9 @@ import { api } from "../_generated/api";
 
 // Campaign name keywords per brand slug (case-insensitive match)
 const BRAND_KEYWORDS: Record<string, string[]> = {
-  bodycam:    ["bodycam", "body-cam", "body cam", "netco-bc"],
-  microvista: ["microvista", "micro vista"],
-  bautv:      ["bautv", "bau-tv", "baustellenkamera"],
+  bodycam:    ["bodycam", "body-cam", "body cam", "netco-bc", "bc-"],
+  microvista: ["microvista", "micro vista", "ndt-"],
+  bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-"],
 };
 
 async function getAdsToken(): Promise<string> {
