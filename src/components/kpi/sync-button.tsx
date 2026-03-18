@@ -5,7 +5,14 @@ import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-type SyncResult = { source: string; status: "ok" | "error"; message: string };
+type SyncResult = { source: string; status: "ok" | "skip" | "error"; message: string };
+
+function lineStatus(line: string): "ok" | "skip" | "error" {
+  if (line.startsWith("OK") || /\d+ ok/.test(line) || /\d+ posts/.test(line)) return "ok";
+  if (line.startsWith("SKIP") || line.includes("SKIP")) return "skip";
+  if (line.startsWith("ERROR")) return "error";
+  return "ok";
+}
 
 export function SyncButton() {
   const syncGSC = useAction(api.actions.syncGSC.syncGSC);
@@ -21,47 +28,31 @@ export function SyncButton() {
     setResults(null);
     const out: SyncResult[] = [];
 
-    try {
-      const gscRes = await syncGSC();
-      for (const line of gscRes) {
-        out.push({ source: "GSC", status: line.startsWith("OK") ? "ok" : "error", message: line });
-      }
-    } catch (e: any) {
-      out.push({ source: "GSC", status: "error", message: e.message });
-    }
+    const jobs: { label: string; fn: () => Promise<string[]> }[] = [
+      { label: "GSC", fn: () => syncGSC() },
+      { label: "Publer", fn: () => syncPubler() },
+      { label: "Publer Accounts", fn: () => syncPublerAccounts() },
+      { label: "Publer Posts", fn: () => syncPublerPosts({ days: 7 }) },
+    ];
 
-    try {
-      const pubRes = await syncPubler();
-      for (const line of pubRes) {
-        out.push({ source: "Publer", status: line.startsWith("OK") ? "ok" : "error", message: line });
+    for (const job of jobs) {
+      try {
+        const lines = await job.fn();
+        for (const line of lines) {
+          out.push({ source: job.label, status: lineStatus(line), message: line });
+        }
+      } catch (e: any) {
+        out.push({ source: job.label, status: "error", message: e.message });
       }
-    } catch (e: any) {
-      out.push({ source: "Publer", status: "error", message: e.message });
-    }
-
-    try {
-      const accRes = await syncPublerAccounts();
-      for (const line of accRes) {
-        out.push({ source: "Publer Accounts", status: line.includes("error") ? "error" : "ok", message: line });
-      }
-    } catch (e: any) {
-      out.push({ source: "Publer Accounts", status: "error", message: e.message });
-    }
-
-    try {
-      const postRes = await syncPublerPosts({ days: 7 });
-      for (const line of postRes) {
-        out.push({ source: "Publer Posts", status: "ok", message: line });
-      }
-    } catch (e: any) {
-      out.push({ source: "Publer Posts", status: "error", message: e.message });
     }
 
     setResults(out);
     setSyncing(false);
   }
 
-  const hasErrors = results?.some(r => r.status === "error");
+  // Hide "SKIP" lines (unconfigured brands), only show real results
+  const visible = results?.filter(r => r.status !== "skip") ?? [];
+  const hasErrors = visible.some(r => r.status === "error");
 
   return (
     <div className="space-y-2">
@@ -92,9 +83,9 @@ export function SyncButton() {
         )}
       </Button>
 
-      {results && (
+      {results && visible.length > 0 && (
         <div className={`rounded-md border p-3 text-xs space-y-1 ${hasErrors ? "border-destructive/50 bg-destructive/5" : "border-green-500/50 bg-green-500/5"}`}>
-          {results.map((r, i) => (
+          {visible.map((r, i) => (
             <div key={i} className="flex items-start gap-2">
               <span>{r.status === "ok" ? "✓" : "✗"}</span>
               <span className="text-muted-foreground">{r.source}:</span>
