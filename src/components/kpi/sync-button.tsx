@@ -16,6 +16,7 @@ function lineStatus(line: string): "ok" | "skip" | "error" {
 
 export function SyncButton() {
   const syncGSC = useAction(api.actions.syncGSC.syncGSC);
+  const syncAds = useAction(api.actions.syncAds.syncAds);
   const syncPubler = useAction(api.actions.syncPubler.syncPubler);
   const syncPublerAccounts = useAction(api.actions.syncPublerAccounts.syncPublerAccounts);
   const syncPublerPosts = useAction(api.actions.syncPublerPosts.syncPublerPosts);
@@ -30,6 +31,7 @@ export function SyncButton() {
 
     const jobs: { label: string; fn: () => Promise<string[]> }[] = [
       { label: "GSC", fn: () => syncGSC() },
+      { label: "Google Ads", fn: () => syncAds() },
       { label: "Publer", fn: () => syncPubler() },
       { label: "Publer Accounts", fn: () => syncPublerAccounts() },
       { label: "Publer Posts", fn: () => syncPublerPosts({ days: 7 }) },
@@ -78,7 +80,7 @@ export function SyncButton() {
               <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
               <path d="M16 16h5v5" />
             </svg>
-            GSC & Publer aktualisieren
+            GSC, Ads & Social aktualisieren
           </>
         )}
       </Button>
