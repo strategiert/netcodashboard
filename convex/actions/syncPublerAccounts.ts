@@ -2,12 +2,7 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { v } from "convex/values";
-
-const PUBLER_WORKSPACE_IDS: Record<string, string> = {
-  bodycam:    process.env.PUBLER_WORKSPACE_ID_BODYCAM    ?? "696f3a3bb78f919a25b9305f",
-  microvista: process.env.PUBLER_WORKSPACE_ID_MICROVISTA ?? "696f505084f533b382144900",
-  bautv:      process.env.PUBLER_WORKSPACE_ID_BAUTV      ?? "696f4dc48e944500a16a52ae",
-};
+import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
 
 // Charts available per account type
 const CHARTS_BY_TYPE: Record<string, string[]> = {
@@ -17,22 +12,6 @@ const CHARTS_BY_TYPE: Record<string, string[]> = {
   in_page:     ["followers", "post_reach", "reach_rate", "post_engagement", "engagement_rate", "video_views"],
   youtube:     ["followers", "profile_views"],
 };
-
-async function publerGet(path: string, workspaceId: string): Promise<any> {
-  const apiKey = process.env.PUBLER_API_KEY;
-  if (!apiKey) throw new Error("PUBLER_API_KEY not set");
-  const res = await fetch(`https://app.publer.com${path}`, {
-    headers: {
-      Authorization: `Bearer-API ${apiKey}`,
-      "Publer-Workspace-Id": workspaceId,
-    },
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Publer ${res.status}: ${text}`);
-  }
-  return res.json();
-}
 
 function extractValue(rows: any[], date: string, field: "value" | "last_value"): number | undefined {
   if (!rows?.length) return undefined;
@@ -90,48 +69,50 @@ export const syncPublerAccounts = action({
   args: {},
   handler: async (ctx) => {
     const brands = await ctx.runQuery(api.brands.list);
+    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const date = yesterday.toISOString().slice(0, 10);
 
     const results: string[] = [];
     for (const brand of brands) {
-      const workspaceId = PUBLER_WORKSPACE_IDS[brand.slug];
-      if (!workspaceId) { results.push(`SKIP ${brand.slug}`); continue; }
+      const wsIds = brandWorkspaces[brand._id];
+      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
 
-      const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
+      let totalOk = 0, totalSkipped = 0, totalErrors = 0;
 
-      // Get post counts for yesterday
-      const postData = await publerGet(
-        `/api/v1/posts?state=published&from=${date}&to=${date}`,
-        workspaceId
-      );
-      const postsByDate: Record<string, number> = {};
-      for (const post of (postData.posts ?? [])) {
-        const d = (post.published_at ?? post.created_at ?? "").slice(0, 10);
-        if (d) postsByDate[d] = (postsByDate[d] ?? 0) + 1;
-      }
+      for (const workspaceId of wsIds) {
+        const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
 
-      let ok = 0, skipped = 0, errors = 0;
-      for (const account of accounts) {
-        try {
-          await new Promise(r => setTimeout(r, 800));
-          const res = await syncAccountForDate(
-            account.id, account.type, account.name ?? account.username ?? "",
-            workspaceId, date, brand._id, ctx, postsByDate
-          );
-          if (res === "skip_no_charts") skipped++;
-          else ok++;
-        } catch (e: any) {
-          if (e.message?.includes("Rate limit")) {
-            await new Promise(r => setTimeout(r, 5000));
-            errors++;
-          } else {
-            errors++;
+        // Get post counts for yesterday
+        const postData = await publerGet(
+          `/api/v1/posts?state=published&from=${date}&to=${date}`,
+          workspaceId
+        );
+        const postsByDate: Record<string, number> = {};
+        for (const post of (postData.posts ?? [])) {
+          const d = (post.published_at ?? post.created_at ?? "").slice(0, 10);
+          if (d) postsByDate[d] = (postsByDate[d] ?? 0) + 1;
+        }
+
+        for (const account of accounts) {
+          try {
+            await new Promise(r => setTimeout(r, 800));
+            const res = await syncAccountForDate(
+              account.id, account.type, account.name ?? account.username ?? "",
+              workspaceId, date, brand._id, ctx, postsByDate
+            );
+            if (res === "skip_no_charts") totalSkipped++;
+            else totalOk++;
+          } catch (e: any) {
+            if (e.message?.includes("Rate limit")) {
+              await new Promise(r => setTimeout(r, 5000));
+            }
+            totalErrors++;
           }
         }
       }
-      results.push(`${brand.slug}: ${ok} ok, ${skipped} skipped, ${errors} errors`);
+      results.push(`${brand.slug}: ${totalOk} ok, ${totalSkipped} skipped, ${totalErrors} errors (${wsIds.length} Workspaces)`);
     }
     return results;
   },
@@ -141,6 +122,7 @@ export const syncPublerAccountsRange = action({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
     const brands = await ctx.runQuery(api.brands.list);
+    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
 
     const dates: string[] = [];
     const cur = new Date(startDate);
@@ -152,8 +134,9 @@ export const syncPublerAccountsRange = action({
 
     const results: string[] = [];
     for (const brand of brands) {
-      const workspaceId = PUBLER_WORKSPACE_IDS[brand.slug];
-      if (!workspaceId) { results.push(`SKIP ${brand.slug}`); continue; }
+      const wsIds = brandWorkspaces[brand._id];
+      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}`); continue; }
+      const workspaceId = wsIds[0];
 
       const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
 

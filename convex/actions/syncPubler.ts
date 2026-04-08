@@ -2,12 +2,7 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { v } from "convex/values";
-
-const PUBLER_WORKSPACE_IDS: Record<string, string> = {
-  bodycam:    process.env.PUBLER_WORKSPACE_ID_BODYCAM    ?? "696f3a3bb78f919a25b9305f",
-  microvista: process.env.PUBLER_WORKSPACE_ID_MICROVISTA ?? "696f505084f533b382144900",
-  bautv:      process.env.PUBLER_WORKSPACE_ID_BAUTV      ?? "696f4dc48e944500a16a52ae",
-};
+import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
 
 // Account types that support analytics (skip personal LinkedIn profiles)
 const ANALYTICS_ACCOUNT_TYPES = new Set([
@@ -16,19 +11,6 @@ const ANALYTICS_ACCOUNT_TYPES = new Set([
 ]);
 
 const CHART_IDS = ["post_reach", "post_engagement", "followers", "video_views", "link_clicks"];
-
-async function publerGet(path: string, workspaceId: string): Promise<any> {
-  const apiKey = process.env.PUBLER_API_KEY;
-  if (!apiKey) throw new Error("PUBLER_API_KEY not set");
-  const res = await fetch(`https://app.publer.com${path}`, {
-    headers: {
-      Authorization: `Bearer-API ${apiKey}`,
-      "Publer-Workspace-Id": workspaceId,
-    },
-  });
-  if (!res.ok) throw new Error(`Publer ${res.status}: ${await res.text()}`);
-  return res.json();
-}
 
 async function fetchPublerPostCount(workspaceId: string, date: string): Promise<number> {
   const data = await publerGet(
@@ -82,27 +64,42 @@ export const syncPubler = action({
   args: {},
   handler: async (ctx) => {
     const brands = await ctx.runQuery(api.brands.list);
+    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const date = yesterday.toISOString().slice(0, 10);
 
     const results: string[] = [];
     for (const brand of brands) {
-      const workspaceId = PUBLER_WORKSPACE_IDS[brand.slug];
-      if (!workspaceId) { results.push(`SKIP ${brand.slug}: no workspace ID`); continue; }
-      try {
-        const [socialPosts, analytics] = await Promise.all([
-          fetchPublerPostCount(workspaceId, date),
-          fetchAnalyticsForDate(workspaceId, date),
-        ]);
-        await ctx.runMutation(api.kpi.upsertSnapshot, {
-          brandId: brand._id, date, source: "publer",
-          socialPosts, ...analytics,
-        });
-        results.push(`OK ${brand.slug}: reach=${analytics.socialReach} eng=${analytics.socialEngagement} posts=${socialPosts}`);
-      } catch (e: any) {
-        results.push(`ERROR ${brand.slug}: ${e.message}`);
+      const wsIds = brandWorkspaces[brand._id];
+      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces zugewiesen`); continue; }
+
+      // Aggregate across all workspaces for this brand
+      const totals = { socialReach: 0, socialEngagement: 0, socialFollowers: 0, socialVideoViews: 0, socialLinkClicks: 0 };
+      let totalPosts = 0;
+
+      for (const workspaceId of wsIds) {
+        try {
+          const [socialPosts, analytics] = await Promise.all([
+            fetchPublerPostCount(workspaceId, date),
+            fetchAnalyticsForDate(workspaceId, date),
+          ]);
+          totalPosts += socialPosts;
+          totals.socialReach += analytics.socialReach;
+          totals.socialEngagement += analytics.socialEngagement;
+          totals.socialFollowers += analytics.socialFollowers;
+          totals.socialVideoViews += analytics.socialVideoViews;
+          totals.socialLinkClicks += analytics.socialLinkClicks;
+        } catch (e: any) {
+          results.push(`ERROR ${brand.slug} ws=${workspaceId}: ${e.message}`);
+        }
       }
+
+      await ctx.runMutation(api.kpi.upsertSnapshot, {
+        brandId: brand._id, date, source: "publer",
+        socialPosts: totalPosts, ...totals,
+      });
+      results.push(`OK ${brand.slug}: reach=${totals.socialReach} eng=${totals.socialEngagement} posts=${totalPosts} (${wsIds.length} Workspaces)`);
     }
     return results;
   },
@@ -112,6 +109,7 @@ export const syncPublerRange = action({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
     const brands = await ctx.runQuery(api.brands.list);
+    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
 
     // Build date list
     const dates: string[] = [];
@@ -124,8 +122,10 @@ export const syncPublerRange = action({
 
     const results: string[] = [];
     for (const brand of brands) {
-      const workspaceId = PUBLER_WORKSPACE_IDS[brand.slug];
-      if (!workspaceId) { results.push(`SKIP ${brand.slug}`); continue; }
+      const wsIds = brandWorkspaces[brand._id];
+      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
+      // Use first workspace for range sync (primary workspace)
+      const workspaceId = wsIds[0];
 
       // Step 1: get accounts once
       let accounts: any[] = [];

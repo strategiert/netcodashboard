@@ -346,6 +346,16 @@ export default defineSchema({
     .index("by_brand_period", ["brandId", "period"])
     .index("by_brand_campaign", ["brandId", "campaign"]),
 
+  publerWorkspaces: defineTable({
+    workspaceId: v.string(),       // Publer workspace ID
+    name: v.string(),              // Workspace name from Publer API
+    brandId: v.optional(v.id("brands")), // Assigned brand (null = unassigned)
+    accountCount: v.optional(v.number()), // Number of social accounts
+    lastSynced: v.optional(v.string()),   // ISO date of last fetch
+  })
+    .index("by_workspace_id", ["workspaceId"])
+    .index("by_brand", ["brandId"]),
+
   kpiTargets: defineTable({
     brandId: v.id("brands"),
     year: v.number(),

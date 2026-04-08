@@ -1,6 +1,60 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// ── Workspace management ─────────────────────────────────────────────────────
+
+export const listWorkspaces = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("publerWorkspaces").collect();
+  },
+});
+
+export const getWorkspacesForBrand = query({
+  args: { brandId: v.id("brands") },
+  handler: async (ctx, { brandId }) => {
+    return await ctx.db
+      .query("publerWorkspaces")
+      .withIndex("by_brand", (q) => q.eq("brandId", brandId))
+      .collect();
+  },
+});
+
+export const upsertWorkspace = mutation({
+  args: {
+    workspaceId: v.string(),
+    name: v.string(),
+    accountCount: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("publerWorkspaces")
+      .withIndex("by_workspace_id", (q) => q.eq("workspaceId", args.workspaceId))
+      .first();
+    const now = new Date().toISOString().slice(0, 10);
+    if (existing) {
+      await ctx.db.patch(existing._id, { name: args.name, accountCount: args.accountCount, lastSynced: now });
+      return existing._id;
+    }
+    return await ctx.db.insert("publerWorkspaces", { ...args, lastSynced: now });
+  },
+});
+
+export const assignWorkspaceToBrand = mutation({
+  args: {
+    workspaceId: v.string(),
+    brandId: v.optional(v.id("brands")),
+  },
+  handler: async (ctx, { workspaceId, brandId }) => {
+    const ws = await ctx.db
+      .query("publerWorkspaces")
+      .withIndex("by_workspace_id", (q) => q.eq("workspaceId", workspaceId))
+      .first();
+    if (!ws) throw new Error(`Workspace ${workspaceId} not found`);
+    await ctx.db.patch(ws._id, { brandId: brandId ?? undefined });
+  },
+});
+
 export const upsertPost = mutation({
   args: {
     brandId: v.id("brands"),

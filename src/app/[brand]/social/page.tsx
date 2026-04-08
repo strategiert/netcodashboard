@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
+import { WorkspaceManager } from "@/components/social/workspace-manager";
 
 const PLATFORM_LABELS: Record<string, string> = {
   fb_page: "Facebook", ig_business: "Instagram",
@@ -163,7 +164,7 @@ function PostsTable({ posts }: { posts: any[] }) {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-const TABS = ["Übersicht", "Beitrags-Insights"] as const;
+const TABS = ["Übersicht", "Beitrags-Insights", "Workspaces"] as const;
 type Tab = typeof TABS[number];
 
 export default function SocialPage() {
@@ -252,6 +253,10 @@ export default function SocialPage() {
             <PostsTable posts={posts ?? []} />
           </CardContent>
         </Card>
+      )}
+
+      {tab === "Workspaces" && (
+        <WorkspaceManager brandSlug={brand} />
       )}
     </div>
   );

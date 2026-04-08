@@ -10,6 +10,8 @@
 
 import type * as actions_aggregateBautvWeekly from "../actions/aggregateBautvWeekly.js";
 import type * as actions_backfill from "../actions/backfill.js";
+import type * as actions_fetchPublerWorkspaces from "../actions/fetchPublerWorkspaces.js";
+import type * as actions_publerHelpers from "../actions/publerHelpers.js";
 import type * as actions_seedBautvGsc from "../actions/seedBautvGsc.js";
 import type * as actions_seedBautvLeads from "../actions/seedBautvLeads.js";
 import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
@@ -43,6 +45,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   "actions/aggregateBautvWeekly": typeof actions_aggregateBautvWeekly;
   "actions/backfill": typeof actions_backfill;
+  "actions/fetchPublerWorkspaces": typeof actions_fetchPublerWorkspaces;
+  "actions/publerHelpers": typeof actions_publerHelpers;
   "actions/seedBautvGsc": typeof actions_seedBautvGsc;
   "actions/seedBautvLeads": typeof actions_seedBautvLeads;
   "actions/seedGadsKeywords": typeof actions_seedGadsKeywords;

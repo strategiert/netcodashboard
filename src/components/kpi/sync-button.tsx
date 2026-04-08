@@ -17,6 +17,7 @@ function lineStatus(line: string): "ok" | "skip" | "error" {
 export function SyncButton() {
   const syncGSC = useAction(api.actions.syncGSC.syncGSC);
   const syncAds = useAction(api.actions.syncAds.syncAds);
+  const fetchWorkspaces = useAction(api.actions.fetchPublerWorkspaces.fetchPublerWorkspaces);
   const syncPubler = useAction(api.actions.syncPubler.syncPubler);
   const syncPublerAccounts = useAction(api.actions.syncPublerAccounts.syncPublerAccounts);
   const syncPublerPosts = useAction(api.actions.syncPublerPosts.syncPublerPosts);
@@ -32,6 +33,7 @@ export function SyncButton() {
     const jobs: { label: string; fn: () => Promise<string[]> }[] = [
       { label: "GSC", fn: () => syncGSC() },
       { label: "Google Ads", fn: () => syncAds() },
+      { label: "Publer Workspaces", fn: () => fetchWorkspaces() },
       { label: "Publer", fn: () => syncPubler() },
       { label: "Publer Accounts", fn: () => syncPublerAccounts() },
       { label: "Publer Posts", fn: () => syncPublerPosts({ days: 7 }) },
