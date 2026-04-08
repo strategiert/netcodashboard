@@ -88,7 +88,7 @@ function CrmFunnel({ stats }: { stats: { total: number; offerMade: number; order
           <div className="flex-1 h-8 rounded relative bg-muted overflow-hidden">
             <div
               className="h-full rounded transition-all"
-              style={{ width: `${(s.count / total) * 100}%`, backgroundColor: s.color }}
+              style={{ width: total > 0 ? `${(s.count / total) * 100}%` : "0%", backgroundColor: s.color }}
             />
           </div>
           <div className="w-16 text-sm font-semibold tabular-nums">
@@ -101,72 +101,6 @@ function CrmFunnel({ stats }: { stats: { total: number; offerMade: number; order
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-// ── Campaigns Table ───────────────────────────────────────────────────────────
-
-function CampaignsTable({ campaigns }: { campaigns: any[] }) {
-  if (!campaigns.length) return <p className="text-sm text-muted-foreground">Keine Kampagnen.</p>;
-
-  const sorted = [...campaigns].sort((a, b) => (b.spend ?? 0) - (a.spend ?? 0));
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-xs text-muted-foreground">
-            <th className="text-left pb-2 pr-4 font-medium">Kampagne</th>
-            <th className="text-left pb-2 pr-3 font-medium">Typ</th>
-            <th className="text-right pb-2 pr-3 font-medium">Budget/Tag</th>
-            <th className="text-right pb-2 pr-3 font-medium">Ausgaben</th>
-            <th className="text-right pb-2 pr-3 font-medium">Impressionen</th>
-            <th className="text-right pb-2 pr-3 font-medium">Klicks</th>
-            <th className="text-right pb-2 pr-3 font-medium">CTR</th>
-            <th className="text-right pb-2 pr-3 font-medium">Konvers.</th>
-            <th className="text-right pb-2 font-medium">Kosten/Conv.</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y">
-          {sorted.map(c => {
-            const costPerConv = c.conversions && c.conversions > 0 && c.spend != null
-              ? c.spend / c.conversions : null;
-            return (
-              <tr key={c._id} className="hover:bg-muted/30 transition-colors">
-                <td className="py-2 pr-4 font-medium text-xs">{c.campaignName}</td>
-                <td className="py-2 pr-3">
-                  {c.campaignType && (
-                    <Badge variant="outline" className="text-xs">{c.campaignType}</Badge>
-                  )}
-                </td>
-                <td className="py-2 pr-3 text-right tabular-nums">{c.budgetPerDay != null ? `${c.budgetPerDay} €` : "—"}</td>
-                <td className="py-2 pr-3 text-right tabular-nums font-medium">{eur(c.spend)}</td>
-                <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.impressions)}</td>
-                <td className="py-2 pr-3 text-right tabular-nums">{fmt(c.clicks)}</td>
-                <td className="py-2 pr-3 text-right tabular-nums">{pct(c.ctr)}</td>
-                <td className="py-2 pr-3 text-right tabular-nums">{c.conversions ?? "—"}</td>
-                <td className="py-2 text-right tabular-nums font-medium">{eur(costPerConv)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr className="border-t font-semibold text-xs">
-            <td colSpan={3} className="pt-2 pr-4 text-muted-foreground">Gesamt</td>
-            <td className="pt-2 pr-3 text-right tabular-nums">{eur(sorted.reduce((a, c) => a + (c.spend ?? 0), 0))}</td>
-            <td className="pt-2 pr-3 text-right tabular-nums">{fmt(sorted.reduce((a, c) => a + (c.impressions ?? 0), 0))}</td>
-            <td className="pt-2 pr-3 text-right tabular-nums">{fmt(sorted.reduce((a, c) => a + (c.clicks ?? 0), 0))}</td>
-            <td className="pt-2 pr-3"></td>
-            <td className="pt-2 pr-3 text-right tabular-nums">{sorted.reduce((a, c) => a + (c.conversions ?? 0), 0).toFixed(2)}</td>
-            {(() => {
-              const totalSpend = sorted.reduce((a, c) => a + (c.spend ?? 0), 0);
-              const totalConv  = sorted.reduce((a, c) => a + (c.conversions ?? 0), 0);
-              return <td className="pt-2 text-right tabular-nums">{totalConv > 0 ? eur(totalSpend / totalConv) : "—"}</td>;
-            })()}
-          </tr>
-        </tfoot>
-      </table>
     </div>
   );
 }
@@ -238,76 +172,93 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-// ── Date helpers (used for subtitle) ─────────────────────────────────────────
-
-function today() { return new Date().toISOString().slice(0, 10); }
-
 // ── Aggregation helpers ──────────────────────────────────────────────────────
 
-type ChartRow = { name: string; Ads: number; SEO: number; "Type-in": number; Social: number; Referral: number; Leads: number; Werbekosten: number };
-type LangRow  = { name: string; DE: number; EN: number; FR: number; IT: number };
+type ChartRow = { name: string; Ads: number; SEO: number; Social: number; Leads: number; Werbekosten: number };
 
-function aggregateMonthly(reports: any[], multiYear: boolean): { chart: ChartRow[]; lang: LangRow[] } {
-  const months: Record<string, { ch: ChartRow; lg: LangRow }> = {};
-  for (const r of reports) {
-    const m = r.weekStart.slice(0, 7); // YYYY-MM
-    const label = multiYear ? m : new Date(r.weekStart + "T12:00:00Z").toLocaleDateString("de-DE", { month: "short" });
-    if (!months[m]) {
-      months[m] = {
-        ch: { name: label, Ads: 0, SEO: 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0 },
-        lg: { name: label, DE: 0, EN: 0, FR: 0, IT: 0 },
-      };
+/** Group kpiSnapshots by date, then bucket into the chosen granularity */
+function aggregateSnapshots(
+  snapshots: any[],
+  granularity: "daily" | "weekly" | "monthly",
+  multiYear: boolean,
+): ChartRow[] {
+  // Step 1: merge all sources per date
+  const byDate: Record<string, ChartRow> = {};
+  for (const s of snapshots) {
+    if (!byDate[s.date]) {
+      byDate[s.date] = { name: s.date, Ads: 0, SEO: 0, Social: 0, Leads: 0, Werbekosten: 0 };
     }
-    const c = months[m].ch;
-    c.Ads += r.chAds ?? 0; c.SEO += r.chSeo ?? 0; c["Type-in"] += r.chDirect ?? 0;
-    c.Social += r.chSocial ?? 0; c.Referral += r.chReferral ?? 0;
-    c.Leads += r.leads ?? 0; c.Werbekosten += r.adSpend ?? 0;
-    const l = months[m].lg;
-    l.DE += r.visitorsDE ?? 0; l.EN += r.visitorsEN ?? 0;
-    l.FR += r.visitorsFR ?? 0; l.IT += r.visitorsIT ?? 0;
+    const c = byDate[s.date];
+    if (s.source === "gsc")    { c.SEO += s.clicks ?? 0; }
+    if (s.source === "publer") { c.Social += s.socialReach ?? 0; }
+    if (s.source === "ads")    { c.Ads += s.adClicks ?? 0; c.Werbekosten += s.adSpend ?? 0; }
+    if (s.source === "manual") { c.Leads += s.leadsCount ?? 0; }
   }
-  const sorted = Object.entries(months).sort(([a], [b]) => a.localeCompare(b));
-  return { chart: sorted.map(([, v]) => v.ch), lang: sorted.map(([, v]) => v.lg) };
+
+  const sortedDates = Object.keys(byDate).sort();
+
+  if (granularity === "daily") {
+    return sortedDates.map(d => ({ ...byDate[d], name: d.slice(5) }));
+  }
+
+  // Step 2: bucket by week or month
+  const buckets: Record<string, ChartRow> = {};
+  for (const date of sortedDates) {
+    const d = new Date(date + "T12:00:00Z");
+    let key: string;
+    let label: string;
+
+    if (granularity === "weekly") {
+      // ISO week: Monday-based
+      const day = d.getDay() || 7;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - day + 1);
+      key = monday.toISOString().slice(0, 10);
+      const weekNum = getISOWeek(d);
+      label = multiYear ? `${d.getFullYear()} KW${weekNum}` : `KW ${weekNum}`;
+    } else {
+      key = date.slice(0, 7);
+      label = multiYear ? key : d.toLocaleDateString("de-DE", { month: "short" });
+    }
+
+    if (!buckets[key]) {
+      buckets[key] = { name: label, Ads: 0, SEO: 0, Social: 0, Leads: 0, Werbekosten: 0 };
+    }
+    const b = buckets[key];
+    const row = byDate[date];
+    b.Ads += row.Ads;
+    b.SEO += row.SEO;
+    b.Social += row.Social;
+    b.Leads += row.Leads;
+    b.Werbekosten += row.Werbekosten;
+  }
+
+  return Object.entries(buckets)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v);
 }
 
-function dailyToChartData(snapshots: any[]): { chart: ChartRow[]; lang: LangRow[] } {
-  // Group all source snapshots by date
-  const byDate: Record<string, { gsc: any; publer: any; ads: any; manual: any }> = {};
-  for (const s of snapshots) {
-    if (!byDate[s.date]) byDate[s.date] = { gsc: null, publer: null, ads: null, manual: null };
-    byDate[s.date][s.source as keyof typeof byDate[string]] = s;
-  }
-  const sorted = Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b));
-  const chart: ChartRow[] = sorted.map(([date, src]) => ({
-    name: date.slice(5),
-    SEO: src.gsc?.clicks ?? 0,
-    Ads: src.ads?.adClicks ?? 0,
-    Social: src.publer?.socialReach ?? 0,
-    "Type-in": 0,
-    Referral: 0,
-    Leads: src.manual?.leadsCount ?? 0,
-    Werbekosten: src.ads?.adSpend ?? 0,
-  }));
-  const lang: LangRow[] = sorted.map(([date]) => ({ name: date.slice(5), DE: 0, EN: 0, FR: 0, IT: 0 }));
-  return { chart, lang };
+function getISOWeek(d: Date): number {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ReportPage() {
   const { brand } = useParams<{ brand: string }>();
-  const curYear = new Date().getFullYear();
   const { dateFrom, dateTo, granularity } = useGlobalFilters();
   const brandData = useQuery(api.brands.getBySlug, { slug: brand });
 
-  const reports = useQuery(
-    api.reports.getWeeklyReports,
+  // Primary data source: kpiSnapshots (filled by Sync button)
+  const snapshots = useQuery(
+    api.kpi.getAllByDateRange,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
-  const dailySnapshots = useQuery(
-    api.kpi.getAllByDateRange,
-    brandData && granularity === "daily" ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
-  );
+
+  // CRM data
   const leads = useQuery(
     api.reports.getCrmLeads,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
@@ -316,10 +267,8 @@ export default function ReportPage() {
     api.reports.getCrmLeadsStats,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
-  const campaigns = useQuery(
-    api.reports.getAdsCampaigns,
-    brandData ? { brandId: brandData._id, period: `Q1 ${curYear}` } : "skip"
-  );
+
+  // Google Ads detail data
   const gadsCampaigns = useQuery(
     api.gads.getCampaignStats,
     brandData ? { brandId: brandData._id, period: "all-time" } : "skip"
@@ -333,104 +282,49 @@ export default function ReportPage() {
     brandData ? { brandId: brandData._id, period: "all-time" } : "skip"
   );
 
-  if (!brandData || reports === undefined) {
+  if (!brandData || snapshots === undefined) {
     return <div className="p-6 text-muted-foreground">Lädt…</div>;
   }
 
-  // ── KPI Summaries ──────────────────────────────────────────────────────────
-  const totalVisitors = reports.reduce((a, r) => a + (r.visitors ?? 0), 0);
-  const totalLeads    = reports.reduce((a, r) => a + (r.leads ?? 0), 0);
-  const totalAdSpend  = reports.reduce((a, r) => a + (r.adSpend ?? 0), 0);
+  // ── KPI Summaries from kpiSnapshots ──────────────────────────────────────
+  // Aggregate totals across all days & sources
+  let totalClicks = 0, totalImpressions = 0, totalAdSpend = 0, totalAdClicks = 0;
+  let totalSocialReach = 0, totalSocialEngagement = 0;
+  let avgPosition = 0, avgPositionCount = 0;
+
+  for (const s of snapshots) {
+    if (s.source === "gsc") {
+      totalClicks += s.clicks ?? 0;
+      totalImpressions += s.impressions ?? 0;
+      if (s.avgPosition) { avgPosition += s.avgPosition; avgPositionCount++; }
+    }
+    if (s.source === "ads") {
+      totalAdSpend += s.adSpend ?? 0;
+      totalAdClicks += s.adClicks ?? 0;
+    }
+    if (s.source === "publer") {
+      totalSocialReach += s.socialReach ?? 0;
+      totalSocialEngagement += s.socialEngagement ?? 0;
+    }
+  }
+
   const totalCrmLeads = leadsStats?.total ?? 0;
   const ordersWon     = leadsStats?.orderReceived ?? 0;
   const newCustomers  = leadsStats?.newCustomer ?? 0;
 
   // ── Subtitle ──────────────────────────────────────────────────────────────
   const fmtShort = (s: string) => new Date(s + "T12:00:00Z").toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
-  const granLabel = granularity === "daily" ? "Tage" : granularity === "weekly" ? "Wochen" : "Monate";
   const multiYear = dateFrom.slice(0, 4) !== dateTo.slice(0, 4);
 
-  // ── Chart Data based on granularity ─────────────────────────────────────────
-  let chartData: ChartRow[] = [];
-  let langData: LangRow[] = [];
-  let dataCount = 0;
-
-  if (granularity === "daily") {
-    // Daily view: ONLY use kpiSnapshots — no weekly reports (avoids fake daily data points)
-    const fmtDate = (s: string) => s.slice(5); // MM-DD
-    const byDate: Record<string, { ch: ChartRow }> = {};
-
-    if (dailySnapshots) {
-      for (const s of dailySnapshots) {
-        if (!byDate[s.date]) {
-          byDate[s.date] = {
-            ch: { name: fmtDate(s.date), Ads: 0, SEO: 0, "Type-in": 0, Social: 0, Referral: 0, Leads: 0, Werbekosten: 0 },
-          };
-        }
-        const c = byDate[s.date].ch;
-        if (s.source === "gsc")    { c.SEO += s.clicks ?? 0; }
-        if (s.source === "publer") { c.Social += s.socialReach ?? 0; }
-        if (s.source === "ads")    { c.Ads += s.adClicks ?? 0; c.Werbekosten += s.adSpend ?? 0; }
-        if (s.source === "manual") { c.Leads += s.leadsCount ?? 0; }
-      }
-    }
-
-    const sorted = Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b));
-    chartData = sorted.map(([, v]) => v.ch);
-    langData = [];
-    dataCount = sorted.length;
-  } else if (granularity === "monthly") {
-    const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
-    const m = aggregateMonthly(sortedReports, multiYear);
-    chartData = m.chart; langData = m.lang;
-    dataCount = m.chart.length;
-  } else {
-    // weekly (default)
-    const sortedReports = [...reports].sort((a, b) => a.weekStart.localeCompare(b.weekStart));
-    chartData = sortedReports.map(r => ({
-      name:    multiYear ? `${r.year} ${r.kw}` : r.kw,
-      Ads:     r.chAds ?? 0,
-      SEO:     r.chSeo ?? 0,
-      "Type-in": r.chDirect ?? 0,
-      Social:  r.chSocial ?? 0,
-      Referral: r.chReferral ?? 0,
-      Leads:   r.leads ?? 0,
-      Werbekosten: r.adSpend ?? 0,
-    }));
-    langData = sortedReports.map(r => ({
-      name: multiYear ? `${r.year} ${r.kw}` : r.kw,
-      DE: r.visitorsDE ?? 0, EN: r.visitorsEN ?? 0,
-      FR: r.visitorsFR ?? 0, IT: r.visitorsIT ?? 0,
-    }));
-    dataCount = reports.length;
-  }
-
-  const subtitle = `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${dataCount} ${granLabel}`;
-
-  // ── Top Keywords ───────────────────────────────────────────────────────────
-  const kwFreq: Record<string, { count: number; lastSeen: string }> = {};
-  for (const r of reports) {
-    if (!r.topKeyword) continue;
-    if (!kwFreq[r.topKeyword]) kwFreq[r.topKeyword] = { count: 0, lastSeen: r.kw };
-    kwFreq[r.topKeyword].count++;
-    kwFreq[r.topKeyword].lastSeen = r.kw;
-  }
-  const topKeywords = Object.entries(kwFreq)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 10);
+  // ── Chart Data ─────────────────────────────────────────────────────────────
+  const chartData = aggregateSnapshots(snapshots, granularity, multiYear);
+  const granLabel = granularity === "daily" ? "Tage" : granularity === "weekly" ? "Wochen" : "Monate";
+  const subtitle = `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${chartData.length} ${granLabel}`;
 
   const CH_COLORS: Record<string, string> = {
     Ads:      "#ef4444",
     SEO:      "#22c55e",
-    "Type-in": "#3b82f6",
     Social:   "#8b5cf6",
-    Referral: "#f59e0b",
-  };
-  const LANG_COLORS: Record<string, string> = {
-    DE: "#3b82f6",
-    EN: "#f59e0b",
-    FR: "#8b5cf6",
-    IT: "#22c55e",
   };
 
   return (
@@ -444,15 +338,18 @@ export default function ReportPage() {
         <SyncButton />
       </div>
 
-      {/* KPI Summary — always visible */}
+      {/* KPI Summary — from kpiSnapshots */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label="Besucher gesamt"   value={fmt(totalVisitors)}    color="#3b82f6" />
-        <KpiCard label="Website-Leads"     value={String(totalLeads)}    color="#22c55e" />
-        <KpiCard label="Werbekosten"       value={eur(totalAdSpend)}     color="#ef4444" />
-        <KpiCard label="CRM Anfragen"      value={String(totalCrmLeads)} color="#8b5cf6" />
-        <KpiCard label="Aufträge erhalten" value={String(ordersWon)}
-          sub={`${Math.round((ordersWon / Math.max(totalCrmLeads, 1)) * 100)} % Conv.`} color="#22c55e" />
-        <KpiCard label="Neukunden"         value={String(newCustomers)}  color="#f59e0b" />
+        <KpiCard label="SEO Klicks"          value={fmt(totalClicks)}       color="#22c55e" />
+        <KpiCard label="SEO Impressionen"    value={fmt(totalImpressions)}  color="#3b82f6"
+          sub={avgPositionCount > 0 ? `Ø Pos. ${(avgPosition / avgPositionCount).toFixed(1)}` : undefined} />
+        <KpiCard label="Werbekosten"         value={eur(totalAdSpend)}      color="#ef4444"
+          sub={totalAdClicks > 0 ? `${fmt(totalAdClicks)} Klicks` : undefined} />
+        <KpiCard label="Social Reichweite"   value={fmt(totalSocialReach)}  color="#8b5cf6"
+          sub={totalSocialEngagement > 0 ? `${fmt(totalSocialEngagement)} Engagement` : undefined} />
+        <KpiCard label="CRM Anfragen"        value={String(totalCrmLeads)}  color="#f59e0b" />
+        <KpiCard label="Aufträge"            value={String(ordersWon)}      color="#22c55e"
+          sub={totalCrmLeads > 0 ? `${Math.round((ordersWon / totalCrmLeads) * 100)} % Conv.` : undefined} />
       </div>
 
       {/* Tabs */}
@@ -465,110 +362,76 @@ export default function ReportPage() {
 
         {/* ── Tab: Traffic & SEO ─────────────────────────────────────────── */}
         <TabsContent value="traffic" className="space-y-4 mt-4">
-          {/* Traffic by Channel */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Traffic-Kanäle pro KW</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  {Object.entries(CH_COLORS).map(([key, color]) => (
-                    <Bar key={key} dataKey={key} stackId="a" fill={color} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Leads + AdSpend Row */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {chartData.length === 0 ? (
             <Card>
-              <CardHeader><CardTitle className="text-base">Website-Leads pro KW</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="Leads" fill="#22c55e" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="py-8">
+                <p className="text-center text-muted-foreground">
+                  Keine Daten im gewählten Zeitraum. Klicke oben auf den Sync-Button um Daten zu laden.
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base">Werbekosten pro KW (€)</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Line dataKey="Werbekosten" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-
-          {/* Top Keywords (GSC) */}
-          <Card>
-            <CardHeader><CardTitle className="text-base">Top Keywords (GSC)</CardTitle></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {reports.filter(r => r.topKeyword).length > 0 && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-xs text-muted-foreground">
-                          <th className="text-left pb-2 pr-4 font-medium">KW</th>
-                          <th className="text-left pb-2 font-medium">Top-Keyword</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {reports.filter(r => r.topKeyword).map(r => (
-                          <tr key={r._id} className="hover:bg-muted/30">
-                            <td className="py-1.5 pr-4 text-xs text-muted-foreground tabular-nums">{r.kw}</td>
-                            <td className="py-1.5 text-xs font-mono">{r.topKeyword}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                {topKeywords.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Häufigkeit im Zeitraum</p>
-                    <div className="space-y-1.5">
-                      {topKeywords.map(([kw, { count }]) => (
-                        <div key={kw} className="flex items-center gap-3">
-                          <div className="flex-1 font-mono text-xs truncate">{kw}</div>
-                          <div className="w-32 h-5 rounded bg-muted overflow-hidden">
-                            <div className="h-full rounded bg-primary/60"
-                              style={{ width: `${(count / reports.length) * 100}%` }} />
-                          </div>
-                          <div className="w-20 text-right text-xs text-muted-foreground tabular-nums">
-                            {count}× ({Math.round((count / reports.length) * 100)} %)
-                          </div>
-                        </div>
+          ) : (
+            <>
+              {/* Traffic by Channel */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Traffic-Kanäle pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      {Object.entries(CH_COLORS).map(([key, color]) => (
+                        <Bar key={key} dataKey={key} stackId="a" fill={color} />
                       ))}
-                    </div>
-                  </div>
-                )}
-                {reports.filter(r => r.topKeyword).length === 0 && topKeywords.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Keine Keyword-Daten im gewählten Zeitraum.</p>
-                )}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Leads + AdSpend Row */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">
+                    Werbekosten pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"} (€)
+                  </CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Line dataKey="Werbekosten" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="text-base">
+                    Social Reichweite pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"}
+                  </CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Line dataKey="Social" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
+            </>
+          )}
         </TabsContent>
 
         {/* ── Tab: CRM ──────────────────────────────────────────────────────── */}
