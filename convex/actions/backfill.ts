@@ -15,7 +15,7 @@ const GSC_PROPERTIES: Record<string, string> = {
 const BRAND_KEYWORDS: Record<string, string[]> = {
   bodycam:    ["bodycam", "body-cam", "body cam", "netco-bc", "bc-"],
   microvista: ["microvista", "micro vista", "ndt-"],
-  bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-"],
+  bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-", "bk-"],
 };
 
 function dateRange(days: number): string[] {
