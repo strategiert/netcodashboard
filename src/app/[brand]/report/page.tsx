@@ -283,6 +283,13 @@ export default function ReportPage() {
     brandData ? { brandId: brandData._id, period: "all-time" } : "skip"
   );
 
+  // Channel toggle state — null means all visible (must be before conditional returns!)
+  const [activeChannel, setActiveChannel] = useState<string | null>(null);
+  const handleLegendClick = useCallback((entry: any) => {
+    const clicked = entry.dataKey ?? entry.value;
+    setActiveChannel(prev => prev === clicked ? null : clicked);
+  }, []);
+
   if (!brandData || snapshots === undefined) {
     return <div className="p-6 text-muted-foreground">Lädt…</div>;
   }
@@ -328,14 +335,6 @@ export default function ReportPage() {
     Social:   "#8b5cf6",
   };
   const ALL_CHANNELS = Object.keys(CH_COLORS);
-
-  // Channel toggle state — null means all visible
-  const [activeChannel, setActiveChannel] = useState<string | null>(null);
-
-  const handleLegendClick = useCallback((entry: any) => {
-    const clicked = entry.dataKey ?? entry.value;
-    setActiveChannel(prev => prev === clicked ? null : clicked);
-  }, []);
 
   return (
     <div className="p-6 space-y-4">
