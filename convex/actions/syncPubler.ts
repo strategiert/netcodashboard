@@ -6,7 +6,7 @@ import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
 
 // Account types that support analytics (skip personal LinkedIn profiles)
 const ANALYTICS_ACCOUNT_TYPES = new Set([
-  "fb_page", "ig_business", "in_page", "youtube", "twitter",
+  "fb_page", "ig_business", "in_profile", "in_page", "youtube", "twitter",
   "tiktok", "pinterest", "threads", "mastodon", "bluesky",
 ]);
 
@@ -18,6 +18,12 @@ async function fetchPublerPostCount(workspaceId: string, date: string): Promise<
     workspaceId
   );
   return (data.total ?? data.posts?.length ?? 0) as number;
+}
+
+function lastValue(rows: any[] | undefined, field: "value" | "last_value"): number {
+  if (!rows?.length) return 0;
+  // Take the most recent data point (last in array)
+  return (rows[rows.length - 1]?.[field] ?? 0) as number;
 }
 
 async function fetchAnalyticsForDate(workspaceId: string, date: string) {
@@ -32,27 +38,27 @@ async function fetchAnalyticsForDate(workspaceId: string, date: string) {
     socialLinkClicks: 0,
   };
 
+  // Fetch a 14-day window so we catch weekly data points from LinkedIn etc.
+  const from = new Date(date + "T12:00:00Z");
+  from.setDate(from.getDate() - 13);
+  const fromStr = from.toISOString().slice(0, 10);
+
   for (const account of accounts) {
     if (!ANALYTICS_ACCOUNT_TYPES.has(account.type)) continue;
     try {
       const chartParam = CHART_IDS.map(id => `chart_ids[]=${id}`).join("&");
       const data = await publerGet(
-        `/api/v1/analytics/${account.id}/chart_data?${chartParam}&from=${date}&to=${date}`,
+        `/api/v1/analytics/${account.id}/chart_data?${chartParam}&from=${fromStr}&to=${date}`,
         workspaceId
       );
       const cur = data.current ?? {};
 
-      const reach = (cur.post_reach?.[0]?.value ?? 0) as number;
-      const engagement = (cur.post_engagement?.[0]?.value ?? 0) as number;
-      const followers = (cur.followers?.[0]?.last_value ?? 0) as number;
-      const videoViews = (cur.video_views?.[0]?.value ?? 0) as number;
-      const linkClicks = (cur.link_clicks?.[0]?.value ?? 0) as number;
-
-      totals.socialReach += reach;
-      totals.socialEngagement += engagement;
-      totals.socialFollowers += followers; // sum across channels
-      totals.socialVideoViews += videoViews;
-      totals.socialLinkClicks += linkClicks;
+      // Use the most recent data point in the range
+      totals.socialReach += lastValue(cur.post_reach, "value");
+      totals.socialEngagement += lastValue(cur.post_engagement, "value");
+      totals.socialFollowers += lastValue(cur.followers, "last_value");
+      totals.socialVideoViews += lastValue(cur.video_views, "value");
+      totals.socialLinkClicks += lastValue(cur.link_clicks, "value");
     } catch {
       // skip accounts that don't support analytics
     }
