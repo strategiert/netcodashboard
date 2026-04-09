@@ -175,25 +175,44 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // ── Aggregation helpers ──────────────────────────────────────────────────────
 
-type ChartRow = { name: string; Ads: number; SEO: number; Social: number; Leads: number; Werbekosten: number };
+type FullRow = {
+  name: string;
+  // Klicks
+  adsClicks: number; seoClicks: number; socialClicks: number;
+  // Impressionen / Reichweite
+  adsImpressions: number; seoImpressions: number; socialReach: number;
+  // Kosten
+  adsCost: number;
+};
 
-/** Group kpiSnapshots by date, then bucket into the chosen granularity */
+const EMPTY_ROW: Omit<FullRow, "name"> = {
+  adsClicks: 0, seoClicks: 0, socialClicks: 0,
+  adsImpressions: 0, seoImpressions: 0, socialReach: 0,
+  adsCost: 0,
+};
+
 function aggregateSnapshots(
   snapshots: any[],
   granularity: "daily" | "weekly" | "monthly",
   multiYear: boolean,
-): ChartRow[] {
-  // Step 1: merge all sources per date
-  const byDate: Record<string, ChartRow> = {};
+): FullRow[] {
+  const byDate: Record<string, FullRow> = {};
   for (const s of snapshots) {
-    if (!byDate[s.date]) {
-      byDate[s.date] = { name: s.date, Ads: 0, SEO: 0, Social: 0, Leads: 0, Werbekosten: 0 };
-    }
+    if (!byDate[s.date]) byDate[s.date] = { name: s.date, ...EMPTY_ROW };
     const c = byDate[s.date];
-    if (s.source === "gsc")    { c.SEO += s.clicks ?? 0; }
-    if (s.source === "publer") { c.Social += s.socialReach ?? 0; }
-    if (s.source === "ads")    { c.Ads += s.adClicks ?? 0; c.Werbekosten += s.adSpend ?? 0; }
-    if (s.source === "manual") { c.Leads += s.leadsCount ?? 0; }
+    if (s.source === "gsc") {
+      c.seoClicks += s.clicks ?? 0;
+      c.seoImpressions += s.impressions ?? 0;
+    }
+    if (s.source === "ads") {
+      c.adsClicks += s.adClicks ?? 0;
+      c.adsImpressions += s.adImpressions ?? 0;
+      c.adsCost += s.adSpend ?? 0;
+    }
+    if (s.source === "publer") {
+      c.socialReach += s.socialReach ?? 0;
+      c.socialClicks += s.socialLinkClicks ?? 0;
+    }
   }
 
   const sortedDates = Object.keys(byDate).sort();
@@ -202,15 +221,13 @@ function aggregateSnapshots(
     return sortedDates.map(d => ({ ...byDate[d], name: d.slice(5) }));
   }
 
-  // Step 2: bucket by week or month
-  const buckets: Record<string, ChartRow> = {};
+  const buckets: Record<string, FullRow> = {};
   for (const date of sortedDates) {
     const d = new Date(date + "T12:00:00Z");
     let key: string;
     let label: string;
 
     if (granularity === "weekly") {
-      // ISO week: Monday-based
       const day = d.getDay() || 7;
       const monday = new Date(d);
       monday.setDate(d.getDate() - day + 1);
@@ -222,22 +239,46 @@ function aggregateSnapshots(
       label = multiYear ? key : d.toLocaleDateString("de-DE", { month: "short" });
     }
 
-    if (!buckets[key]) {
-      buckets[key] = { name: label, Ads: 0, SEO: 0, Social: 0, Leads: 0, Werbekosten: 0 };
-    }
+    if (!buckets[key]) buckets[key] = { name: label, ...EMPTY_ROW };
     const b = buckets[key];
     const row = byDate[date];
-    b.Ads += row.Ads;
-    b.SEO += row.SEO;
-    b.Social += row.Social;
-    b.Leads += row.Leads;
-    b.Werbekosten += row.Werbekosten;
+    b.adsClicks += row.adsClicks; b.seoClicks += row.seoClicks; b.socialClicks += row.socialClicks;
+    b.adsImpressions += row.adsImpressions; b.seoImpressions += row.seoImpressions; b.socialReach += row.socialReach;
+    b.adsCost += row.adsCost;
   }
 
-  return Object.entries(buckets)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, v]) => v);
+  return Object.entries(buckets).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
 }
+
+type MetricView = "clicks" | "impressions" | "costs";
+
+const METRIC_CONFIG: Record<MetricView, {
+  label: string;
+  channels: { key: string; label: string; color: string }[];
+}> = {
+  clicks: {
+    label: "Klicks",
+    channels: [
+      { key: "adsClicks", label: "Ads", color: "#ef4444" },
+      { key: "seoClicks", label: "SEO", color: "#22c55e" },
+      { key: "socialClicks", label: "Social", color: "#8b5cf6" },
+    ],
+  },
+  impressions: {
+    label: "Impressionen / Reichweite",
+    channels: [
+      { key: "adsImpressions", label: "Ads", color: "#ef4444" },
+      { key: "seoImpressions", label: "SEO", color: "#22c55e" },
+      { key: "socialReach", label: "Social", color: "#8b5cf6" },
+    ],
+  },
+  costs: {
+    label: "Werbekosten (€)",
+    channels: [
+      { key: "adsCost", label: "Ads", color: "#ef4444" },
+    ],
+  },
+};
 
 function getISOWeek(d: Date): number {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -283,7 +324,8 @@ export default function ReportPage() {
     brandData ? { brandId: brandData._id, period: "all-time" } : "skip"
   );
 
-  // Channel toggle state — null means all visible (must be before conditional returns!)
+  // Metric view toggle (must be before conditional returns!)
+  const [metricView, setMetricView] = useState<MetricView>("clicks");
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const handleLegendClick = useCallback((entry: any) => {
     const clicked = entry.dataKey ?? entry.value;
@@ -329,12 +371,8 @@ export default function ReportPage() {
   const granLabel = granularity === "daily" ? "Tage" : granularity === "weekly" ? "Wochen" : "Monate";
   const subtitle = `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${chartData.length} ${granLabel}`;
 
-  const CH_COLORS: Record<string, string> = {
-    Ads:      "#ef4444",
-    SEO:      "#22c55e",
-    Social:   "#8b5cf6",
-  };
-  const ALL_CHANNELS = Object.keys(CH_COLORS);
+  const currentMetric = METRIC_CONFIG[metricView];
+  const periodLabel = granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat";
 
   return (
     <div className="p-6 space-y-4">
@@ -381,19 +419,34 @@ export default function ReportPage() {
             </Card>
           ) : (
             <>
-              {/* Traffic by Channel */}
+              {/* Metric Switcher */}
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="text-base">
-                    Traffic-Kanäle pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"}
+                    {currentMetric.label} pro {periodLabel}
                   </CardTitle>
+                  <div className="flex gap-1 rounded-lg border p-0.5">
+                    {(Object.entries(METRIC_CONFIG) as [MetricView, typeof currentMetric][]).map(([key, cfg]) => (
+                      <button
+                        key={key}
+                        onClick={() => { setMetricView(key); setActiveChannel(null); }}
+                        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                          metricView === key
+                            ? "bg-primary text-primary-foreground font-medium"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {cfg.label.split(" ")[0]}
+                      </button>
+                    ))}
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={metricView === "costs" ? (v: number) => `${v}€` : undefined} />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend
                         wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
@@ -405,60 +458,25 @@ export default function ReportPage() {
                           }}>{value}</span>
                         )}
                       />
-                      {ALL_CHANNELS.map(key => (
+                      {currentMetric.channels.map(ch => (
                         <Bar
-                          key={key}
-                          dataKey={key}
+                          key={ch.key}
+                          dataKey={ch.key}
+                          name={ch.label}
                           stackId="a"
-                          fill={CH_COLORS[key]}
-                          hide={activeChannel !== null && activeChannel !== key}
+                          fill={ch.color}
+                          hide={activeChannel !== null && activeChannel !== ch.label}
                         />
                       ))}
                     </BarChart>
                   </ResponsiveContainer>
                   {activeChannel && (
                     <p className="text-xs text-muted-foreground mt-2 text-center">
-                      Nur <strong>{activeChannel}</strong> angezeigt — klicke erneut zum Zurücksetzen
+                      Nur <strong>{activeChannel}</strong> — klicke erneut zum Zurücksetzen
                     </p>
                   )}
                 </CardContent>
               </Card>
-
-              {/* Leads + AdSpend Row */}
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">
-                    Werbekosten pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"} (€)
-                  </CardTitle></CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={220}>
-                      <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Line dataKey="Werbekosten" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader><CardTitle className="text-base">
-                    Social Reichweite pro {granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat"}
-                  </CardTitle></CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={220}>
-                      <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Line dataKey="Social" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
             </>
           )}
         </TabsContent>
