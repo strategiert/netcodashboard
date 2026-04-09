@@ -157,7 +157,7 @@ function LeadsTable({ leads }: { leads: any[] }) {
 
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, isCurrency }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-popover p-3 shadow-md text-sm">
@@ -166,7 +166,13 @@ function CustomTooltip({ active, payload, label }: any) {
         <div key={p.dataKey} className="flex items-center gap-2">
           <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: p.fill ?? p.stroke }} />
           <span className="text-muted-foreground">{p.name}:</span>
-          <span className="font-semibold tabular-nums">{typeof p.value === "number" ? p.value.toLocaleString("de-DE") : p.value}</span>
+          <span className="font-semibold tabular-nums">
+            {typeof p.value === "number"
+              ? isCurrency
+                ? p.value.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"
+                : p.value.toLocaleString("de-DE")
+              : p.value}
+          </span>
         </div>
       ))}
     </div>
@@ -328,7 +334,8 @@ export default function ReportPage() {
   const [metricView, setMetricView] = useState<MetricView>("clicks");
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const handleLegendClick = useCallback((entry: any) => {
-    const clicked = entry.dataKey ?? entry.value;
+    // entry.value is the display name (e.g. "Ads"), entry.dataKey is the field (e.g. "adsClicks")
+    const clicked = entry.value ?? entry.dataKey;
     setActiveChannel(prev => prev === clicked ? null : clicked);
   }, []);
 
@@ -446,8 +453,8 @@ export default function ReportPage() {
                     <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} tickFormatter={metricView === "costs" ? (v: number) => `${v}€` : undefined} />
-                      <Tooltip content={<CustomTooltip />} />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={metricView === "costs" ? (v: number) => `${v.toLocaleString("de-DE")}€` : undefined} />
+                      <Tooltip content={<CustomTooltip isCurrency={metricView === "costs"} />} />
                       <Legend
                         wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
                         onClick={handleLegendClick}
