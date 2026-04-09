@@ -517,18 +517,23 @@ export default function ReportPage() {
 
         {/* ── Tab: Google Ads ───────────────────────────────────────────────── */}
         <TabsContent value="ads" className="space-y-4 mt-4">
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Google Ads Daten sind als Gesamtlaufzeit importiert — Zeitraumfilter hat hier keine Wirkung.
-          </p>
+          {/* Date-filtered Ads summary from kpiSnapshots */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <KpiCard label="Werbekosten" value={eur(totalAdSpend)} color="#ef4444" />
+            <KpiCard label="Klicks" value={fmt(totalAdClicks)} color="#3b82f6" />
+            <KpiCard label="Impressionen" value={fmt(snapshots.filter(s => s.source === "ads").reduce((a, s) => a + (s.adImpressions ?? 0), 0))} color="#f59e0b" />
+            <KpiCard label="Conversions" value={fmt(snapshots.filter(s => s.source === "ads").reduce((a, s) => a + (s.adConversions ?? 0), 0))} color="#22c55e" />
+          </div>
 
-          {/* Campaigns */}
+          {/* Campaigns — all-time detail data */}
           {gadsCampaigns && gadsCampaigns.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-base">Kampagnen</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  Kampagnen
+                  <span className="text-xs font-normal text-muted-foreground">Gesamtlaufzeit</span>
+                </CardTitle>
+              </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -573,7 +578,7 @@ export default function ReportPage() {
           {/* Ad Groups */}
           {gadsAdGroups && gadsAdGroups.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-base">Anzeigengruppen</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2">Anzeigengruppen <span className="text-xs font-normal text-muted-foreground">Gesamtlaufzeit</span></CardTitle></CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
