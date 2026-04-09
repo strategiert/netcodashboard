@@ -12,6 +12,7 @@ import {
   LineChart, Line, CartesianGrid,
 } from "recharts";
 import { SyncButton } from "@/components/kpi/sync-button";
+import { useState, useCallback } from "react";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
 
@@ -326,6 +327,15 @@ export default function ReportPage() {
     SEO:      "#22c55e",
     Social:   "#8b5cf6",
   };
+  const ALL_CHANNELS = Object.keys(CH_COLORS);
+
+  // Channel toggle state — null means all visible
+  const [activeChannel, setActiveChannel] = useState<string | null>(null);
+
+  const handleLegendClick = useCallback((entry: any) => {
+    const clicked = entry.dataKey ?? entry.value;
+    setActiveChannel(prev => prev === clicked ? null : clicked);
+  }, []);
 
   return (
     <div className="p-6 space-y-4">
@@ -386,12 +396,32 @@ export default function ReportPage() {
                       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      {Object.entries(CH_COLORS).map(([key, color]) => (
-                        <Bar key={key} dataKey={key} stackId="a" fill={color} />
+                      <Legend
+                        wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
+                        onClick={handleLegendClick}
+                        formatter={(value: string) => (
+                          <span style={{
+                            opacity: activeChannel && activeChannel !== value ? 0.3 : 1,
+                            fontWeight: activeChannel === value ? 700 : 400,
+                          }}>{value}</span>
+                        )}
+                      />
+                      {ALL_CHANNELS.map(key => (
+                        <Bar
+                          key={key}
+                          dataKey={key}
+                          stackId="a"
+                          fill={CH_COLORS[key]}
+                          hide={activeChannel !== null && activeChannel !== key}
+                        />
                       ))}
                     </BarChart>
                   </ResponsiveContainer>
+                  {activeChannel && (
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      Nur <strong>{activeChannel}</strong> angezeigt — klicke erneut zum Zurücksetzen
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
