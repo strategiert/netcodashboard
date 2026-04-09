@@ -38,7 +38,7 @@ async function fetchAdsCampaigns(token: string, date: string) {
   `;
 
   const res = await fetch(
-    `https://googleads.googleapis.com/v17/customers/${customerId}/googleAds:search`,
+    `https://googleads.googleapis.com/v22/customers/${customerId}/googleAds:search`,
     {
       method: "POST",
       headers: {
@@ -88,11 +88,11 @@ export const syncAds = action({
       if (!slug) continue;
       if (!aggregated[slug]) aggregated[slug] = { adSpend: 0, adClicks: 0, adImpressions: 0, adConversions: 0, cpcSum: 0, count: 0 };
       const m = row.metrics;
-      aggregated[slug].adSpend       += (m.cost_micros   ?? 0) / 1_000_000;
-      aggregated[slug].adClicks      += m.clicks         ?? 0;
-      aggregated[slug].adImpressions += m.impressions    ?? 0;
-      aggregated[slug].adConversions += m.conversions    ?? 0;
-      aggregated[slug].cpcSum        += (m.average_cpc   ?? 0) / 1_000_000;
+      aggregated[slug].adSpend       += Number(m.costMicros   ?? m.cost_micros   ?? 0) / 1_000_000;
+      aggregated[slug].adClicks      += Number(m.clicks       ?? 0);
+      aggregated[slug].adImpressions += Number(m.impressions  ?? 0);
+      aggregated[slug].adConversions += Number(m.conversions  ?? 0);
+      aggregated[slug].cpcSum        += Number(m.averageCpc   ?? m.average_cpc   ?? 0) / 1_000_000;
       aggregated[slug].count++;
     }
 
