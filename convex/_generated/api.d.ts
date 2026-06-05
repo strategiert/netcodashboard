@@ -35,6 +35,7 @@ import type * as reports from "../reports.js";
 import type * as seed from "../seed.js";
 import type * as seoClusters from "../seoClusters.js";
 import type * as stakeholders from "../stakeholders.js";
+import type * as teamBoard from "../teamBoard.js";
 
 import type {
   ApiFromModules,
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   seoClusters: typeof seoClusters;
   stakeholders: typeof stakeholders;
+  teamBoard: typeof teamBoard;
 }>;
 
 /**
