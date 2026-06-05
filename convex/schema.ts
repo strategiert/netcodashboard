@@ -380,4 +380,15 @@ export default defineSchema({
   })
     .index("by_agent", ["agent"])
     .index("by_status", ["status"]),
+
+  // HTML-Previews: Team veröffentlicht Arbeitsstände als unerratbare URL /p/{slug},
+  // damit Bereichsleitung Ergebnisse direkt im Browser ansehen kann. Public read, noindex.
+  previews: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    html: v.string(),
+    agent: v.string(),
+    project: v.optional(v.string()),
+    updatedAt: v.number(),
+  }).index("by_slug", ["slug"]),
 });

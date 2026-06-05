@@ -30,6 +30,7 @@ import type * as gads from "../gads.js";
 import type * as journeys from "../journeys.js";
 import type * as kpi from "../kpi.js";
 import type * as phases from "../phases.js";
+import type * as previews from "../previews.js";
 import type * as publer from "../publer.js";
 import type * as reports from "../reports.js";
 import type * as seed from "../seed.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   journeys: typeof journeys;
   kpi: typeof kpi;
   phases: typeof phases;
+  previews: typeof previews;
   publer: typeof publer;
   reports: typeof reports;
   seed: typeof seed;
