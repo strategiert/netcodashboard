@@ -367,4 +367,17 @@ export default defineSchema({
     targetConversions: v.optional(v.number()),
   })
     .index("by_brand_year_month", ["brandId", "year", "month"]),
+
+  // Team-Board: Status-Updates der Claude-Code-Instanzen des Marketing-Teams.
+  // Kein UI-Link — nur über /intern/agent-board (key-gated) + /api/team-board/* erreichbar.
+  teamTasks: defineTable({
+    agent: v.string(),             // z. B. "Claude Code (ffranz)"
+    title: v.string(),
+    status: v.string(),            // "In Arbeit" | "Fertig" | "Blockiert" | "Backlog"
+    notes: v.optional(v.string()), // Fortschritt/Entscheidungen/Ergebnis
+    project: v.optional(v.string()), // z. B. "bodycam", "microvista", "seo"
+    updatedAt: v.number(),
+  })
+    .index("by_agent", ["agent"])
+    .index("by_status", ["status"]),
 });
