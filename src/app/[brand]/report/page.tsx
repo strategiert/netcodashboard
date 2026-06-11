@@ -12,6 +12,8 @@ import {
   LineChart, Line, CartesianGrid,
 } from "recharts";
 import { SyncButton } from "@/components/kpi/sync-button";
+import { Button } from "@/components/ui/button";
+import { Download, Printer } from "lucide-react";
 import { useState, useCallback } from "react";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
@@ -295,6 +297,28 @@ function getISOWeek(d: Date): number {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+// CSV-Export der GA4-Wochendaten (Excel-kompatibel: Semikolon + BOM)
+function downloadWeeklyCsv(brandName: string, rows: any[]) {
+  const cols = ["kw", "weekStart", "sessions", "visitors", "pageviews", "bounceRate",
+    "chAds", "chSeo", "chDirect", "chSocial", "chReferral", "chOther", "leads", "adSpend"];
+  const header = ["KW", "Wochenstart", "Sitzungen", "Nutzer", "Seitenaufrufe", "Bounce %",
+    "Ads", "SEO", "Direkt", "Social", "Referral", "Sonstige", "Leads", "Werbekosten"];
+  const lines = [header.join(";")];
+  for (const r of rows) {
+    lines.push(cols.map((c) => {
+      const v = (r as any)[c];
+      if (v == null) return "";
+      return typeof v === "number" ? String(v).replace(".", ",") : String(v);
+    }).join(";"));
+  }
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `traffic-report-${brandName.toLowerCase().replace(/\s+/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 export default function ReportPage() {
   const { brand } = useParams<{ brand: string }>();
   const { dateFrom, dateTo, granularity } = useGlobalFilters();
@@ -328,6 +352,12 @@ export default function ReportPage() {
   const gadsKeywords = useQuery(
     api.gads.getKeywords,
     brandData ? { brandId: brandData._id, period: "all-time" } : "skip"
+  );
+
+  // Wochen-Traffic aus GA4 (syncTraffic-Cron -> weeklyReports)
+  const weekly = useQuery(
+    api.reports.getWeeklyReports,
+    brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
 
   // Metric view toggle (must be before conditional returns!)
@@ -389,7 +419,15 @@ export default function ReportPage() {
           <h1 className="text-3xl font-bold tracking-tight">Bericht</h1>
           <p className="text-muted-foreground">{brandData.name} · {subtitle}</p>
         </div>
-        <SyncButton />
+        <div className="flex items-center gap-2 print:hidden">
+          <Button variant="outline" size="sm" onClick={() => downloadWeeklyCsv(brandData.name, weekly ?? [])} disabled={!weekly?.length}>
+            <Download className="h-4 w-4 mr-1" /> CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="h-4 w-4 mr-1" /> PDF
+          </Button>
+          <SyncButton />
+        </div>
       </div>
 
       {/* KPI Summary — from kpiSnapshots */}
@@ -410,9 +448,59 @@ export default function ReportPage() {
       <Tabs defaultValue="traffic">
         <TabsList>
           <TabsTrigger value="traffic">Traffic &amp; SEO</TabsTrigger>
+          <TabsTrigger value="weeks">Wochen (GA4)</TabsTrigger>
           <TabsTrigger value="crm">CRM</TabsTrigger>
           <TabsTrigger value="ads">Google Ads</TabsTrigger>
         </TabsList>
+
+        {/* ── Tab: Wochen-Traffic aus GA4 ──────────────────────────────────── */}
+        <TabsContent value="weeks" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Website-Traffic je Kalenderwoche (GA4, täglich automatisch)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!weekly?.length ? (
+                <p className="text-sm text-muted-foreground">Noch keine Wochendaten — Sync läuft täglich 08:25.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-muted-foreground">
+                        <th className="text-left py-2 pr-3">KW</th>
+                        <th className="text-right py-2 px-3">Sitzungen</th>
+                        <th className="text-right py-2 px-3">Nutzer</th>
+                        <th className="text-right py-2 px-3">Seitenaufrufe</th>
+                        <th className="text-right py-2 px-3">Bounce</th>
+                        <th className="text-right py-2 px-3">Ads</th>
+                        <th className="text-right py-2 px-3">SEO</th>
+                        <th className="text-right py-2 px-3">Direkt</th>
+                        <th className="text-right py-2 px-3">Social</th>
+                        <th className="text-right py-2 pl-3">Referral</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...weekly].reverse().map((w) => (
+                        <tr key={w._id} className="border-b border-border/50">
+                          <td className="py-1.5 pr-3 font-medium whitespace-nowrap">{w.kw} <span className="text-muted-foreground text-xs">({w.weekStart})</span></td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.sessions)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.visitors)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.pageviews)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{w.bounceRate != null ? `${w.bounceRate.toFixed(1)} %` : "—"}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.chAds)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.chSeo)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.chDirect)}</td>
+                          <td className="text-right py-1.5 px-3 tabular-nums">{fmt(w.chSocial)}</td>
+                          <td className="text-right py-1.5 pl-3 tabular-nums">{fmt(w.chReferral)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* ── Tab: Traffic & SEO ─────────────────────────────────────────── */}
         <TabsContent value="traffic" className="space-y-4 mt-4">
