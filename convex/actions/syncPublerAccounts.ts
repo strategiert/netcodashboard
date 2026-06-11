@@ -68,7 +68,13 @@ async function syncAccountForDate(
 export const syncPublerAccounts = action({
   args: {},
   handler: async (ctx) => {
-    const brands = await ctx.runQuery(api.brands.list);
+    const brandsRaw = await ctx.runQuery(api.brands.list);
+    // Brands mit chronischem 429 (netco) ans Ende, damit andere zuerst Rate-Budget kriegen
+    const brands = [...brandsRaw].sort((a: any, b: any) => {
+      const ap = a.slug === "netco" ? 1 : 0;
+      const bp = b.slug === "netco" ? 1 : 0;
+      return ap - bp;
+    });
     const brandWorkspaces = await getBrandWorkspaceMap(ctx);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -79,20 +85,31 @@ export const syncPublerAccounts = action({
       const wsIds = brandWorkspaces[brand._id];
       if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
 
-      let totalOk = 0, totalSkipped = 0, totalErrors = 0;
+      let totalOk = 0, totalSkipped = 0, totalErrors = 0, wsErrors = 0;
 
       for (const workspaceId of wsIds) {
-        const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
+        let accounts: any[] = [];
+        try {
+          accounts = await publerGet("/api/v1/accounts", workspaceId);
+        } catch (e: any) {
+          wsErrors++;
+          console.warn(`[syncPublerAccounts] skip ws=${workspaceId} (${brand.slug}): ${e.message}`);
+          continue;
+        }
 
         // Get post counts for yesterday
-        const postData = await publerGet(
-          `/api/v1/posts?state=published&from=${date}&to=${date}`,
-          workspaceId
-        );
         const postsByDate: Record<string, number> = {};
-        for (const post of (postData.posts ?? [])) {
-          const d = (post.published_at ?? post.created_at ?? "").slice(0, 10);
-          if (d) postsByDate[d] = (postsByDate[d] ?? 0) + 1;
+        try {
+          const postData = await publerGet(
+            `/api/v1/posts?state=published&from=${date}&to=${date}`,
+            workspaceId
+          );
+          for (const post of (postData.posts ?? [])) {
+            const d = (post.published_at ?? post.created_at ?? "").slice(0, 10);
+            if (d) postsByDate[d] = (postsByDate[d] ?? 0) + 1;
+          }
+        } catch (e: any) {
+          console.warn(`[syncPublerAccounts] post count failed ws=${workspaceId}: ${e.message}`);
         }
 
         for (const account of accounts) {
@@ -105,14 +122,14 @@ export const syncPublerAccounts = action({
             if (res === "skip_no_charts") totalSkipped++;
             else totalOk++;
           } catch (e: any) {
-            if (e.message?.includes("Rate limit")) {
+            if (e.message?.includes("429") || e.message?.includes("Rate limit")) {
               await new Promise(r => setTimeout(r, 5000));
             }
             totalErrors++;
           }
         }
       }
-      results.push(`${brand.slug}: ${totalOk} ok, ${totalSkipped} skipped, ${totalErrors} errors (${wsIds.length} Workspaces)`);
+      results.push(`${brand.slug}: ${totalOk} ok, ${totalSkipped} skipped, ${totalErrors} errors, ${wsErrors} ws-skipped (${wsIds.length} Workspaces)`);
     }
     return results;
   },

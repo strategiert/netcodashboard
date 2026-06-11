@@ -69,7 +69,12 @@ async function fetchAnalyticsForDate(workspaceId: string, date: string) {
 export const syncPubler = action({
   args: {},
   handler: async (ctx) => {
-    const brands = await ctx.runQuery(api.brands.list);
+    const brandsRaw = await ctx.runQuery(api.brands.list);
+    const brands = [...brandsRaw].sort((a: any, b: any) => {
+      const ap = a.slug === "netco" ? 1 : 0;
+      const bp = b.slug === "netco" ? 1 : 0;
+      return ap - bp;
+    });
     const brandWorkspaces = await getBrandWorkspaceMap(ctx);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);

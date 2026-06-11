@@ -4,10 +4,15 @@ import { api } from "../_generated/api";
 import { v } from "convex/values";
 import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
 
-// Get account name map for workspace
+// Get account name map for workspace. Returns empty map on failure (workspace skipped upstream).
 async function getAccountNames(workspaceId: string): Promise<Record<string, string>> {
-  const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
-  return Object.fromEntries(accounts.map(a => [a.id, a.name ?? a.username ?? a.id]));
+  try {
+    const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
+    return Object.fromEntries(accounts.map(a => [a.id, a.name ?? a.username ?? a.id]));
+  } catch (e: any) {
+    console.warn(`[syncPublerPosts] account names failed ws=${workspaceId}: ${e.message}`);
+    return {};
+  }
 }
 
 async function fetchPostInsights(workspaceId: string, from: string, to: string, page = 1): Promise<any[]> {
@@ -32,7 +37,13 @@ function getThumbnail(post: any): string | undefined {
 export const syncPublerPosts = action({
   args: { days: v.optional(v.number()) },
   handler: async (ctx, { days = 30 }) => {
-    const brands = await ctx.runQuery(api.brands.list);
+    const brandsRaw = await ctx.runQuery(api.brands.list);
+    // netco ans Ende — chronisch rate-limited, soll Budget der anderen nicht klauen
+    const brands = [...brandsRaw].sort((a: any, b: any) => {
+      const ap = a.slug === "netco" ? 1 : 0;
+      const bp = b.slug === "netco" ? 1 : 0;
+      return ap - bp;
+    });
     const end = new Date();
     const start = new Date();
     start.setDate(start.getDate() - days);
@@ -47,8 +58,13 @@ export const syncPublerPosts = action({
       if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
 
       let brandTotal = 0;
+      let wsErrors = 0;
       for (const workspaceId of wsIds) {
         const accountNames = await getAccountNames(workspaceId);
+        if (Object.keys(accountNames).length === 0) {
+          wsErrors++;
+          continue;
+        }
         await new Promise(r => setTimeout(r, 500));
 
         let saved = 0, page = 1;
@@ -98,14 +114,17 @@ export const syncPublerPosts = action({
             page++;
             await new Promise(r => setTimeout(r, 800));
           } catch (e: any) {
-            if (e.message?.includes("Rate limit")) await new Promise(r => setTimeout(r, 8000));
+            if (e.message?.includes("429") || e.message?.includes("Rate limit")) {
+              await new Promise(r => setTimeout(r, 8000));
+            }
+            console.warn(`[syncPublerPosts] page ${page} failed ws=${workspaceId}: ${e.message}`);
             break;
           }
         }
         brandTotal += saved;
         await new Promise(r => setTimeout(r, 1000));
       }
-      results.push(`${brand.slug}: ${brandTotal} posts (${wsIds.length} Workspaces)`);
+      results.push(`${brand.slug}: ${brandTotal} posts, ${wsErrors} ws-skipped (${wsIds.length} Workspaces)`);
     }
     return results;
   },
