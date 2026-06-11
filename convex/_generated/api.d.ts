@@ -22,6 +22,7 @@ import type * as actions_syncGSC from "../actions/syncGSC.js";
 import type * as actions_syncPubler from "../actions/syncPubler.js";
 import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.js";
 import type * as actions_syncPublerPosts from "../actions/syncPublerPosts.js";
+import type * as actions_syncTraffic from "../actions/syncTraffic.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "actions/syncPubler": typeof actions_syncPubler;
   "actions/syncPublerAccounts": typeof actions_syncPublerAccounts;
   "actions/syncPublerPosts": typeof actions_syncPublerPosts;
+  "actions/syncTraffic": typeof actions_syncTraffic;
   brands: typeof brands;
   campaigns: typeof campaigns;
   content: typeof content;
