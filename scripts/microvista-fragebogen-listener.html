@@ -1,0 +1,50 @@
+<script>
+!function () {
+  var dl = window.dataLayer = window.dataLayer || [];
+  var labels = ['Material', 'Bauteilgr\u00f6\u00dfe (H\u00fcllkreis)', 'Inspektionsaufgabe', 'St\u00fcckzahl'];
+  var started = false, completed = false, aborted = false, lastStep = 0;
+  function push(o) { dl.push(o); }
+  function began() { if (!started) { started = true; push({ event: 'fragebogen_start' }); } }
+  var intro = document.getElementById('mvQuizIntro');
+  if (intro) { intro.addEventListener('click', began, true); }
+  document.addEventListener('click', function (e) {
+    var b = e.target && e.target.closest ? e.target.closest('.mv-quiz-opt') : null;
+    if (!b) { return; }
+    began();
+    var q = document.querySelector('.mv-quiz-question.active');
+    var s = q ? parseInt(q.getAttribute('data-step'), 10) : (lastStep + 1);
+    lastStep = s;
+    push({ event: 'fragebogen_schritt', fb_step: s, fb_frage: labels[s - 1] || ('Frage ' + s), fb_antwort: ('' + (b.textContent || '')).trim(), fb_score: parseInt(b.getAttribute('data-score'), 10) });
+  }, true);
+  document.addEventListener('click', function (e) {
+    var c = e.target && e.target.closest ? e.target.closest('#mvQuizResultCta') : null;
+    if (c) { push({ event: 'fragebogen_lead', fb_lead_typ: 'beratung' }); }
+  }, true);
+  var res = document.getElementById('mvQuizResult');
+  if (res) {
+    var ro = new MutationObserver(function () {
+      var vis = res.style.display !== 'none' && res.offsetParent !== null;
+      if (vis && !completed) {
+        completed = true;
+        var a = res.classList.contains('green') ? 'gruen' : res.classList.contains('yellow') ? 'gelb' : res.classList.contains('red') ? 'rot' : 'unbekannt';
+        var ti = document.getElementById('mvQuizResultTitle');
+        push({ event: 'fragebogen_ergebnis', fb_ampel: a, fb_ergebnis: ('' + (ti && ti.textContent || '')).trim() });
+      }
+    });
+    ro.observe(res, { attributes: true, attributeFilter: ['style', 'class'] });
+  }
+  var succ = document.getElementById('mvQuizCf7Success');
+  if (succ) {
+    var so = new MutationObserver(function () {
+      if (succ.offsetParent !== null && succ.style.display !== 'none') {
+        push({ event: 'fragebogen_lead', fb_lead_typ: 'rueckruf' });
+        so.disconnect();
+      }
+    });
+    so.observe(succ, { attributes: true, attributeFilter: ['style', 'class'] });
+  }
+  window.addEventListener('pagehide', function () {
+    if (started && !completed && !aborted) { aborted = true; push({ event: 'fragebogen_abbruch', fb_letzter_schritt: lastStep }); }
+  });
+}();
+</script>

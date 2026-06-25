@@ -1,0 +1,616 @@
+{
+  "page": "https://www.microvista.de/fragebogen/",
+  "gsc": {
+    "range": [
+      "2026-03-25",
+      "2026-06-22"
+    ],
+    "prevRange": [
+      "2025-12-25",
+      "2026-03-24"
+    ],
+    "total": {
+      "clicks": 0,
+      "impressions": 68,
+      "ctr": 0,
+      "position": 11.338235294117647
+    },
+    "prevTotal": {
+      "clicks": 0,
+      "impressions": 63,
+      "ctr": 0,
+      "position": 18.58730158730159
+    },
+    "queries": [
+      {
+        "q": "fügekontrolle",
+        "clicks": 0,
+        "impressions": 41,
+        "ctr": 0,
+        "position": 12.585365853658537
+      },
+      {
+        "q": "site:https://www.microvista.de/",
+        "clicks": 0,
+        "impressions": 5,
+        "ctr": 0,
+        "position": 12
+      },
+      {
+        "q": "site:http://www.microvista.de",
+        "clicks": 0,
+        "impressions": 4,
+        "ctr": 0,
+        "position": 12
+      }
+    ],
+    "devices": [
+      {
+        "d": "DESKTOP",
+        "clicks": 0,
+        "impressions": 50,
+        "ctr": 0,
+        "position": 12.48
+      }
+    ],
+    "countries": [
+      {
+        "c": "can",
+        "clicks": 0,
+        "impressions": 2,
+        "ctr": 0,
+        "position": 12
+      },
+      {
+        "c": "deu",
+        "clicks": 0,
+        "impressions": 41,
+        "ctr": 0,
+        "position": 12.585365853658537
+      },
+      {
+        "c": "fra",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 12
+      },
+      {
+        "c": "npl",
+        "clicks": 0,
+        "impressions": 1,
+        "ctr": 0,
+        "position": 12
+      },
+      {
+        "c": "usa",
+        "clicks": 0,
+        "impressions": 5,
+        "ctr": 0,
+        "position": 12
+      }
+    ],
+    "byDate": [
+      {
+        "date": "2026-03-25",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-03-26",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-03-27",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-03-28",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-03-29",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-03-30",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-03-31",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-01",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-02",
+        "clicks": 0,
+        "impressions": 3
+      },
+      {
+        "date": "2026-04-03",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-04",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-04-05",
+        "clicks": 0,
+        "impressions": 3
+      },
+      {
+        "date": "2026-04-06",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-07",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-08",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-09",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-10",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-11",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-12",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-13",
+        "clicks": 0,
+        "impressions": 3
+      },
+      {
+        "date": "2026-04-14",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-15",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-16",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-17",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-18",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-19",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-20",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-21",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-22",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-04-23",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-24",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-25",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-26",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-27",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-28",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-29",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-04-30",
+        "clicks": 0,
+        "impressions": 6
+      },
+      {
+        "date": "2026-05-01",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-05-02",
+        "clicks": 0,
+        "impressions": 2
+      },
+      {
+        "date": "2026-05-03",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-05-04",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-05",
+        "clicks": 0,
+        "impressions": 4
+      },
+      {
+        "date": "2026-05-06",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-07",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-08",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-09",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-10",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-11",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-12",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-13",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-14",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-15",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-16",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-17",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-18",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-19",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-05-20",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-21",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-22",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-23",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-24",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-25",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-05-26",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-27",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-28",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-29",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-30",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-05-31",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-01",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-06-02",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-03",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-04",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-05",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-06",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-07",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-08",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-09",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-06-10",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-11",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-12",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-13",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-14",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-15",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-06-16",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-17",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-18",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-19",
+        "clicks": 0,
+        "impressions": 1
+      },
+      {
+        "date": "2026-06-20",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-21",
+        "clicks": 0,
+        "impressions": 0
+      },
+      {
+        "date": "2026-06-22",
+        "clicks": 0,
+        "impressions": 0
+      }
+    ]
+  },
+  "ga4": {
+    "range": [
+      "2026-03-27",
+      "2026-06-24"
+    ],
+    "views": 276,
+    "users": 157,
+    "sessions": 167,
+    "engSec": 11711,
+    "keyEvents": 0,
+    "channels": [
+      {
+        "ch": "Cross-network",
+        "views": 219,
+        "users": 113
+      },
+      {
+        "ch": "Direct",
+        "views": 48,
+        "users": 40
+      },
+      {
+        "ch": "Paid Search",
+        "views": 5,
+        "users": 2
+      },
+      {
+        "ch": "Referral",
+        "views": 3,
+        "users": 2
+      },
+      {
+        "ch": "Organic Search",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "ch": "Unassigned",
+        "views": 0,
+        "users": 1
+      }
+    ],
+    "sources": [
+      {
+        "src": "google",
+        "views": 225,
+        "users": 116
+      },
+      {
+        "src": "(direct)",
+        "views": 48,
+        "users": 40
+      },
+      {
+        "src": "ads.google.com",
+        "views": 2,
+        "users": 1
+      },
+      {
+        "src": "statics.teams.cdn.office.net",
+        "views": 1,
+        "users": 1
+      },
+      {
+        "src": "(not set)",
+        "views": 0,
+        "users": 1
+      }
+    ]
+  }
+}

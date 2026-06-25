@@ -1,0 +1,450 @@
+{
+  "property": "397812718",
+  "windows": {
+    "june": [
+      "2026-06-01",
+      "2026-06-24"
+    ],
+    "may": [
+      "2026-05-01",
+      "2026-05-24"
+    ],
+    "jun2025": [
+      "2025-06-01",
+      "2025-06-24"
+    ]
+  },
+  "ga4": {
+    "june": {
+      "Cross-network": {
+        "sessions": 609,
+        "users": 520,
+        "conv": 0
+      },
+      "Direct": {
+        "sessions": 183,
+        "users": 157,
+        "conv": 0
+      },
+      "Paid Search": {
+        "sessions": 86,
+        "users": 71,
+        "conv": 0
+      },
+      "Organic Search": {
+        "sessions": 66,
+        "users": 52,
+        "conv": 0
+      },
+      "Unassigned": {
+        "sessions": 11,
+        "users": 11,
+        "conv": 0
+      },
+      "Referral": {
+        "sessions": 6,
+        "users": 5,
+        "conv": 0
+      },
+      "AI Assistant": {
+        "sessions": 2,
+        "users": 2,
+        "conv": 0
+      },
+      "Email": {
+        "sessions": 1,
+        "users": 1,
+        "conv": 0
+      }
+    },
+    "may": {
+      "Cross-network": {
+        "sessions": 653,
+        "users": 561,
+        "conv": 0
+      },
+      "Paid Search": {
+        "sessions": 112,
+        "users": 91,
+        "conv": 0
+      },
+      "Direct": {
+        "sessions": 89,
+        "users": 75,
+        "conv": 0
+      },
+      "Organic Search": {
+        "sessions": 41,
+        "users": 30,
+        "conv": 0
+      },
+      "Referral": {
+        "sessions": 8,
+        "users": 3,
+        "conv": 0
+      },
+      "Unassigned": {
+        "sessions": 2,
+        "users": 2,
+        "conv": 0
+      }
+    },
+    "jun25": {
+      "Paid Search": {
+        "sessions": 123,
+        "users": 103,
+        "conv": 0
+      },
+      "Direct": {
+        "sessions": 85,
+        "users": 71,
+        "conv": 0
+      },
+      "Cross-network": {
+        "sessions": 60,
+        "users": 48,
+        "conv": 0
+      },
+      "Organic Search": {
+        "sessions": 12,
+        "users": 11,
+        "conv": 0
+      },
+      "Referral": {
+        "sessions": 9,
+        "users": 6,
+        "conv": 0
+      },
+      "Organic Social": {
+        "sessions": 3,
+        "users": 1,
+        "conv": 0
+      },
+      "Unassigned": {
+        "sessions": 2,
+        "users": 2,
+        "conv": 0
+      }
+    },
+    "channels": [
+      {
+        "channel": "Cross-network",
+        "j": {
+          "sessions": 609,
+          "users": 520,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 653,
+          "users": 561,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 60,
+          "users": 48,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Direct",
+        "j": {
+          "sessions": 183,
+          "users": 157,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 89,
+          "users": 75,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 85,
+          "users": 71,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Paid Search",
+        "j": {
+          "sessions": 86,
+          "users": 71,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 112,
+          "users": 91,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 123,
+          "users": 103,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Organic Search",
+        "j": {
+          "sessions": 66,
+          "users": 52,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 41,
+          "users": 30,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 12,
+          "users": 11,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Unassigned",
+        "j": {
+          "sessions": 11,
+          "users": 11,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 2,
+          "users": 2,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 2,
+          "users": 2,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Referral",
+        "j": {
+          "sessions": 6,
+          "users": 5,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 8,
+          "users": 3,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 9,
+          "users": 6,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "AI Assistant",
+        "j": {
+          "sessions": 2,
+          "users": 2,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Email",
+        "j": {
+          "sessions": 1,
+          "users": 1,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        }
+      },
+      {
+        "channel": "Organic Social",
+        "j": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        },
+        "m": {
+          "sessions": 0,
+          "users": 0,
+          "conv": 0
+        },
+        "y": {
+          "sessions": 3,
+          "users": 1,
+          "conv": 0
+        }
+      }
+    ]
+  },
+  "ads": [
+    {
+      "name": "NDT-PerfomanceMax-Leads-D",
+      "status": "ENABLED",
+      "cost": 2678.409134,
+      "clicks": 13463,
+      "imp": 501076,
+      "conv": 28.998518,
+      "val": 769.98518
+    },
+    {
+      "name": "NDT-SN-D",
+      "status": "ENABLED",
+      "cost": 758.672599,
+      "clicks": 198,
+      "imp": 1438,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-Ultraschall-D",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-EU",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SD-D",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-Ultraschall-EU",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-D -Conmax",
+      "status": "REMOVED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-EU -Conmax",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SW-SN-Leads-D",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-Performance Max-D-Showevent-Scanexpress",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-Performance Max-EU-Showevent Scanexpress",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-Remarketing-DE-Showevent-Scanexpress",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-Performance Max-EU-Showevent-Scanexpress",
+      "status": "REMOVED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "MV-ScanExpress-D",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "MV-ScanExpress-EN",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "MV-ScanExpress-FR",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    },
+    {
+      "name": "NDT-SN-End-of-Line",
+      "status": "PAUSED",
+      "cost": 0,
+      "clicks": 0,
+      "imp": 0,
+      "conv": 0,
+      "val": 0
+    }
+  ],
+  "adsErr": null
+}
