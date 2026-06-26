@@ -10,5 +10,6 @@ crons.daily("sync Publer Accounts", { hourUTC: 6, minuteUTC: 15 }, api.actions.s
 crons.daily("sync Ads",          { hourUTC: 6, minuteUTC: 20 }, api.actions.syncAds.syncAds);
 crons.daily("sync Traffic",      { hourUTC: 6, minuteUTC: 25 }, api.actions.syncTraffic.syncTraffic, {});
 crons.daily("sync Publer Posts", { hourUTC: 6, minuteUTC: 30 }, api.actions.syncPublerPosts.syncPublerPosts, { days: 2 });
+crons.daily("sync SE Ranking",   { hourUTC: 6, minuteUTC: 35 }, api.actions.syncSERanking.syncSERanking);
 
 export default crons;

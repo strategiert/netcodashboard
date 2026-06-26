@@ -391,4 +391,89 @@ export default defineSchema({
     project: v.optional(v.string()),
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),
+
+  // ── SE Ranking ────────────────────────────────────────────────────────────
+  // Rank-Tracking + Sichtbarkeit + Competitors + Backlinks pro Brand.
+  // Eine Brand kann mehrere SE-Ranking-Sites haben (z. B. bautv = BK DE/NL/IT).
+
+  // Tägliches Sichtbarkeits-Aggregat pro Brand-Site (aus Positions berechnet).
+  serankingDaily: defineTable({
+    brandId: v.id("brands"),
+    siteId: v.number(),          // SE Ranking site_id
+    siteTitle: v.string(),       // z. B. "BC DE"
+    domain: v.string(),
+    date: v.string(),            // YYYY-MM-DD
+    totalKeywords: v.number(),
+    ranked: v.number(),          // Keywords mit Position > 0
+    top3: v.number(),
+    top10: v.number(),
+    top30: v.number(),
+    top100: v.number(),
+    avgPosition: v.optional(v.number()), // nur über gerankte Keywords
+    totalVolume: v.number(),
+    visibilityScore: v.optional(v.number()), // 0–100, volumengewichtet
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_site_date", ["siteId", "date"]),
+
+  // Letzter Stand pro getracktem Keyword (überschrieben pro Sync).
+  serankingKeywords: defineTable({
+    brandId: v.id("brands"),
+    siteId: v.number(),
+    keywordId: v.string(),       // SE Ranking keyword id
+    keyword: v.string(),
+    date: v.string(),            // YYYY-MM-DD des Positionswerts
+    position: v.number(),        // 0 = nicht in Top-Tiefe
+    change: v.optional(v.number()),
+    volume: v.optional(v.number()),
+    cpc: v.optional(v.number()),
+    competition: v.optional(v.number()),
+    url: v.optional(v.string()), // Landingpage in SERP
+  })
+    .index("by_brand", ["brandId"])
+    .index("by_site_keyword", ["siteId", "keywordId"])
+    .index("by_brand_position", ["brandId", "position"]),
+
+  // Competitors pro Brand-Site (Snapshot pro Sync, überschrieben).
+  serankingCompetitors: defineTable({
+    brandId: v.id("brands"),
+    siteId: v.number(),
+    competitorId: v.number(),
+    name: v.string(),
+    url: v.string(),
+    domainTrust: v.optional(v.number()),
+  })
+    .index("by_brand", ["brandId"])
+    .index("by_site", ["siteId"]),
+
+  // Backlink-Summary pro Brand-Domain (täglich).
+  serankingBacklinks: defineTable({
+    brandId: v.id("brands"),
+    domain: v.string(),
+    date: v.string(),            // YYYY-MM-DD
+    backlinks: v.number(),
+    refDomains: v.number(),
+    dofollowBacklinks: v.optional(v.number()),
+    nofollowBacklinks: v.optional(v.number()),
+    inlinkRank: v.optional(v.number()),        // URL Trust
+    domainInlinkRank: v.optional(v.number()),  // Domain Trust
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_domain_date", ["domain", "date"]),
+
+  // On-Demand Keyword-Research (Data API, credits-basiert). Pro Brand gespeichert.
+  serankingResearch: defineTable({
+    brandId: v.optional(v.id("brands")),
+    source: v.string(),          // Regions-DB, z. B. "de"
+    keyword: v.string(),
+    volume: v.optional(v.number()),
+    cpc: v.optional(v.number()),
+    competition: v.optional(v.number()),
+    difficulty: v.optional(v.number()),
+    intents: v.optional(v.array(v.string())),
+    isDataFound: v.boolean(),
+    fetchedAt: v.number(),
+  })
+    .index("by_brand", ["brandId"])
+    .index("by_keyword", ["source", "keyword"]),
 });

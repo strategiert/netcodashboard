@@ -15,6 +15,7 @@ import {
   BarChart2,
   Share2,
   ClipboardList,
+  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/stakeholders", label: "Stakeholder", icon: Users },
   { href: "/journeys", label: "Journeys", icon: Route },
   { href: "/seo", label: "SEO Cluster", icon: Search },
+  { href: "/rankings", label: "Rankings", icon: TrendingUp },
 ];
 
 export function Sidebar() {
