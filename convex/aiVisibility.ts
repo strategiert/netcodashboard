@@ -357,3 +357,14 @@ export const listBingRows = query({
       .take(100);
   },
 });
+
+export const listBingByDateRange = query({
+  args: { brandId: v.id("brands"), from: v.string(), to: v.string() },
+  handler: async (ctx, { brandId, from, to }) => {
+    return await ctx.db
+      .query("bingSearchSnapshots")
+      .withIndex("by_brand_date", (q) => q.eq("brandId", brandId).gte("date", from).lte("date", to))
+      .order("asc")
+      .collect();
+  },
+});

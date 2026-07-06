@@ -3,11 +3,9 @@ import assert from "node:assert/strict";
 
 import { shouldIncludeInPerformanceSnapshot } from "../../convex/adsMapping";
 
-test("performance snapshots include search campaigns", () => {
+test("performance snapshots include all Google Ads campaign channel types", () => {
   assert.equal(shouldIncludeInPerformanceSnapshot("SEARCH"), true);
-});
-
-test("performance snapshots exclude performance max and display campaigns", () => {
-  assert.equal(shouldIncludeInPerformanceSnapshot("PERFORMANCE_MAX"), false);
-  assert.equal(shouldIncludeInPerformanceSnapshot("DISPLAY"), false);
+  assert.equal(shouldIncludeInPerformanceSnapshot("PERFORMANCE_MAX"), true);
+  assert.equal(shouldIncludeInPerformanceSnapshot("DISPLAY"), true);
+  assert.equal(shouldIncludeInPerformanceSnapshot("VIDEO"), true);
 });

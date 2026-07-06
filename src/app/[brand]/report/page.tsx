@@ -15,6 +15,11 @@ import { SyncButton } from "@/components/kpi/sync-button";
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import { useState, useCallback } from "react";
+import {
+  aggregateSourceCoverage,
+  COVERAGE_METRIC_CONFIG,
+  type CoverageMetricView,
+} from "@/lib/source-coverage";
 
 // ── Formatters ────────────────────────────────────────────────────────────────
 
@@ -181,120 +186,6 @@ function CustomTooltip({ active, payload, label, isCurrency }: any) {
   );
 }
 
-// ── Aggregation helpers ──────────────────────────────────────────────────────
-
-type FullRow = {
-  name: string;
-  // Klicks
-  adsClicks: number; seoClicks: number; socialClicks: number;
-  // Impressionen / Reichweite
-  adsImpressions: number; seoImpressions: number; socialReach: number;
-  // Kosten
-  adsCost: number;
-};
-
-const EMPTY_ROW: Omit<FullRow, "name"> = {
-  adsClicks: 0, seoClicks: 0, socialClicks: 0,
-  adsImpressions: 0, seoImpressions: 0, socialReach: 0,
-  adsCost: 0,
-};
-
-function aggregateSnapshots(
-  snapshots: any[],
-  granularity: "daily" | "weekly" | "monthly",
-  multiYear: boolean,
-): FullRow[] {
-  const byDate: Record<string, FullRow> = {};
-  for (const s of snapshots) {
-    if (!byDate[s.date]) byDate[s.date] = { name: s.date, ...EMPTY_ROW };
-    const c = byDate[s.date];
-    if (s.source === "gsc") {
-      c.seoClicks += s.clicks ?? 0;
-      c.seoImpressions += s.impressions ?? 0;
-    }
-    if (s.source === "ads") {
-      c.adsClicks += s.adClicks ?? 0;
-      c.adsImpressions += s.adImpressions ?? 0;
-      c.adsCost += s.adSpend ?? 0;
-    }
-    if (s.source === "publer") {
-      c.socialReach += s.socialReach ?? 0;
-      c.socialClicks += s.socialLinkClicks ?? 0;
-    }
-  }
-
-  const sortedDates = Object.keys(byDate).sort();
-
-  if (granularity === "daily") {
-    return sortedDates.map(d => ({ ...byDate[d], name: d.slice(5) }));
-  }
-
-  const buckets: Record<string, FullRow> = {};
-  for (const date of sortedDates) {
-    const d = new Date(date + "T12:00:00Z");
-    let key: string;
-    let label: string;
-
-    if (granularity === "weekly") {
-      const day = d.getDay() || 7;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() - day + 1);
-      key = monday.toISOString().slice(0, 10);
-      const weekNum = getISOWeek(d);
-      label = multiYear ? `${d.getFullYear()} KW${weekNum}` : `KW ${weekNum}`;
-    } else {
-      key = date.slice(0, 7);
-      label = multiYear ? key : d.toLocaleDateString("de-DE", { month: "short" });
-    }
-
-    if (!buckets[key]) buckets[key] = { name: label, ...EMPTY_ROW };
-    const b = buckets[key];
-    const row = byDate[date];
-    b.adsClicks += row.adsClicks; b.seoClicks += row.seoClicks; b.socialClicks += row.socialClicks;
-    b.adsImpressions += row.adsImpressions; b.seoImpressions += row.seoImpressions; b.socialReach += row.socialReach;
-    b.adsCost += row.adsCost;
-  }
-
-  return Object.entries(buckets).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
-}
-
-type MetricView = "clicks" | "impressions" | "costs";
-
-const METRIC_CONFIG: Record<MetricView, {
-  label: string;
-  channels: { key: string; label: string; color: string }[];
-}> = {
-  clicks: {
-    label: "Klicks",
-    channels: [
-      { key: "adsClicks", label: "Ads", color: "#ef4444" },
-      { key: "seoClicks", label: "SEO", color: "#22c55e" },
-      { key: "socialClicks", label: "Social", color: "#8b5cf6" },
-    ],
-  },
-  impressions: {
-    label: "Impressionen / Reichweite",
-    channels: [
-      { key: "adsImpressions", label: "Ads", color: "#ef4444" },
-      { key: "seoImpressions", label: "SEO", color: "#22c55e" },
-      { key: "socialReach", label: "Social", color: "#8b5cf6" },
-    ],
-  },
-  costs: {
-    label: "Werbekosten (€)",
-    channels: [
-      { key: "adsCost", label: "Ads", color: "#ef4444" },
-    ],
-  },
-};
-
-function getISOWeek(d: Date): number {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 // CSV-Export der GA4-Wochendaten (Excel-kompatibel: Semikolon + BOM)
@@ -329,6 +220,14 @@ export default function ReportPage() {
     api.kpi.getAllByDateRange,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
   );
+  const dailyTraffic = useQuery(
+    api.dailyTraffic.getRange,
+    brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
+  );
+  const bingRows = useQuery(
+    api.aiVisibility.listBingByDateRange,
+    brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
+  );
 
   // CRM data
   const leads = useQuery(
@@ -361,15 +260,15 @@ export default function ReportPage() {
   );
 
   // Metric view toggle (must be before conditional returns!)
-  const [metricView, setMetricView] = useState<MetricView>("clicks");
+  const [metricView, setMetricView] = useState<CoverageMetricView>("coverage");
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const handleLegendClick = useCallback((entry: any) => {
-    // entry.value is the display name (e.g. "Ads"), entry.dataKey is the field (e.g. "adsClicks")
+    // entry.value is the display name (e.g. "Ads"), entry.dataKey is the field.
     const clicked = entry.value ?? entry.dataKey;
     setActiveChannel(prev => prev === clicked ? null : clicked);
   }, []);
 
-  if (!brandData || snapshots === undefined) {
+  if (!brandData || snapshots === undefined || dailyTraffic === undefined || bingRows === undefined) {
     return <div className="p-6 text-muted-foreground">Lädt…</div>;
   }
 
@@ -404,11 +303,17 @@ export default function ReportPage() {
   const multiYear = dateFrom.slice(0, 4) !== dateTo.slice(0, 4);
 
   // ── Chart Data ─────────────────────────────────────────────────────────────
-  const chartData = aggregateSnapshots(snapshots, granularity, multiYear);
+  const chartData = aggregateSourceCoverage({
+    snapshots,
+    bingRows,
+    dailyTraffic,
+    granularity,
+    multiYear,
+  });
   const granLabel = granularity === "daily" ? "Tage" : granularity === "weekly" ? "Wochen" : "Monate";
   const subtitle = `${fmtShort(dateFrom)} – ${fmtShort(dateTo)} · ${chartData.length} ${granLabel}`;
 
-  const currentMetric = METRIC_CONFIG[metricView];
+  const currentMetric = COVERAGE_METRIC_CONFIG[metricView];
   const periodLabel = granularity === "daily" ? "Tag" : granularity === "weekly" ? "KW" : "Monat";
 
   return (
@@ -521,7 +426,7 @@ export default function ReportPage() {
                     {currentMetric.label} pro {periodLabel}
                   </CardTitle>
                   <div className="flex gap-1 rounded-lg border p-0.5">
-                    {(Object.entries(METRIC_CONFIG) as [MetricView, typeof currentMetric][]).map(([key, cfg]) => (
+                    {(Object.entries(COVERAGE_METRIC_CONFIG) as [CoverageMetricView, typeof currentMetric][]).map(([key, cfg]) => (
                       <button
                         key={key}
                         onClick={() => { setMetricView(key); setActiveChannel(null); }}
