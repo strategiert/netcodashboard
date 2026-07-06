@@ -185,6 +185,31 @@ export default defineSchema({
     .index("by_brand_date", ["brandId", "date"])
     .index("by_brand_source_date", ["brandId", "source", "date"]),
 
+  // Tages-Traffic pro Brand (GA4). Grundlage für Tagesreport + Wochenvergleich.
+  // sessions/visitors aus dimensionsloser Total-Query (autoritativ); Kanal-Split
+  // aus sessionDefaultChannelGroup kann attributionsbedingt leicht abweichen.
+  dailyTraffic: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),        // YYYY-MM-DD
+    sessions: v.number(),
+    visitors: v.number(),
+    pageviews: v.number(),
+    // Traffic by channel (Sitzungen)
+    chAds: v.optional(v.number()),
+    chSeo: v.optional(v.number()),
+    chDirect: v.optional(v.number()),
+    chSocial: v.optional(v.number()),
+    chReferral: v.optional(v.number()),
+    chOther: v.optional(v.number()),
+    // Fragebogen-Funnel (Event-Counts; nur Brands mit Fragebogen, z. B. Microvista)
+    fbStart: v.optional(v.number()),
+    fbSchritt: v.optional(v.number()),
+    fbErgebnis: v.optional(v.number()),
+    fbLead: v.optional(v.number()),
+    fbAbbruch: v.optional(v.number()),
+  })
+    .index("by_brand_date", ["brandId", "date"]),
+
   weeklyReports: defineTable({
     brandId: v.id("brands"),
     kw: v.string(),          // "KW 1", "KW 2" etc.

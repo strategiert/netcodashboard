@@ -11,5 +11,8 @@ crons.daily("sync Ads",          { hourUTC: 6, minuteUTC: 20 }, api.actions.sync
 crons.daily("sync Traffic",      { hourUTC: 6, minuteUTC: 25 }, api.actions.syncTraffic.syncTraffic, {});
 crons.daily("sync Publer Posts", { hourUTC: 6, minuteUTC: 30 }, api.actions.syncPublerPosts.syncPublerPosts, { days: 2 });
 crons.daily("sync SE Ranking",   { hourUTC: 6, minuteUTC: 35 }, api.actions.syncSERanking.syncSERanking);
+crons.daily("sync Daily Traffic", { hourUTC: 6, minuteUTC: 40 }, api.actions.syncDailyTraffic.syncDailyTraffic, {});
+// Mittags-Refresh, damit der Tagesreport tagsüber aktuelle Zahlen zeigt.
+crons.daily("sync Daily Traffic (noon)", { hourUTC: 11, minuteUTC: 0 }, api.actions.syncDailyTraffic.syncDailyTraffic, {});
 
 export default crons;

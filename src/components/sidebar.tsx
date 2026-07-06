@@ -16,11 +16,13 @@ import {
   Share2,
   ClipboardList,
   TrendingUp,
+  CalendarDays,
 } from "lucide-react";
 
 const navItems = [
   { href: "", label: "Dashboard", icon: LayoutDashboard },
   { href: "/kpis", label: "KPIs", icon: BarChart2 },
+  { href: "/daily", label: "Tagesreport", icon: CalendarDays },
   { href: "/social", label: "Social", icon: Share2 },
   { href: "/report", label: "Bericht", icon: ClipboardList },
   { href: "/campaigns", label: "Kampagnen", icon: Megaphone },

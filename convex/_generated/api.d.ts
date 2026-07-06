@@ -19,6 +19,7 @@ import type * as actions_seedMicrovistaKeywords from "../actions/seedMicrovistaK
 import type * as actions_seedMicrovistaReport from "../actions/seedMicrovistaReport.js";
 import type * as actions_serankingResearch from "../actions/serankingResearch.js";
 import type * as actions_syncAds from "../actions/syncAds.js";
+import type * as actions_syncDailyTraffic from "../actions/syncDailyTraffic.js";
 import type * as actions_syncGSC from "../actions/syncGSC.js";
 import type * as actions_syncPubler from "../actions/syncPubler.js";
 import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.js";
@@ -29,6 +30,7 @@ import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as crons from "../crons.js";
+import type * as dailyTraffic from "../dailyTraffic.js";
 import type * as gads from "../gads.js";
 import type * as journeys from "../journeys.js";
 import type * as kpi from "../kpi.js";
@@ -60,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "actions/seedMicrovistaReport": typeof actions_seedMicrovistaReport;
   "actions/serankingResearch": typeof actions_serankingResearch;
   "actions/syncAds": typeof actions_syncAds;
+  "actions/syncDailyTraffic": typeof actions_syncDailyTraffic;
   "actions/syncGSC": typeof actions_syncGSC;
   "actions/syncPubler": typeof actions_syncPubler;
   "actions/syncPublerAccounts": typeof actions_syncPublerAccounts;
@@ -70,6 +73,7 @@ declare const fullApi: ApiFromModules<{
   campaigns: typeof campaigns;
   content: typeof content;
   crons: typeof crons;
+  dailyTraffic: typeof dailyTraffic;
   gads: typeof gads;
   journeys: typeof journeys;
   kpi: typeof kpi;
