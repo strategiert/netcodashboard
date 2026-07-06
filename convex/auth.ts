@@ -1,24 +1,17 @@
-import { Password } from "@convex-dev/auth/providers/Password";
+import Resend from "@auth/core/providers/resend";
 import { convexAuth } from "@convex-dev/auth/server";
-import { DataModel } from "./_generated/dataModel";
 
-// Selbst-Registrierung: jeder kann ein Konto anlegen, ist aber standardmäßig
-// NICHT freigeschaltet (approved=false) und sieht nichts, bis ein Admin ihn
-// in der Nutzerverwaltung freischaltet und Rechte vergibt.
-// Admin-Konten: E-Mail muss in der Convex-Env ADMIN_EMAILS (kommagetrennt) stehen
-// — solche Konten werden sofort als admin + approved angelegt.
+// Login per Magic Link (passwortlos). Der Nutzer gibt nur seine E-Mail ein und
+// erhält einen Anmelde-Link. Absender-Domain klaus-arent.de ist bei Resend verifiziert
+// (netco.de ist es noch nicht — bei Bedarf dort verifizieren für @netco.de-Absender).
+//
+// Freischaltung: Self-Login legt beim ersten Klick ein Konto an, das standardmäßig
+// NICHT freigeschaltet ist (approved=false). Admin-E-Mails (Convex-Env ADMIN_EMAILS)
+// werden sofort admin+approved. Vom Admin vorgemerkte Konten übernehmen ihre
+// vorkonfigurierten Rechte automatisch.
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
-    Password<DataModel>({
-      // WICHTIG: role/approved NIE aus params übernehmen (User könnte sie mitschicken).
-      // Nur email + optionaler Name aus dem Registrierungsformular.
-      profile(params) {
-        return {
-          email: params.email as string,
-          name: (params.name as string) || undefined,
-        };
-      },
-    }),
+    Resend({ from: "NetCo Dashboard <login@klaus-arent.de>" }),
   ],
   callbacks: {
     async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {
