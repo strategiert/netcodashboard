@@ -1,7 +1,30 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  // Convex-Auth-Tabellen (authAccounts, authSessions, authRefreshTokens, …).
+  ...authTables,
+
+  // users aus authTables mit eigenen Feldern für Rollen + Sicht-Rechte überschrieben.
+  // Standardfelder + Indizes von authTables.users müssen erhalten bleiben.
+  users: defineTable({
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    // Eigene Felder:
+    role: v.optional(v.string()),              // "admin" | "member"
+    approved: v.optional(v.boolean()),         // vom Admin freigeschaltet?
+    allowedSections: v.optional(v.array(v.string())), // section-keys (report, daily, social, rankings)
+    allowedBrands: v.optional(v.array(v.string())),   // brand-slugs (bodycam, bautv, microvista)
+  })
+    .index("email", ["email"])
+    .index("phone", ["phone"]),
+
   brands: defineTable({
     name: v.string(),
     slug: v.string(),

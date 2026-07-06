@@ -1,6 +1,7 @@
 "use client";
 
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ReactNode, useMemo } from "react";
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
@@ -18,21 +19,13 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen items-center justify-center p-8">
         <div className="max-w-md rounded-lg border bg-card p-6 text-center">
           <h2 className="mb-2 text-lg font-semibold">Convex nicht konfiguriert</h2>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Bitte konfigurieren Sie Convex, um die App zu nutzen:
-          </p>
-          <ol className="mb-4 text-left text-sm text-muted-foreground">
-            <li className="mb-2">1. Führen Sie <code className="rounded bg-muted px-1">npx convex dev</code> aus</li>
-            <li className="mb-2">2. Erstellen Sie ein neues Projekt oder wählen Sie ein bestehendes</li>
-            <li>3. Die <code className="rounded bg-muted px-1">.env.local</code> Datei wird automatisch erstellt</li>
-          </ol>
-          <p className="text-xs text-muted-foreground">
-            Starten Sie danach die App neu mit <code className="rounded bg-muted px-1">npm run dev</code>
+          <p className="text-sm text-muted-foreground">
+            <code className="rounded bg-muted px-1">NEXT_PUBLIC_CONVEX_URL</code> ist nicht gesetzt.
           </p>
         </div>
       </div>
     );
   }
 
-  return <ConvexProvider client={convex}>{children}</ConvexProvider>;
+  return <ConvexAuthProvider client={convex}>{children}</ConvexAuthProvider>;
 }

@@ -4,8 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, Info } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AdminOnly } from "@/components/auth/admin-only";
 
 export default function SettingsPage() {
+  return (
+    <AdminOnly>
+      <SettingsInner />
+    </AdminOnly>
+  );
+}
+
+function SettingsInner() {
   return (
     <div className="min-h-screen bg-muted/30 p-6">
       <div className="mx-auto max-w-4xl space-y-6">

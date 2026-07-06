@@ -26,12 +26,14 @@ import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.
 import type * as actions_syncPublerPosts from "../actions/syncPublerPosts.js";
 import type * as actions_syncSERanking from "../actions/syncSERanking.js";
 import type * as actions_syncTraffic from "../actions/syncTraffic.js";
+import type * as auth from "../auth.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as crons from "../crons.js";
 import type * as dailyTraffic from "../dailyTraffic.js";
 import type * as gads from "../gads.js";
+import type * as http from "../http.js";
 import type * as journeys from "../journeys.js";
 import type * as kpi from "../kpi.js";
 import type * as phases from "../phases.js";
@@ -43,6 +45,7 @@ import type * as seoClusters from "../seoClusters.js";
 import type * as seranking from "../seranking.js";
 import type * as stakeholders from "../stakeholders.js";
 import type * as teamBoard from "../teamBoard.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -69,12 +72,14 @@ declare const fullApi: ApiFromModules<{
   "actions/syncPublerPosts": typeof actions_syncPublerPosts;
   "actions/syncSERanking": typeof actions_syncSERanking;
   "actions/syncTraffic": typeof actions_syncTraffic;
+  auth: typeof auth;
   brands: typeof brands;
   campaigns: typeof campaigns;
   content: typeof content;
   crons: typeof crons;
   dailyTraffic: typeof dailyTraffic;
   gads: typeof gads;
+  http: typeof http;
   journeys: typeof journeys;
   kpi: typeof kpi;
   phases: typeof phases;
@@ -86,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   seranking: typeof seranking;
   stakeholders: typeof stakeholders;
   teamBoard: typeof teamBoard;
+  users: typeof users;
 }>;
 
 /**

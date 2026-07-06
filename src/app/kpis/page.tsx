@@ -4,8 +4,17 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/kpi/kpi-card";
+import { AdminOnly } from "@/components/auth/admin-only";
 
 export default function ExecutiveOverviewPage() {
+  return (
+    <AdminOnly>
+      <ExecutiveOverviewInner />
+    </AdminOnly>
+  );
+}
+
+function ExecutiveOverviewInner() {
   const allBrands = useQuery(api.kpi.getAllBrandsLatest);
   const dateStr = new Date().toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
 

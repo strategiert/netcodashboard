@@ -3,55 +3,40 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { visibleSections } from "@/lib/sections";
 import {
-  LayoutDashboard,
-  Filter,
-  FileText,
-  Users,
-  Route,
-  Search,
-  Settings,
-  Megaphone,
-  BarChart2,
-  Share2,
-  ClipboardList,
-  TrendingUp,
-  CalendarDays,
+  LayoutDashboard, Filter, FileText, Users, Route, Search, Settings,
+  Megaphone, BarChart2, Share2, ClipboardList, TrendingUp, CalendarDays,
+  type LucideIcon,
 } from "lucide-react";
 
-const navItems = [
-  { href: "", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/kpis", label: "KPIs", icon: BarChart2 },
-  { href: "/daily", label: "Tagesreport", icon: CalendarDays },
-  { href: "/social", label: "Social", icon: Share2 },
-  { href: "/report", label: "Bericht", icon: ClipboardList },
-  { href: "/campaigns", label: "Kampagnen", icon: Megaphone },
-  { href: "/funnel", label: "Funnel", icon: Filter },
-  { href: "/content", label: "Content", icon: FileText },
-  { href: "/stakeholders", label: "Stakeholder", icon: Users },
-  { href: "/journeys", label: "Journeys", icon: Route },
-  { href: "/seo", label: "SEO Cluster", icon: Search },
-  { href: "/rankings", label: "Rankings", icon: TrendingUp },
-];
+const ICONS: Record<string, LucideIcon> = {
+  LayoutDashboard, Filter, FileText, Users, Route, Search,
+  Megaphone, BarChart2, Share2, ClipboardList, TrendingUp, CalendarDays,
+};
 
 export function Sidebar() {
   const params = useParams();
   const pathname = usePathname();
   const brand = params.brand as string;
+  const me = useCurrentUser();
 
   if (!brand) return null;
+
+  const sections = visibleSections(me);
 
   return (
     <aside className="flex h-full w-56 flex-col border-r bg-card">
       <nav className="flex-1 space-y-1 p-4">
-        {navItems.map((item) => {
+        {sections.map((item) => {
           const href = `/${brand}${item.href}`;
           const isActive = pathname === href || (item.href === "" && pathname === `/${brand}`);
-          const Icon = item.icon;
+          const Icon = ICONS[item.icon] ?? LayoutDashboard;
 
           return (
             <Link
-              key={item.href}
+              key={item.key}
               href={href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
@@ -66,15 +51,17 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="border-t p-4">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        >
-          <Settings className="h-4 w-4" />
-          Einstellungen
-        </Link>
-      </div>
+      {me?.isAdmin && (
+        <div className="border-t p-4">
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <Settings className="h-4 w-4" />
+            Einstellungen
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }

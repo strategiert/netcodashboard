@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Camera, HardHat, Microscope } from "lucide-react";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { canSeeBrand } from "@/lib/sections";
 
 const brandIcons: Record<string, React.ReactNode> = {
   bodycam: <Camera className="h-4 w-4" />,
@@ -19,7 +21,8 @@ const brandIcons: Record<string, React.ReactNode> = {
 };
 
 export function BrandSelector() {
-  const brands = useQuery(api.brands.list);
+  const allBrands = useQuery(api.brands.list);
+  const me = useCurrentUser();
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -30,11 +33,17 @@ export function BrandSelector() {
     router.push(newPath);
   };
 
-  if (!brands) {
+  if (!allBrands) {
     return (
       <div className="h-10 w-[180px] animate-pulse rounded-md bg-muted" />
     );
   }
+
+  // Nur Marken zeigen, die der Nutzer sehen darf (Admin: alle).
+  const brands = allBrands.filter((b) => canSeeBrand(me, b.slug));
+
+  // Ein Nutzer mit nur einer erlaubten Marke braucht keinen Umschalter.
+  if (brands.length <= 1) return null;
 
   const selectedBrand = brands.find((b) => b.slug === currentBrand);
 
