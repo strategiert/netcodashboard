@@ -27,8 +27,8 @@ GEO wird nicht als separates Tool-Silo gebaut. Stattdessen entsteht ein Datenlay
 
 | Quelle | Zweck | Zugriff | MVP-Status |
 |--------|-------|---------|------------|
-| SE Ranking AI Search API | AI Mentions, Share of Voice, Link Presence, Prompts, Wettbewerber, Antwort-Snapshots | `SERANKING_API_KEY` vorhanden | Primaere MVP-Quelle |
-| Bing Webmaster Tools | Bing Search Performance, ggf. AI-/Copilot-Reports, Indexierungs- und URL-Signale | Key noch nicht in `.env.local` | Schema + Importpfad vorsehen |
+| SE Ranking AI Search API | AI Mentions, Share of Voice, Link Presence, Prompts, Wettbewerber, Antwort-Snapshots | `SERANKING_API_KEY` vorhanden, AI Search/API-Zugang laut Nutzer freigeschaltet | Primaere MVP-Quelle |
+| Bing Webmaster Tools | Klassische Bing Search Performance per API; AI Performance/Grounding Queries/Citations zunaechst per CSV-Export | Key noch nicht in `.env.local` | API-Felder + CSV-Importpfad trennen |
 | Google Search Console | GEO-Fruehsignale: Fragen, Longtail, Laender, Landingpages, Brand/Non-Brand | vorhandene GSC-Env-Variablen | Erweiterung bestehender GSC-Skripte |
 | DataForSEO oder Ahrefs | Zweitvalidierung fuer AI Responses/Citations | spaeter | Phase 2 |
 
@@ -122,7 +122,7 @@ sourceProvider
 Indizes: `by_brand_date`, `by_prompt_date`
 
 ### `bingSearchSnapshots`
-Bing-spezifische Suchdaten. Startet als Import-/API-Ziel fuer klassische Bing-Webmaster-Daten und kann AI-/Copilot-Felder aufnehmen, sobald verfuegbar.
+Bing-spezifische Suchdaten. Die klassischen Felder (`clicks`, `impressions`, `ctr`, `position`) sind fuer die Bing Webmaster API vorgesehen. Die AI-/Copilot-Felder (`aiImpressions`, `aiClicks`, `aiCitations`, `aiCitationShare`, `topic`, `intent`) werden im MVP nur per CSV-Import gefuellt, weil die Bing AI Performance API noch nicht verfuegbar ist.
 
 ```
 brandId
@@ -145,6 +145,29 @@ sourceProvider        // bing-api, bing-export
 ```
 
 Indizes: `by_brand_date`, `by_query`, `by_page`
+
+---
+
+## AI Visibility Score
+
+Der Score wird deterministisch aus den gespeicherten Snapshots berechnet und als 0-100 Wert angezeigt:
+
+```
+score =
+  mentionRate * 45
+  + citationShare * 30
+  + linkPresenceRate * 15
+  + positionScore * 10
+```
+
+Definitionen:
+
+- `mentionRate`: Anteil der Snapshots, in denen die eigene Marke genannt wird.
+- `citationShare`: Anteil der erkannten Quellen/Citations, die auf eigene Domains zeigen.
+- `linkPresenceRate`: Anteil der Snapshots, in denen eine eigene URL verlinkt oder zitiert wird.
+- `positionScore`: 1.0 bei Position 1, 0.75 bei Position 2-3, 0.5 bei Position 4-5, 0.25 bei weiterer Nennung, 0 bei keiner Nennung.
+
+Fehlende Felder zaehlen als 0, damit importierte Bing-CSV-Daten und SE-Ranking-AI-Daten vergleichbar bleiben.
 
 ---
 
@@ -204,14 +227,14 @@ Der bestehende Wochenreport erhaelt einen neuen Abschnitt:
 
 - Schema fuer `aiPrompts`, `aiVisibilitySnapshots`, `aiResponseSnapshots`, `bingSearchSnapshots`
 - Seed/Import fuer 30-50 Microvista-Prompts
-- SE Ranking AI Search Sync Action
+- SE Ranking AI Search Sync Action mit woechentlicher Cron-Frequenz; kein taeglicher Sync, weil AI-Search-Daten credits-basiert sind und laut SE-Ranking-Doku nicht taeglich aktualisiert werden muessen
 - `/microvista/ai-visibility` Seite
 - Wochenreport-Abschnitt fuer AI Visibility
 
 ### Phase 2 - Bing und GSC-GEO
 
-- Bing Webmaster API oder Export-Import anbinden
-- Bing Search/AI-Daten in `bingSearchSnapshots` speichern
+- Bing Webmaster API fuer klassische Search-Performance anbinden
+- Bing AI Performance CSV-Import fuer Grounding Queries, Topics, Intents und Citations bauen, bis Microsoft eine API bereitstellt
 - GSC-GEO-Auswertung fuer Fragen, Longtail, Laender und Landingpages
 - Vergleich Bing/GSC/AI Visibility im Dashboard
 
@@ -223,9 +246,9 @@ Der bestehende Wochenreport erhaelt einen neuen Abschnitt:
 
 ---
 
-## Offene Voraussetzung
+## Zugriffsvoraussetzungen
 
-In `.env.local` ist `SERANKING_API_KEY` vorhanden. Fuer Bing fehlt aktuell noch ein eigener Webmaster-Key, z. B. `BING_WEBMASTER_API_KEY`. Bis dieser Key verfuegbar ist, wird Bing im Datenmodell vorgesehen und kann ueber CSV/Export importiert werden.
+In `.env.local` ist `SERANKING_API_KEY` vorhanden. Der Nutzer hat bestaetigt, dass der SE-Ranking-API-Zugang freigeschaltet und auf die groessere Version upgegradet wurde. Fuer Bing fehlt aktuell noch ein eigener Webmaster-Key, z. B. `BING_WEBMASTER_API_KEY`. Bis dieser Key verfuegbar ist, wird Bing im Datenmodell vorgesehen und kann ueber CSV/Export importiert werden.
 
 ---
 

@@ -18,6 +18,7 @@ import type * as actions_seedGadsKeywords from "../actions/seedGadsKeywords.js";
 import type * as actions_seedMicrovistaKeywords from "../actions/seedMicrovistaKeywords.js";
 import type * as actions_seedMicrovistaReport from "../actions/seedMicrovistaReport.js";
 import type * as actions_serankingResearch from "../actions/serankingResearch.js";
+import type * as actions_syncAIVisibility from "../actions/syncAIVisibility.js";
 import type * as actions_syncAds from "../actions/syncAds.js";
 import type * as actions_syncDailyTraffic from "../actions/syncDailyTraffic.js";
 import type * as actions_syncGSC from "../actions/syncGSC.js";
@@ -26,6 +27,7 @@ import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.
 import type * as actions_syncPublerPosts from "../actions/syncPublerPosts.js";
 import type * as actions_syncSERanking from "../actions/syncSERanking.js";
 import type * as actions_syncTraffic from "../actions/syncTraffic.js";
+import type * as aiVisibility from "../aiVisibility.js";
 import type * as auth from "../auth.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
@@ -64,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   "actions/seedMicrovistaKeywords": typeof actions_seedMicrovistaKeywords;
   "actions/seedMicrovistaReport": typeof actions_seedMicrovistaReport;
   "actions/serankingResearch": typeof actions_serankingResearch;
+  "actions/syncAIVisibility": typeof actions_syncAIVisibility;
   "actions/syncAds": typeof actions_syncAds;
   "actions/syncDailyTraffic": typeof actions_syncDailyTraffic;
   "actions/syncGSC": typeof actions_syncGSC;
@@ -72,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "actions/syncPublerPosts": typeof actions_syncPublerPosts;
   "actions/syncSERanking": typeof actions_syncSERanking;
   "actions/syncTraffic": typeof actions_syncTraffic;
+  aiVisibility: typeof aiVisibility;
   auth: typeof auth;
   brands: typeof brands;
   campaigns: typeof campaigns;

@@ -525,4 +525,107 @@ export default defineSchema({
   })
     .index("by_brand", ["brandId"])
     .index("by_keyword", ["source", "keyword"]),
+
+  // ── AI Visibility / GEO ──────────────────────────────────────────────────
+  // Prompt-Stammdaten: echte Entscheidungsfragen statt klassischer Keywords.
+  aiPrompts: defineTable({
+    brandId: v.id("brands"),
+    prompt: v.string(),
+    language: v.string(),         // de, en, nl, it
+    region: v.string(),           // DE, NL, IT, global
+    persona: v.string(),
+    funnelStage: v.string(),      // awareness, consideration, decision
+    priority: v.number(),         // 1-5
+    cluster: v.string(),
+    active: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_brand", ["brandId"])
+    .index("by_brand_active", ["brandId", "active"])
+    .index("by_brand_prompt", ["brandId", "prompt"])
+    .index("by_cluster", ["cluster"]),
+
+  // Aggregierter Snapshot pro Prompt/Engine/Datum.
+  aiVisibilitySnapshots: defineTable({
+    brandId: v.id("brands"),
+    promptId: v.id("aiPrompts"),
+    date: v.string(),             // YYYY-MM-DD
+    engine: v.string(),           // chatgpt, perplexity, gemini, ai-overview, ai-mode, bing-ai
+    region: v.string(),
+    brandMentioned: v.boolean(),
+    brandPosition: v.optional(v.number()),
+    mentionRate: v.optional(v.number()),
+    linkPresent: v.boolean(),
+    citationShare: v.optional(v.number()),
+    sentiment: v.union(
+      v.literal("positive"),
+      v.literal("neutral"),
+      v.literal("negative"),
+      v.literal("unknown")
+    ),
+    competitorsMentioned: v.array(v.string()),
+    sourceProvider: v.union(
+      v.literal("seranking"),
+      v.literal("bing"),
+      v.literal("manual"),
+      v.literal("dataforseo"),
+      v.literal("ahrefs")
+    ),
+    rawUrl: v.optional(v.string()),
+    fetchedAt: v.number(),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_prompt_date", ["promptId", "date"])
+    .index("by_prompt_engine_date", ["promptId", "engine", "date"])
+    .index("by_engine_date", ["engine", "date"]),
+
+  // Antwort- und Quellen-Snapshot fuer Review, Citation-Analyse und Content-Ideen.
+  aiResponseSnapshots: defineTable({
+    brandId: v.id("brands"),
+    promptId: v.id("aiPrompts"),
+    date: v.string(),             // YYYY-MM-DD
+    engine: v.string(),
+    answerSummary: v.optional(v.string()),
+    mentionedBrands: v.array(v.string()),
+    citedUrls: v.array(v.string()),
+    citedDomains: v.array(v.string()),
+    missingAngles: v.array(v.string()),
+    rawResponse: v.optional(v.string()),
+    sourceProvider: v.union(
+      v.literal("seranking"),
+      v.literal("bing"),
+      v.literal("manual"),
+      v.literal("dataforseo"),
+      v.literal("ahrefs")
+    ),
+    fetchedAt: v.number(),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_prompt_date", ["promptId", "date"])
+    .index("by_prompt_engine_date", ["promptId", "engine", "date"]),
+
+  // Bing classic Search Performance + AI Performance CSV-Import.
+  bingSearchSnapshots: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),             // YYYY-MM-DD
+    query: v.optional(v.string()),
+    page: v.optional(v.string()),
+    country: v.optional(v.string()),
+    device: v.optional(v.string()),
+    clicks: v.optional(v.number()),
+    impressions: v.optional(v.number()),
+    ctr: v.optional(v.number()),
+    position: v.optional(v.number()),
+    aiImpressions: v.optional(v.number()),
+    aiClicks: v.optional(v.number()),
+    aiCitations: v.optional(v.number()),
+    aiCitationShare: v.optional(v.number()),
+    topic: v.optional(v.string()),
+    intent: v.optional(v.string()),
+    sourceProvider: v.union(v.literal("bing-api"), v.literal("bing-export")),
+    importedAt: v.number(),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_query", ["query"])
+    .index("by_page", ["page"]),
 });

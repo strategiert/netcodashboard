@@ -8,12 +8,13 @@ import { visibleSections } from "@/lib/sections";
 import {
   LayoutDashboard, Filter, FileText, Users, Route, Search, Settings,
   Megaphone, BarChart2, Share2, ClipboardList, TrendingUp, CalendarDays,
-  type LucideIcon,
+  Sparkles, type LucideIcon,
 } from "lucide-react";
 
 const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard, Filter, FileText, Users, Route, Search,
   Megaphone, BarChart2, Share2, ClipboardList, TrendingUp, CalendarDays,
+  Sparkles,
 };
 
 export function Sidebar() {

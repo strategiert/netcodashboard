@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "ads:auth": "tsx --env-file=.env.local scripts/ads-auth.ts"
+    "ads:auth": "tsx --env-file=.env.local scripts/ads-auth.ts",
+    "bing:ai-import": "tsx scripts/import-bing-ai-performance.ts"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
