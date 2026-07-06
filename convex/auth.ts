@@ -2,8 +2,8 @@ import Resend from "@auth/core/providers/resend";
 import { convexAuth } from "@convex-dev/auth/server";
 
 // Login per Magic Link (passwortlos). Der Nutzer gibt nur seine E-Mail ein und
-// erhält einen Anmelde-Link. Absender-Domain klaus-arent.de ist bei Resend verifiziert
-// (netco.de ist es noch nicht — bei Bedarf dort verifizieren für @netco.de-Absender).
+// erhält einen Anmelde-Link. Absender: report.klaus-arent.de (dedizierte, bei Resend
+// verifizierte Sending-Subdomain; DKIM/SPF via Cloudflare gesetzt).
 //
 // Freischaltung: Self-Login legt beim ersten Klick ein Konto an, das standardmäßig
 // NICHT freigeschaltet ist (approved=false). Admin-E-Mails (Convex-Env ADMIN_EMAILS)
@@ -11,7 +11,7 @@ import { convexAuth } from "@convex-dev/auth/server";
 // vorkonfigurierten Rechte automatisch.
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
-    Resend({ from: "NetCo Dashboard <login@klaus-arent.de>" }),
+    Resend({ from: "NetCo Dashboard <login@report.klaus-arent.de>" }),
   ],
   callbacks: {
     async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {
