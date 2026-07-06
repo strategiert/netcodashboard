@@ -21,6 +21,7 @@ export default defineSchema({
     approved: v.optional(v.boolean()),         // vom Admin freigeschaltet?
     allowedSections: v.optional(v.array(v.string())), // section-keys (report, daily, social, rankings)
     allowedBrands: v.optional(v.array(v.string())),   // brand-slugs (bodycam, bautv, microvista)
+    pending: v.optional(v.boolean()),          // vom Admin vorgemerkt, noch nicht selbst registriert
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),

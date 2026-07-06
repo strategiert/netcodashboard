@@ -49,8 +49,53 @@ export const listUsers = query({
         approved: u.approved ?? false,
         allowedSections: u.allowedSections ?? [],
         allowedBrands: u.allowedBrands ?? [],
+        pending: u.pending ?? false,
       }))
       .sort((a, b) => a._creationTime - b._creationTime);
+  },
+});
+
+// Mitarbeiter vormerken (nur Admin): legt einen Platzhalter-Datensatz an, den der
+// Mitarbeiter bei Selbst-Registrierung mit derselben E-Mail übernimmt.
+export const createMember = mutation({
+  args: { email: v.string(), name: v.optional(v.string()) },
+  handler: async (ctx, { email, name }) => {
+    await requireAdmin(ctx);
+    const norm = email.trim().toLowerCase();
+    if (!norm.includes("@")) throw new Error("Ungültige E-Mail");
+    const all = await ctx.db.query("users").collect();
+    if (all.some((u) => (u.email ?? "").toLowerCase() === norm)) {
+      throw new Error("Für diese E-Mail existiert bereits ein Eintrag");
+    }
+    return await ctx.db.insert("users", {
+      email: norm,
+      name: name?.trim() || undefined,
+      role: "member",
+      approved: false,
+      pending: true,
+      allowedSections: [],
+      allowedBrands: [],
+    });
+  },
+});
+
+// Nutzer/Vormerkung löschen (nur Admin) inkl. Auth-Verknüpfungen.
+export const deleteUser = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const admin = await requireAdmin(ctx);
+    if (userId === admin._id) throw new Error("Eigenes Konto kann nicht gelöscht werden");
+    const accounts = await ctx.db.query("authAccounts").collect();
+    for (const a of accounts) if (a.userId === userId) await ctx.db.delete(a._id);
+    const sessions = await ctx.db.query("authSessions").collect();
+    for (const s of sessions) {
+      if (s.userId === userId) {
+        const rts = await ctx.db.query("authRefreshTokens").collect();
+        for (const rt of rts) if (rt.sessionId === s._id) await ctx.db.delete(rt._id);
+        await ctx.db.delete(s._id);
+      }
+    }
+    await ctx.db.delete(userId);
   },
 });
 
