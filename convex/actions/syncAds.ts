@@ -1,6 +1,7 @@
 "use node";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
+import { shouldIncludeInPerformanceSnapshot } from "../adsMapping";
 
 // Campaign name keywords per brand slug (case-insensitive match)
 const BRAND_KEYWORDS: Record<string, string[]> = {
@@ -8,6 +9,7 @@ const BRAND_KEYWORDS: Record<string, string[]> = {
   microvista: ["microvista", "micro vista", "ndt-"],
   bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-", "bk-"],
 };
+const TRACKED_BRANDS = Object.keys(BRAND_KEYWORDS);
 
 async function getAdsToken(): Promise<string> {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -31,7 +33,8 @@ async function fetchAdsCampaigns(token: string, date: string) {
   const managerCustomerId = process.env.GADS_MANAGER_CUSTOMER_ID!.replace(/-/g, "");
 
   const query = `
-    SELECT campaign.name, metrics.cost_micros, metrics.clicks,
+    SELECT campaign.name, campaign.advertising_channel_type,
+           metrics.cost_micros, metrics.clicks,
            metrics.impressions, metrics.conversions, metrics.average_cpc
     FROM campaign
     WHERE segments.date = '${date}' AND campaign.status = 'ENABLED'
@@ -86,6 +89,7 @@ export const syncAds = action({
     for (const row of campaigns) {
       const slug = detectBrand(row.campaign?.name ?? "");
       if (!slug) continue;
+      if (!shouldIncludeInPerformanceSnapshot(row.campaign?.advertisingChannelType)) continue;
       if (!aggregated[slug]) aggregated[slug] = { adSpend: 0, adClicks: 0, adImpressions: 0, adConversions: 0, cpcSum: 0, count: 0 };
       const m = row.metrics;
       aggregated[slug].adSpend       += Number(m.costMicros   ?? m.cost_micros   ?? 0) / 1_000_000;
@@ -97,7 +101,8 @@ export const syncAds = action({
     }
 
     const results: string[] = [];
-    for (const [slug, agg] of Object.entries(aggregated)) {
+    for (const slug of TRACKED_BRANDS) {
+      const agg = aggregated[slug] ?? { adSpend: 0, adClicks: 0, adImpressions: 0, adConversions: 0, cpcSum: 0, count: 0 };
       const brand = brandMap[slug];
       if (!brand) continue;
       await ctx.runMutation(api.kpi.upsertSnapshot, {

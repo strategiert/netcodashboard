@@ -4,6 +4,7 @@ import { api } from "../_generated/api";
 import { GoogleAuth } from "google-auth-library";
 import { v } from "convex/values";
 import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
+import { shouldIncludeInPerformanceSnapshot } from "../adsMapping";
 
 const GSC_PROPERTIES: Record<string, string> = {
   bodycam:   process.env.GSC_PROPERTY_BODYCAM   ?? "",
@@ -17,6 +18,7 @@ const BRAND_KEYWORDS: Record<string, string[]> = {
   microvista: ["microvista", "micro vista", "ndt-"],
   bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-", "bk-"],
 };
+const TRACKED_ADS_BRANDS = Object.keys(BRAND_KEYWORDS);
 
 function dateRange(days: number): string[] {
   const dates: string[] = [];
@@ -24,6 +26,17 @@ function dateRange(days: number): string[] {
     const d = new Date();
     d.setDate(d.getDate() - i);
     dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+function eachDate(startDate: string, endDate: string): string[] {
+  const dates: string[] = [];
+  const d = new Date(`${startDate}T12:00:00Z`);
+  const end = new Date(`${endDate}T12:00:00Z`);
+  while (d <= end) {
+    dates.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
   }
   return dates;
 }
@@ -201,11 +214,11 @@ export const backfillAds = action({
     const endDate = end.toISOString().slice(0, 10);
 
     const query = `
-      SELECT campaign.name, segments.date, metrics.cost_micros, metrics.clicks,
+      SELECT campaign.name, campaign.advertising_channel_type,
+             segments.date, metrics.cost_micros, metrics.clicks,
              metrics.impressions, metrics.conversions, metrics.average_cpc
       FROM campaign
       WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'
-        AND campaign.status = 'ENABLED'
     `;
 
     const res = await fetch(
@@ -232,6 +245,7 @@ export const backfillAds = action({
     for (const row of rows) {
       const slug = detectBrand(row.campaign?.name ?? "");
       if (!slug) continue;
+      if (!shouldIncludeInPerformanceSnapshot(row.campaign?.advertisingChannelType)) continue;
       const date = row.segments?.date;
       if (!date) continue;
       const key = `${slug}:${date}`;
@@ -246,18 +260,20 @@ export const backfillAds = action({
     }
 
     let saved = 0;
-    for (const [key, agg] of Object.entries(byBrandDate)) {
-      const [slug, date] = key.split(":");
+    for (const slug of TRACKED_ADS_BRANDS) {
       const brand = brandMap[slug];
       if (!brand) continue;
-      await ctx.runMutation(api.kpi.upsertSnapshot, {
-        brandId: brand._id, date, source: "ads",
-        adSpend: agg.adSpend, adClicks: agg.adClicks,
-        adImpressions: agg.adImpressions, adConversions: agg.adConversions,
-        adCpc: agg.count > 0 ? agg.cpcSum / agg.count : 0,
-      });
-      saved++;
+      for (const date of eachDate(startDate, endDate)) {
+        const agg = byBrandDate[`${slug}:${date}`] ?? { adSpend: 0, adClicks: 0, adImpressions: 0, adConversions: 0, cpcSum: 0, count: 0 };
+        await ctx.runMutation(api.kpi.upsertSnapshot, {
+          brandId: brand._id, date, source: "ads",
+          adSpend: agg.adSpend, adClicks: agg.adClicks,
+          adImpressions: agg.adImpressions, adConversions: agg.adConversions,
+          adCpc: agg.count > 0 ? agg.cpcSum / agg.count : 0,
+        });
+        saved++;
+      }
     }
-    return [`OK: ${saved} brand-day rows from ${rows.length} campaigns (${startDate} → ${endDate})`];
+    return [`OK: ${saved} brand-day rows from ${rows.length} search campaign rows (${startDate} → ${endDate})`];
   },
 });

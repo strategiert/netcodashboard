@@ -27,6 +27,7 @@ import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.
 import type * as actions_syncPublerPosts from "../actions/syncPublerPosts.js";
 import type * as actions_syncSERanking from "../actions/syncSERanking.js";
 import type * as actions_syncTraffic from "../actions/syncTraffic.js";
+import type * as adsMapping from "../adsMapping.js";
 import type * as aiVisibility from "../aiVisibility.js";
 import type * as auth from "../auth.js";
 import type * as brands from "../brands.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   "actions/syncPublerPosts": typeof actions_syncPublerPosts;
   "actions/syncSERanking": typeof actions_syncSERanking;
   "actions/syncTraffic": typeof actions_syncTraffic;
+  adsMapping: typeof adsMapping;
   aiVisibility: typeof aiVisibility;
   auth: typeof auth;
   brands: typeof brands;
