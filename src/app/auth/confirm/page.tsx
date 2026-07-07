@@ -26,7 +26,18 @@ export default function ConfirmLoginPage() {
   }, []);
 
   function confirmLogin() {
-    if (magicUrl) window.location.assign(magicUrl);
+    if (magicUrl) {
+      // Marker: falls die Verifizierung fehlschlägt (z.B. veralteter Link, weil
+      // zwischenzeitlich ein neuer angefordert wurde), landet der Nutzer wieder
+      // auf dem Login. Das Login-Formular liest diesen Marker und erklärt dann,
+      // warum es nicht geklappt hat, statt stumm zurückzuspringen.
+      try {
+        sessionStorage.setItem("netco_login_attempt", String(Date.now()));
+      } catch {
+        // sessionStorage kann in manchen Kontexten blockiert sein — dann ohne Marker.
+      }
+      window.location.assign(magicUrl);
+    }
   }
 
   return (
