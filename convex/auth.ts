@@ -1,5 +1,6 @@
 import Resend from "@auth/core/providers/resend";
 import { convexAuth } from "@convex-dev/auth/server";
+import { sendMagicLinkVerificationRequest } from "./authEmail";
 
 // Login per Magic Link (passwortlos). Der Nutzer gibt nur seine E-Mail ein und
 // erhält einen Anmelde-Link. Absender: report.klaus-arent.de (dedizierte, bei Resend
@@ -11,7 +12,10 @@ import { convexAuth } from "@convex-dev/auth/server";
 // vorkonfigurierten Rechte automatisch.
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
-    Resend({ from: "NetCo Dashboard <login@report.klaus-arent.de>" }),
+    Resend({
+      from: "NetCo Dashboard <login@report.klaus-arent.de>",
+      sendVerificationRequest: sendMagicLinkVerificationRequest,
+    }),
   ],
   callbacks: {
     async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {

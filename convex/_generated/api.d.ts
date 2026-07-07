@@ -30,6 +30,7 @@ import type * as actions_syncTraffic from "../actions/syncTraffic.js";
 import type * as adsMapping from "../adsMapping.js";
 import type * as aiVisibility from "../aiVisibility.js";
 import type * as auth from "../auth.js";
+import type * as authEmail from "../authEmail.js";
 import type * as brands from "../brands.js";
 import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
@@ -79,6 +80,7 @@ declare const fullApi: ApiFromModules<{
   adsMapping: typeof adsMapping;
   aiVisibility: typeof aiVisibility;
   auth: typeof auth;
+  authEmail: typeof authEmail;
   brands: typeof brands;
   campaigns: typeof campaigns;
   content: typeof content;
