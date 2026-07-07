@@ -42,12 +42,65 @@ export function buildMagicLinkEmail({ confirmUrl, host }: { confirmUrl: string; 
   };
 }
 
+export function buildBodycamMagicLinkRelayRequest({
+  endpoint,
+  secret,
+  to,
+  magicUrl,
+  siteUrl = process.env.SITE_URL ?? DEFAULT_SITE_URL,
+}: {
+  endpoint: string;
+  secret: string;
+  to: string;
+  magicUrl: string;
+  siteUrl?: string;
+}) {
+  const host = new URL(siteUrl).host;
+  const confirmUrl = buildMagicLinkConfirmUrl(magicUrl, siteUrl);
+
+  return {
+    url: endpoint,
+    init: {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to,
+        host,
+        confirmUrl,
+      }),
+    },
+  };
+}
+
 export async function sendMagicLinkVerificationRequest(params: EmailProviderSendVerificationRequestParams) {
   const { identifier: to, provider, url } = params;
   const siteUrl = process.env.SITE_URL ?? DEFAULT_SITE_URL;
   const host = new URL(siteUrl).host;
   const confirmUrl = buildMagicLinkConfirmUrl(url, siteUrl);
   const email = buildMagicLinkEmail({ confirmUrl, host });
+  const relayEndpoint = process.env.BODYCAM_LOGIN_MAIL_ENDPOINT;
+  const relaySecret = process.env.BODYCAM_LOGIN_MAIL_SECRET;
+
+  if (relayEndpoint && relaySecret) {
+    const relayRequest = buildBodycamMagicLinkRelayRequest({
+      endpoint: relayEndpoint,
+      secret: relaySecret,
+      to,
+      magicUrl: url,
+      siteUrl,
+    });
+
+    const res = await fetch(relayRequest.url, relayRequest.init);
+
+    if (!res.ok) {
+      throw new Error("Bodycam mail relay error: " + JSON.stringify(await res.json()));
+    }
+
+    return;
+  }
 
   if (!provider.apiKey) {
     throw new Error("Resend API key is missing");
