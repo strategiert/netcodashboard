@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildBodycamMagicLinkRelayRequest, buildMagicLinkConfirmUrl, buildMagicLinkEmail } from "./authEmail";
+import {
+  buildBodycamMagicLinkRelayRequest,
+  buildBodycamOtpRelayRequest,
+  buildMagicLinkConfirmUrl,
+  buildMagicLinkEmail,
+  buildOtpEmail,
+} from "./authEmail";
 
 test("buildMagicLinkConfirmUrl keeps the one-time code out of the request URL", () => {
   const magicUrl = "https://netcodashboard.vercel.app/?code=secret-code&redirectTo=%2Fmicrovista%2Freport";
@@ -31,6 +37,33 @@ test("buildMagicLinkEmail only exposes the scanner-safe confirmation URL", () =>
   assert.match(email.text, /\/auth\/confirm#url=/);
   assert.doesNotMatch(email.html, /\?code=secret-code/);
   assert.doesNotMatch(email.text, /\?code=secret-code/);
+});
+
+test("buildOtpEmail shows the code and no link", () => {
+  const email = buildOtpEmail({ code: "428913", host: "netcodashboard.vercel.app" });
+
+  assert.match(email.subject, /428913/);
+  assert.match(email.html, /428913/);
+  assert.match(email.text, /428913/);
+  assert.doesNotMatch(email.html, /auth\/confirm/);
+  assert.doesNotMatch(email.text, /https?:\/\//);
+});
+
+test("buildBodycamOtpRelayRequest sends to/host/code, no confirmUrl", () => {
+  const request = buildBodycamOtpRelayRequest({
+    endpoint: "https://netco-bodycam-website-eoa.pages.dev/api/dashboard-login-mail",
+    secret: "relay-secret",
+    to: "alexa.baumann@netco.de",
+    code: "428913",
+    siteUrl: "https://netcodashboard.vercel.app",
+  });
+
+  assert.equal(request.init.headers.Authorization, "Bearer relay-secret");
+  const payload = JSON.parse(String(request.init.body));
+  assert.equal(payload.to, "alexa.baumann@netco.de");
+  assert.equal(payload.host, "netcodashboard.vercel.app");
+  assert.equal(payload.code, "428913");
+  assert.equal(payload.confirmUrl, undefined);
 });
 
 test("buildBodycamMagicLinkRelayRequest sends the scanner-safe confirmation URL", () => {

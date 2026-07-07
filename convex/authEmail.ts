@@ -75,6 +75,114 @@ export function buildBodycamMagicLinkRelayRequest({
   };
 }
 
+// ── OTP (Einmalcode) ─────────────────────────────────────────────────────────
+// Statt eines Magic-Links bekommt der Nutzer einen 6-stelligen Code, den er im
+// wartenden Tab eintippt. Damit authentifiziert sich immer genau der Browser, der
+// den Code angefordert hat — kein "Link im falschen Browser/veralteter Link"-Problem.
+
+export function buildOtpEmail({ code, host }: { code: string; host: string }) {
+  const safeCode = escapeHtml(code);
+  const safeHost = escapeHtml(host);
+
+  return {
+    subject: `Anmeldecode: ${code}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+        <h1 style="font-size: 20px; margin: 0 0 12px;">NetCo Marketing</h1>
+        <p style="margin: 0 0 16px;">Dein Anmeldecode für ${safeHost}:</p>
+        <p style="margin: 0 0 18px;">
+          <span style="display: inline-block; font-size: 30px; font-weight: 700; letter-spacing: 6px; background: #f3f4f6; padding: 12px 18px; border-radius: 8px;">${safeCode}</span>
+        </p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">Gib den Code im bereits geöffneten Anmeldefenster ein. Er ist 15 Minuten gültig. Falls du ihn nicht angefordert hast, ignoriere diese Mail.</p>
+      </div>
+    `,
+    text: [
+      `Dein Anmeldecode für ${host}: ${code}`,
+      "",
+      "Gib den Code im bereits geöffneten Anmeldefenster ein. Er ist 15 Minuten gültig.",
+      "Falls du ihn nicht angefordert hast, ignoriere diese Mail.",
+    ].join("\n"),
+  };
+}
+
+export function buildBodycamOtpRelayRequest({
+  endpoint,
+  secret,
+  to,
+  code,
+  siteUrl = process.env.SITE_URL ?? DEFAULT_SITE_URL,
+}: {
+  endpoint: string;
+  secret: string;
+  to: string;
+  code: string;
+  siteUrl?: string;
+}) {
+  const host = new URL(siteUrl).host;
+
+  return {
+    url: endpoint,
+    init: {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ to, host, code }),
+    },
+  };
+}
+
+export async function sendOtpVerificationRequest(params: EmailProviderSendVerificationRequestParams) {
+  const { identifier: to, provider, token } = params;
+  const siteUrl = process.env.SITE_URL ?? DEFAULT_SITE_URL;
+  const host = new URL(siteUrl).host;
+  const relayEndpoint = process.env.BODYCAM_LOGIN_MAIL_ENDPOINT;
+  const relaySecret = process.env.BODYCAM_LOGIN_MAIL_SECRET;
+
+  if (relayEndpoint && relaySecret) {
+    const relayRequest = buildBodycamOtpRelayRequest({
+      endpoint: relayEndpoint,
+      secret: relaySecret,
+      to,
+      code: token,
+      siteUrl,
+    });
+
+    const res = await fetch(relayRequest.url, relayRequest.init);
+
+    if (!res.ok) {
+      throw new Error("Bodycam mail relay error: " + JSON.stringify(await res.json()));
+    }
+
+    return;
+  }
+
+  if (!provider.apiKey) {
+    throw new Error("Resend API key is missing");
+  }
+
+  const email = buildOtpEmail({ code: token, host });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${provider.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: provider.from,
+      to,
+      subject: email.subject,
+      html: email.html,
+      text: email.text,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Resend error: " + JSON.stringify(await res.json()));
+  }
+}
+
 export async function sendMagicLinkVerificationRequest(params: EmailProviderSendVerificationRequestParams) {
   const { identifier: to, provider, url } = params;
   const siteUrl = process.env.SITE_URL ?? DEFAULT_SITE_URL;
