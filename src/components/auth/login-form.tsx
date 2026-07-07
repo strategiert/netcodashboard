@@ -35,7 +35,7 @@ export function LoginForm() {
           <>
             <p className="mt-1 mb-4 text-sm text-muted-foreground">
               Wir haben dir einen Anmelde-Link an <strong className="text-foreground">{email}</strong> geschickt.
-              Öffne die Mail und klick den Link — damit bist du direkt eingeloggt.
+              Öffne die Mail und bestätige die Anmeldung über den Button.
             </p>
             <p className="text-xs text-muted-foreground">
               Keine Mail bekommen? Spam-Ordner prüfen oder{" "}
