@@ -15,14 +15,6 @@ async function getAccountNames(workspaceId: string): Promise<Record<string, stri
   }
 }
 
-async function fetchPostInsights(workspaceId: string, from: string, to: string, page = 1): Promise<any[]> {
-  const data = await publerGet(
-    `/api/v1/analytics/post_insights?from=${from}&to=${to}&limit=50&page=${page}`,
-    workspaceId
-  );
-  return data.posts ?? [];
-}
-
 function extractMetric(analytics: any, key: string): number | undefined {
   const val = analytics?.[key]?.value;
   return (val === null || val === undefined) ? undefined : Number(val);
@@ -68,9 +60,11 @@ export const syncPublerPosts = action({
         }
         await new Promise(r => setTimeout(r, 500));
 
-        let saved = 0, page = 1;
+        // Publer-Pagination ist 0-basiert — page=1 wäre die zweite (oft leere) Seite.
+        // Seitengröße bestimmt die API selbst (ignoriert limit teils) → bis leere Seite lesen.
+        let saved = 0, processed = 0, page = 0;
         let total = Infinity;
-        while (saved < total) {
+        while (processed < total && page < 50) {
           try {
             const data = await publerGet(
               `/api/v1/analytics/post_insights?from=${from}&to=${to}&limit=50&page=${page}`,
@@ -79,6 +73,7 @@ export const syncPublerPosts = action({
             const posts: any[] = data.posts ?? [];
             total = data.total ?? posts.length;
             if (!posts.length) break;
+            processed += posts.length;
 
             for (const post of posts) {
               const a = post.analytics ?? {};
@@ -111,7 +106,6 @@ export const syncPublerPosts = action({
               saved++;
             }
 
-            if (posts.length < 10) break;
             page++;
             await new Promise(r => setTimeout(r, 800));
           } catch (e: any) {
