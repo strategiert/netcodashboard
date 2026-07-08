@@ -1,16 +1,9 @@
 "use node";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
-import { shouldIncludeInPerformanceSnapshot } from "../adsMapping";
+import { shouldIncludeInPerformanceSnapshot, detectBrand, TRACKED_ADS_BRANDS } from "../adsMapping";
 
-// Campaign name keywords per brand slug (case-insensitive match)
-const BRAND_KEYWORDS: Record<string, string[]> = {
-  bodycam:    ["bodycam", "body-cam", "body cam", "netco-bc", "bc-"],
-  microvista: ["microvista", "micro vista", "ndt-"],
-  bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-", "bk-"],
-  netco:      ["nc-", "netco-"],
-};
-const TRACKED_BRANDS = Object.keys(BRAND_KEYWORDS);
+const TRACKED_BRANDS = TRACKED_ADS_BRANDS;
 
 async function getAdsToken(): Promise<string> {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -57,14 +50,6 @@ async function fetchAdsCampaigns(token: string, date: string) {
   if (!res.ok) throw new Error(`Ads API ${res.status}: ${await res.text()}`);
   const data = await res.json() as any;
   return (data.results ?? []) as any[];
-}
-
-function detectBrand(campaignName: string): string | null {
-  const lower = campaignName.toLowerCase();
-  for (const [brand, keywords] of Object.entries(BRAND_KEYWORDS)) {
-    if (keywords.some((kw) => lower.includes(kw))) return brand;
-  }
-  return null;
 }
 
 export const syncAds = action({

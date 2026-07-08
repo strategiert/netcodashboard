@@ -12,13 +12,17 @@ import { SECTIONS, canSeeBrand, canSeeSection } from "@/lib/sections";
 
 const brandIcons: Record<string, React.ReactNode> = {
   bodycam: <Camera className="h-6 w-6" />,
+  "bodycam-nl": <Camera className="h-6 w-6" />,
   bautv: <HardHat className="h-6 w-6" />,
+  "bautv-nl": <HardHat className="h-6 w-6" />,
   microvista: <Microscope className="h-6 w-6" />,
 };
 
 const brandTitles: Record<string, string> = {
   bodycam: "NetCo Body-Cam",
+  "bodycam-nl": "NetCo Body-Cam NL",
   bautv: "BauTV+",
+  "bautv-nl": "BauTV+ NL",
   microvista: "Microvista",
 };
 

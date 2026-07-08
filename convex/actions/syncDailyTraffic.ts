@@ -8,14 +8,10 @@ import { GoogleAuth } from "google-auth-library";
 type Source = { propertyId: string; pathPrefix?: string };
 const BRAND_SOURCES: Record<string, Source[]> = {
   microvista: [{ propertyId: "397812718" }],
-  bautv: [
-    { propertyId: "358231771", pathPrefix: "/baustellen-webcam" },
-    { propertyId: "446819425" },
-  ],
-  bodycam: [
-    { propertyId: "500342936" },
-    { propertyId: "358231771", pathPrefix: "/body-cam" },
-  ],
+  bautv: [{ propertyId: "358231771", pathPrefix: "/baustellen-webcam" }],
+  "bautv-nl": [{ propertyId: "446819425" }],
+  bodycam: [{ propertyId: "358231771", pathPrefix: "/body-cam" }],
+  "bodycam-nl": [{ propertyId: "500342936" }],
 };
 
 function channelField(group: string): "chAds" | "chSeo" | "chDirect" | "chSocial" | "chReferral" | "chOther" {

@@ -16,7 +16,9 @@ import { canSeeBrand } from "@/lib/sections";
 
 const brandIcons: Record<string, React.ReactNode> = {
   bodycam: <Camera className="h-4 w-4" />,
+  "bodycam-nl": <Camera className="h-4 w-4" />,
   bautv: <HardHat className="h-4 w-4" />,
+  "bautv-nl": <HardHat className="h-4 w-4" />,
   microvista: <Microscope className="h-4 w-4" />,
 };
 

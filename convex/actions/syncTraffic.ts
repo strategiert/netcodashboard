@@ -9,21 +9,17 @@ import { GoogleAuth } from "google-auth-library";
 // Verifiziert 2026-06-11 per Hostname-/Pfad-Probe:
 //  - microvista.de (397812718) = einzige Microvista-Property mit Traffic
 //  - netco.de (358231771): /baustellen-webcam/* = BauTV, /body-cam/* = Body-Cam
-//  - bouwtvplus.nl (446819425) = BauTV NL-Markt
-//  - netco-bodycam.com [Total traffic] (500342936) = Body-Cam Eigendomain
+//  - bouwtvplus.nl (446819425) = BauTV NL-Markt → eigene Brand bautv-nl
+//  - netco-bodycam.com [Total traffic] (500342936) = Body-Cam NL-Markt → eigene Brand bodycam-nl
 // Neue Properties ohne Traffic (BK Italien, Bodycam EN/DE/NL-only, YoUScan) bewusst NICHT
 // angebunden — erst wenn deren Tagging live ist.
 type Source = { propertyId: string; pathPrefix?: string };
 const BRAND_SOURCES: Record<string, Source[]> = {
   microvista: [{ propertyId: "397812718" }],
-  bautv: [
-    { propertyId: "358231771", pathPrefix: "/baustellen-webcam" },
-    { propertyId: "446819425" },
-  ],
-  bodycam: [
-    { propertyId: "500342936" },
-    { propertyId: "358231771", pathPrefix: "/body-cam" },
-  ],
+  bautv: [{ propertyId: "358231771", pathPrefix: "/baustellen-webcam" }],
+  "bautv-nl": [{ propertyId: "446819425" }],
+  bodycam: [{ propertyId: "358231771", pathPrefix: "/body-cam" }],
+  "bodycam-nl": [{ propertyId: "500342936" }],
 };
 
 function channelField(group: string): "chAds" | "chSeo" | "chDirect" | "chSocial" | "chReferral" | "chOther" {

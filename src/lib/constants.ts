@@ -4,7 +4,17 @@ export const BRAND_COLORS = {
     secondary: "#ff6600",
     accent: "#1a365d",
   },
+  "bodycam-nl": {
+    primary: "#003366",
+    secondary: "#ff6600",
+    accent: "#1a365d",
+  },
   bautv: {
+    primary: "#003366",
+    secondary: "#ff6600",
+    accent: "#004d99",
+  },
+  "bautv-nl": {
     primary: "#003366",
     secondary: "#ff6600",
     accent: "#004d99",

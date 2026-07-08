@@ -6,16 +6,14 @@ import { api } from "../_generated/api";
 // Eine Brand kann mehrere Sites haben (Länder/Subsites).
 type SiteCfg = { siteId: number; title: string; domain: string };
 const BRAND_SITES: Record<string, SiteCfg[]> = {
-  bodycam: [
-    { siteId: 7818764, title: "BC DE", domain: "netco.de" },
-    { siteId: 9984911, title: "BC NL", domain: "netco-bodycam.com" },
-  ],
+  bodycam: [{ siteId: 7818764, title: "BC DE", domain: "netco.de" }],
+  "bodycam-nl": [{ siteId: 9984911, title: "BC NL", domain: "netco-bodycam.com" }],
   microvista: [{ siteId: 7818656, title: "MV DE", domain: "microvista.de" }],
   bautv: [
     { siteId: 7818788, title: "BK DE", domain: "netco.de" },
-    { siteId: 7818701, title: "BK NL", domain: "bouwtvplus.nl" },
     { siteId: 8777207, title: "BK IT", domain: "ediltvpiu.it" },
   ],
+  "bautv-nl": [{ siteId: 7818701, title: "BK NL", domain: "bouwtvplus.nl" }],
 };
 
 const BASE = "https://api.seranking.com/v1";
@@ -165,6 +163,79 @@ export const syncSERanking = action({
           results.push(
             `OK ${brand.slug}/${site.title}: ${keywords.length} KW, ${ranked} gerankt, Top10=${top10} (${latestDate})`
           );
+        } catch (e: any) {
+          results.push(`ERROR ${brand.slug}/${site.title}: ${e.message}`);
+        }
+      }
+    }
+    return results;
+  },
+});
+
+// Backfill: Die Positions-API liefert die volle Ranking-Historie pro Keyword.
+// Schreibt serankingDaily-Aggregate für JEDEN Datumspunkt der Historie
+// (der normale Sync schreibt nur den neuesten Tag).
+export const backfillSERanking = action({
+  args: {},
+  handler: async (ctx): Promise<string[]> => {
+    const brands = await ctx.runQuery(api.brands.list);
+    const results: string[] = [];
+
+    for (const brand of brands) {
+      const sites = BRAND_SITES[brand.slug];
+      if (!sites) continue;
+
+      for (const site of sites) {
+        try {
+          const engines: Array<{ keywords: PosRow[] }> = await seGet(
+            `/project-management/sites/positions?site_id=${site.siteId}&with_landing_pages=1`
+          );
+          const keywords: PosRow[] = engines.flatMap((e) => e.keywords ?? []);
+
+          const allDates = new Set<string>();
+          for (const kw of keywords)
+            for (const p of kw.positions ?? []) allDates.add(p.date);
+
+          let written = 0;
+          for (const date of [...allDates].sort()) {
+            let ranked = 0, top3 = 0, top10 = 0, top30 = 0, top100 = 0;
+            let totalVolume = 0, posSum = 0, weightedVol = 0, sumVol = 0;
+            for (const kw of keywords) {
+              const entry = (kw.positions ?? []).find((p) => p.date === date);
+              const pos = entry?.pos ?? 0;
+              const vol = kw.volume ?? 0;
+              totalVolume += vol;
+              sumVol += vol;
+              if (pos > 0) {
+                ranked++;
+                posSum += pos;
+                if (pos <= 3) top3++;
+                if (pos <= 10) top10++;
+                if (pos <= 30) top30++;
+                if (pos <= 100) top100++;
+                weightedVol += vol * (Math.max(0, 101 - pos) / 100);
+              }
+            }
+            await ctx.runMutation(api.seranking.upsertDaily, {
+              brandId: brand._id,
+              siteId: site.siteId,
+              siteTitle: site.title,
+              domain: site.domain,
+              date,
+              totalKeywords: keywords.length,
+              ranked,
+              top3,
+              top10,
+              top30,
+              top100,
+              avgPosition: ranked > 0 ? Math.round((posSum / ranked) * 10) / 10 : undefined,
+              totalVolume,
+              visibilityScore:
+                sumVol > 0 ? Math.round((weightedVol / sumVol) * 1000) / 10 : undefined,
+            });
+            written++;
+          }
+          results.push(`OK ${brand.slug}/${site.title}: ${written} Tage Historie`);
         } catch (e: any) {
           results.push(`ERROR ${brand.slug}/${site.title}: ${e.message}`);
         }

@@ -4,22 +4,15 @@ import { api } from "../_generated/api";
 import { GoogleAuth } from "google-auth-library";
 import { v } from "convex/values";
 import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
-import { shouldIncludeInPerformanceSnapshot } from "../adsMapping";
+import { shouldIncludeInPerformanceSnapshot, detectBrand, TRACKED_ADS_BRANDS } from "../adsMapping";
 
 const GSC_PROPERTIES: Record<string, string> = {
-  bodycam:   process.env.GSC_PROPERTY_BODYCAM   ?? "",
-  microvista: process.env.GSC_PROPERTY_MICROVISTA ?? "",
-  bautv:     process.env.GSC_PROPERTY_BAUTV      ?? "",
+  bodycam:      process.env.GSC_PROPERTY_BODYCAM      ?? "",
+  "bodycam-nl": process.env.GSC_PROPERTY_BODYCAM_NL   ?? "",
+  microvista:   process.env.GSC_PROPERTY_MICROVISTA   ?? "",
+  bautv:        process.env.GSC_PROPERTY_BAUTV        ?? "",
+  "bautv-nl":   process.env.GSC_PROPERTY_BAUTV_NL     ?? "",
 };
-
-// Google Ads brand detection (same as syncAds.ts)
-const BRAND_KEYWORDS: Record<string, string[]> = {
-  bodycam:    ["bodycam", "body-cam", "body cam", "netco-bc", "bc-"],
-  microvista: ["microvista", "micro vista", "ndt-"],
-  bautv:      ["bautv", "bau-tv", "baustellenkamera", "btv-", "bk-"],
-  netco:      ["nc-", "netco-"],
-};
-const TRACKED_ADS_BRANDS = Object.keys(BRAND_KEYWORDS);
 
 function dateRange(days: number): string[] {
   const dates: string[] = [];
@@ -185,17 +178,11 @@ async function getAdsToken(): Promise<string> {
   return data.access_token;
 }
 
-function detectBrand(campaignName: string): string | null {
-  const lower = campaignName.toLowerCase();
-  for (const [brand, keywords] of Object.entries(BRAND_KEYWORDS)) {
-    if (keywords.some((kw) => lower.includes(kw))) return brand;
-  }
-  return null;
-}
-
+// Backfill in Fenstern: { days: 550, daysUntil: 490 } usw. — die Ads-API liefert
+// pro Suchanfrage max. ~10k Zeilen ohne Paging, lange Zeiträume daher stückeln.
 export const backfillAds = action({
-  args: { days: v.optional(v.number()) },
-  handler: async (ctx, { days = 30 }) => {
+  args: { days: v.optional(v.number()), daysUntil: v.optional(v.number()) },
+  handler: async (ctx, { days = 30, daysUntil = 0 }) => {
     if (!process.env.GADS_REFRESH_TOKEN) return ["SKIP: no GADS_REFRESH_TOKEN"];
 
     const brands = await ctx.runQuery(api.brands.list);
@@ -210,7 +197,7 @@ export const backfillAds = action({
     const start = new Date();
     start.setDate(start.getDate() - days);
     const end = new Date();
-    end.setDate(end.getDate() - 1);
+    end.setDate(end.getDate() - Math.max(1, daysUntil));
     const startDate = start.toISOString().slice(0, 10);
     const endDate = end.toISOString().slice(0, 10);
 

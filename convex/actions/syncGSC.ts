@@ -4,9 +4,11 @@ import { api } from "../_generated/api";
 import { GoogleAuth } from "google-auth-library";
 
 const GSC_PROPERTIES: Record<string, string> = {
-  bodycam: process.env.GSC_PROPERTY_BODYCAM ?? "",
-  microvista: process.env.GSC_PROPERTY_MICROVISTA ?? "",
-  bautv: process.env.GSC_PROPERTY_BAUTV ?? "",
+  bodycam:      process.env.GSC_PROPERTY_BODYCAM      ?? "",
+  "bodycam-nl": process.env.GSC_PROPERTY_BODYCAM_NL   ?? "",
+  microvista:   process.env.GSC_PROPERTY_MICROVISTA   ?? "",
+  bautv:        process.env.GSC_PROPERTY_BAUTV        ?? "",
+  "bautv-nl":   process.env.GSC_PROPERTY_BAUTV_NL     ?? "",
 };
 
 async function fetchGSCData(property: string, date: string) {
