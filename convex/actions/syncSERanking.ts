@@ -1,6 +1,7 @@
 "use node";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
+import { v } from "convex/values";
 
 // SE Ranking Site → Brand-Mapping (verifiziert via /v1/project-management/sites).
 // Eine Brand kann mehrere Sites haben (Länder/Subsites).
@@ -172,12 +173,13 @@ export const syncSERanking = action({
   },
 });
 
-// Backfill: Die Positions-API liefert die volle Ranking-Historie pro Keyword.
-// Schreibt serankingDaily-Aggregate für JEDEN Datumspunkt der Historie
-// (der normale Sync schreibt nur den neuesten Tag).
+// Backfill: Die Positions-API liefert Ranking-Historie pro Keyword; ohne
+// date_from/date_to nur die letzten ~Tage. Schreibt serankingDaily-Aggregate
+// für JEDEN Datumspunkt im Zeitraum (der normale Sync schreibt nur den neuesten Tag).
+// Lange Zeiträume in Stücken aufrufen: { dateFrom: "2025-01-01", dateTo: "2025-06-30" } usw.
 export const backfillSERanking = action({
-  args: {},
-  handler: async (ctx): Promise<string[]> => {
+  args: { dateFrom: v.optional(v.string()), dateTo: v.optional(v.string()) },
+  handler: async (ctx, { dateFrom, dateTo }): Promise<string[]> => {
     const brands = await ctx.runQuery(api.brands.list);
     const results: string[] = [];
 
@@ -187,8 +189,10 @@ export const backfillSERanking = action({
 
       for (const site of sites) {
         try {
+          const range =
+            dateFrom && dateTo ? `&date_from=${dateFrom}&date_to=${dateTo}` : "";
           const engines: Array<{ keywords: PosRow[] }> = await seGet(
-            `/project-management/sites/positions?site_id=${site.siteId}&with_landing_pages=1`
+            `/project-management/sites/positions?site_id=${site.siteId}&with_landing_pages=1${range}`
           );
           const keywords: PosRow[] = engines.flatMap((e) => e.keywords ?? []);
 
