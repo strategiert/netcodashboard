@@ -116,6 +116,85 @@ export const reassignNlBatch = internalMutation({
   },
 });
 
+// ── Publer-NL-Trennung (2026-07-08) ─────────────────────────────────────────
+// BouwTV+-Workspace → bautv-nl; Bestandszeilen einzelner Override-Accounts
+// (Binck Weenink → bodycam-nl) in publerPosts/publerSnapshots umhängen.
+const PUBLER_NL_WORKSPACES: Record<string, string> = {
+  "696f50dd53b91689c8215ca6": "bautv-nl", // BouwTV+
+};
+const PUBLER_NL_ACCOUNTS: Record<string, string> = {
+  "696f500c97aecd9a746f75dc": "bodycam-nl", // Binck Weenink (Body-Cam-Workspace)
+};
+
+export const fixPublerWorkspaceBrands = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const brandIdBySlug: Record<string, string> = {};
+    for (const b of await ctx.db.query("brands").collect()) brandIdBySlug[b.slug] = b._id;
+    const out: string[] = [];
+    for (const [workspaceId, slug] of Object.entries(PUBLER_NL_WORKSPACES)) {
+      const ws = await ctx.db
+        .query("publerWorkspaces")
+        .withIndex("by_workspace_id", (q) => q.eq("workspaceId", workspaceId))
+        .first();
+      const target = brandIdBySlug[slug];
+      if (!ws || !target) { out.push(`SKIP ${workspaceId} (${slug})`); continue; }
+      if (ws.brandId === target) { out.push(`ok: ${ws.name} schon ${slug}`); continue; }
+      await ctx.db.patch(ws._id, { brandId: target as any });
+      out.push(`${ws.name} → ${slug}`);
+    }
+    return out;
+  },
+});
+
+export const reassignPublerBatch = internalMutation({
+  args: {
+    table: v.union(v.literal("publerPosts"), v.literal("publerSnapshots")),
+    cursor: v.optional(v.string()),
+  },
+  handler: async (ctx, { table, cursor }) => {
+    const brandIdBySlug: Record<string, string> = {};
+    for (const b of await ctx.db.query("brands").collect()) brandIdBySlug[b.slug] = b._id;
+
+    const page = await ctx.db
+      .query(table)
+      .paginate({ cursor: cursor ?? null, numItems: 500 });
+
+    let moved = 0;
+    for (const doc of page.page) {
+      const d = doc as any;
+      const slug = PUBLER_NL_ACCOUNTS[d.accountId] ?? PUBLER_NL_WORKSPACES[d.workspaceId];
+      const target = slug ? brandIdBySlug[slug] : undefined;
+      if (!target || d.brandId === target) continue;
+      await ctx.db.patch(doc._id, { brandId: target as any });
+      moved++;
+    }
+    return { moved, cursor: page.continueCursor, done: page.isDone };
+  },
+});
+
+export const runNlPublerMigration = internalAction({
+  args: {},
+  handler: async (ctx): Promise<string[]> => {
+    const out: string[] = await ctx.runMutation(internal.migrations.fixPublerWorkspaceBrands, {});
+    for (const table of ["publerPosts", "publerSnapshots"] as const) {
+      let cursor: string | undefined;
+      let moved = 0;
+      for (;;) {
+        const res: { moved: number; cursor: string; done: boolean } = await ctx.runMutation(
+          internal.migrations.reassignPublerBatch,
+          { table, cursor },
+        );
+        moved += res.moved;
+        if (res.done) break;
+        cursor = res.cursor;
+      }
+      out.push(`${table}: ${moved} Zeilen umgehängt`);
+    }
+    return out;
+  },
+});
+
 // Komplette NL-Migration: Brands anlegen, Rechte erweitern, Daten umhängen.
 export const runNlMigration = internalAction({
   args: {},

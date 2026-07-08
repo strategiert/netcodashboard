@@ -3,7 +3,7 @@ import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { GoogleAuth } from "google-auth-library";
 import { v } from "convex/values";
-import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
+import { publerGet, resolveAccountBrand } from "./publerHelpers";
 import { shouldIncludeInPerformanceSnapshot, detectBrand, TRACKED_ADS_BRANDS } from "../adsMapping";
 
 const GSC_PROPERTIES: Record<string, string> = {
@@ -68,21 +68,6 @@ async function fetchGSCRange(property: string, startDate: string, endDate: strin
   }>;
 }
 
-async function fetchPublerPostsForDate(workspaceId: string, date: string, apiKey: string): Promise<number> {
-  const res = await fetch(
-    `https://app.publer.com/api/v1/posts?state=published&from=${date}&to=${date}`,
-    {
-      headers: {
-        Authorization: `Bearer-API ${apiKey}`,
-        "Publer-Workspace-Id": workspaceId,
-      },
-    }
-  );
-  if (!res.ok) throw new Error(`Publer ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return (data.total ?? data.posts?.length ?? 0) as number;
-}
-
 export const backfillGSC = action({
   args: { days: v.optional(v.number()) },
   handler: async (ctx, { days = 90 }) => {
@@ -124,38 +109,53 @@ export const backfillGSC = action({
   },
 });
 
+// Posts-only-Backfill. Zählt Posts je ZIEL-Brand (Account-Overrides wie in syncPubler);
+// für volle Social-Analytics syncPublerRange nutzen.
 export const backfillPubler = action({
   args: { days: v.optional(v.number()) },
   handler: async (ctx, { days = 90 }) => {
     const brands = await ctx.runQuery(api.brands.list);
-    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
+    const brandBySlug = Object.fromEntries(brands.map((b) => [b.slug, b]));
+    const slugById = Object.fromEntries(brands.map((b) => [b._id, b.slug]));
+    const workspaces = (await ctx.runQuery(api.publer.listWorkspaces)).filter((ws) => ws.brandId);
     const dates = dateRange(days);
 
+    // brandId → date → Anzahl Posts
+    const counts: Record<string, Record<string, number>> = {};
+    let errors = 0;
+
+    for (const ws of workspaces) {
+      for (let i = 0; i < dates.length; i += 7) {
+        const chunk = dates.slice(i, i + 7);
+        try {
+          const data = await publerGet(
+            `/api/v1/posts?state=published&from=${chunk[0]}&to=${chunk[chunk.length - 1]}`,
+            ws.workspaceId
+          );
+          for (const post of data.posts ?? []) {
+            const d = (post.published_at ?? post.created_at ?? post.scheduled_at ?? "").slice(0, 10);
+            if (!d || !dates.includes(d)) continue;
+            const brandId = resolveAccountBrand(post.account_id, ws.brandId!, brandBySlug);
+            counts[brandId] ??= {};
+            counts[brandId][d] = (counts[brandId][d] ?? 0) + 1;
+          }
+        } catch { errors++; }
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+
     const results: string[] = [];
-    for (const brand of brands) {
-      const wsIds = brandWorkspaces[brand._id];
-      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
+    for (const [brandId, byDate] of Object.entries(counts)) {
       let saved = 0;
-      let errors = 0;
-      for (const date of dates) {
-        let totalPosts = 0;
-        for (const workspaceId of wsIds) {
-          try {
-            const data = await publerGet(
-              `/api/v1/posts?state=published&from=${date}&to=${date}`,
-              workspaceId
-            );
-            totalPosts += (data.total ?? data.posts?.length ?? 0) as number;
-          } catch { errors++; }
-        }
+      for (const [date, socialPosts] of Object.entries(byDate)) {
         await ctx.runMutation(api.kpi.upsertSnapshot, {
-          brandId: brand._id, date, source: "publer", socialPosts: totalPosts,
+          brandId: brandId as any, date, source: "publer", socialPosts,
         });
         saved++;
-        await new Promise(r => setTimeout(r, 300));
       }
-      results.push(`OK ${brand.slug}: ${saved} days, ${errors} errors`);
+      results.push(`OK ${slugById[brandId] ?? brandId}: ${saved} Tage`);
     }
+    if (errors) results.push(`${errors} Fenster-Fehler`);
     return results;
   },
 });

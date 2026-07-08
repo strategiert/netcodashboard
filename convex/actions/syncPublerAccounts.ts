@@ -2,7 +2,7 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { v } from "convex/values";
-import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
+import { getBrandWorkspaceMap, publerGet, resolveAccountBrand } from "./publerHelpers";
 
 // Charts available per account type
 const CHARTS_BY_TYPE: Record<string, string[]> = {
@@ -75,6 +75,7 @@ export const syncPublerAccounts = action({
       const bp = b.slug === "netco" ? 1 : 0;
       return ap - bp;
     });
+    const brandBySlug = Object.fromEntries(brandsRaw.map((b: any) => [b.slug, b]));
     const brandWorkspaces = await getBrandWorkspaceMap(ctx);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -117,7 +118,8 @@ export const syncPublerAccounts = action({
             await new Promise(r => setTimeout(r, 800));
             const res = await syncAccountForDate(
               account.id, account.type, account.name ?? account.username ?? "",
-              workspaceId, date, brand._id, ctx, postsByDate
+              workspaceId, date,
+              resolveAccountBrand(account.id, brand._id, brandBySlug), ctx, postsByDate
             );
             if (res === "skip_no_charts") totalSkipped++;
             else totalOk++;
@@ -139,6 +141,7 @@ export const syncPublerAccountsRange = action({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
     const brands = await ctx.runQuery(api.brands.list);
+    const brandBySlug = Object.fromEntries(brands.map((b: any) => [b.slug, b]));
     const brandWorkspaces = await getBrandWorkspaceMap(ctx);
 
     const dates: string[] = [];
@@ -197,7 +200,7 @@ export const syncPublerAccountsRange = action({
 
             for (const date of chunk) {
               const snap: any = {
-                brandId: brand._id, date,
+                brandId: resolveAccountBrand(account.id, brand._id, brandBySlug), date,
                 accountId: account.id,
                 accountType: account.type,
                 accountName: account.name ?? account.username ?? "",

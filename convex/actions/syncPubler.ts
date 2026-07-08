@@ -2,7 +2,7 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { v } from "convex/values";
-import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
+import { publerGet, resolveAccountBrand } from "./publerHelpers";
 
 // Account types that support analytics (skip personal LinkedIn profiles)
 const ANALYTICS_ACCOUNT_TYPES = new Set([
@@ -12,13 +12,14 @@ const ANALYTICS_ACCOUNT_TYPES = new Set([
 
 const CHART_IDS = ["post_reach", "post_engagement", "followers", "video_views", "link_clicks"];
 
-async function fetchPublerPostCount(workspaceId: string, date: string): Promise<number> {
-  const data = await publerGet(
-    `/api/v1/posts?state=published&from=${date}&to=${date}`,
-    workspaceId
-  );
-  return (data.total ?? data.posts?.length ?? 0) as number;
-}
+type Totals = {
+  socialReach: number; socialEngagement: number; socialFollowers: number;
+  socialVideoViews: number; socialLinkClicks: number; socialPosts: number;
+};
+const emptyTotals = (): Totals => ({
+  socialReach: 0, socialEngagement: 0, socialFollowers: 0,
+  socialVideoViews: 0, socialLinkClicks: 0, socialPosts: 0,
+});
 
 function lastValue(rows: any[] | undefined, field: "value" | "last_value"): number {
   if (!rows?.length) return 0;
@@ -26,91 +27,85 @@ function lastValue(rows: any[] | undefined, field: "value" | "last_value"): numb
   return (rows[rows.length - 1]?.[field] ?? 0) as number;
 }
 
-async function fetchAnalyticsForDate(workspaceId: string, date: string) {
-  // Get all accounts in workspace
-  const accounts: any[] = await publerGet("/api/v1/accounts", workspaceId);
-
-  const totals = {
-    socialReach: 0,
-    socialEngagement: 0,
-    socialFollowers: 0,
-    socialVideoViews: 0,
-    socialLinkClicks: 0,
-  };
-
-  // Fetch a 14-day window so we catch weekly data points from LinkedIn etc.
-  const from = new Date(date + "T12:00:00Z");
-  from.setDate(from.getDate() - 13);
-  const fromStr = from.toISOString().slice(0, 10);
-
-  for (const account of accounts) {
-    if (!ANALYTICS_ACCOUNT_TYPES.has(account.type)) continue;
-    try {
-      const chartParam = CHART_IDS.map(id => `chart_ids[]=${id}`).join("&");
-      const data = await publerGet(
-        `/api/v1/analytics/${account.id}/chart_data?${chartParam}&from=${fromStr}&to=${date}`,
-        workspaceId
-      );
-      const cur = data.current ?? {};
-
-      // Use the most recent data point in the range
-      totals.socialReach += lastValue(cur.post_reach, "value");
-      totals.socialEngagement += lastValue(cur.post_engagement, "value");
-      totals.socialFollowers += lastValue(cur.followers, "last_value");
-      totals.socialVideoViews += lastValue(cur.video_views, "value");
-      totals.socialLinkClicks += lastValue(cur.link_clicks, "value");
-    } catch {
-      // skip accounts that don't support analytics
-    }
-  }
-  return totals;
+// Workspaces mit Brand-Zuordnung, chronisch rate-limitete (NetCo) ans Ende.
+async function getAssignedWorkspaces(ctx: any) {
+  const workspaces = (await ctx.runQuery(api.publer.listWorkspaces)).filter((ws: any) => ws.brandId);
+  return workspaces.sort((a: any, b: any) => {
+    const ap = a.name === "NetCo" ? 1 : 0;
+    const bp = b.name === "NetCo" ? 1 : 0;
+    return ap - bp;
+  });
 }
 
 export const syncPubler = action({
   args: {},
   handler: async (ctx) => {
-    const brandsRaw = await ctx.runQuery(api.brands.list);
-    const brands = [...brandsRaw].sort((a: any, b: any) => {
-      const ap = a.slug === "netco" ? 1 : 0;
-      const bp = b.slug === "netco" ? 1 : 0;
-      return ap - bp;
-    });
-    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
+    const brands = await ctx.runQuery(api.brands.list);
+    const brandBySlug = Object.fromEntries(brands.map((b) => [b.slug, b]));
+    const slugById = Object.fromEntries(brands.map((b) => [b._id, b.slug]));
+    const workspaces = await getAssignedWorkspaces(ctx);
+
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const date = yesterday.toISOString().slice(0, 10);
 
+    // Fetch a 14-day window so we catch weekly data points from LinkedIn etc.
+    const from = new Date(date + "T12:00:00Z");
+    from.setDate(from.getDate() - 13);
+    const fromStr = from.toISOString().slice(0, 10);
+
+    // Totals je ZIEL-Brand (Account-Overrides können vom Workspace abweichen).
+    const perBrand: Record<string, Totals> = {};
+    const totalsFor = (brandId: string) => (perBrand[brandId] ??= emptyTotals());
+
     const results: string[] = [];
-    for (const brand of brands) {
-      const wsIds = brandWorkspaces[brand._id];
-      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces zugewiesen`); continue; }
+    for (const ws of workspaces) {
+      try {
+        const accounts: any[] = await publerGet("/api/v1/accounts", ws.workspaceId);
 
-      // Aggregate across all workspaces for this brand
-      const totals = { socialReach: 0, socialEngagement: 0, socialFollowers: 0, socialVideoViews: 0, socialLinkClicks: 0 };
-      let totalPosts = 0;
-
-      for (const workspaceId of wsIds) {
-        try {
-          const [socialPosts, analytics] = await Promise.all([
-            fetchPublerPostCount(workspaceId, date),
-            fetchAnalyticsForDate(workspaceId, date),
-          ]);
-          totalPosts += socialPosts;
-          totals.socialReach += analytics.socialReach;
-          totals.socialEngagement += analytics.socialEngagement;
-          totals.socialFollowers += analytics.socialFollowers;
-          totals.socialVideoViews += analytics.socialVideoViews;
-          totals.socialLinkClicks += analytics.socialLinkClicks;
-        } catch (e: any) {
-          results.push(`ERROR ${brand.slug} ws=${workspaceId}: ${e.message}`);
+        for (const account of accounts) {
+          if (!ANALYTICS_ACCOUNT_TYPES.has(account.type)) continue;
+          const target = totalsFor(resolveAccountBrand(account.id, ws.brandId!, brandBySlug));
+          try {
+            const chartParam = CHART_IDS.map((id) => `chart_ids[]=${id}`).join("&");
+            const data = await publerGet(
+              `/api/v1/analytics/${account.id}/chart_data?${chartParam}&from=${fromStr}&to=${date}`,
+              ws.workspaceId
+            );
+            const cur = data.current ?? {};
+            // Use the most recent data point in the range
+            target.socialReach += lastValue(cur.post_reach, "value");
+            target.socialEngagement += lastValue(cur.post_engagement, "value");
+            target.socialFollowers += lastValue(cur.followers, "last_value");
+            target.socialVideoViews += lastValue(cur.video_views, "value");
+            target.socialLinkClicks += lastValue(cur.link_clicks, "value");
+          } catch {
+            // skip accounts that don't support analytics
+          }
         }
-      }
 
+        // Posts je Account attribuieren (account_id steht am Post).
+        const postData = await publerGet(
+          `/api/v1/posts?state=published&from=${date}&to=${date}`,
+          ws.workspaceId
+        );
+        for (const post of postData.posts ?? []) {
+          totalsFor(resolveAccountBrand(post.account_id, ws.brandId!, brandBySlug)).socialPosts++;
+        }
+      } catch (e: any) {
+        results.push(`ERROR ws=${ws.name}: ${e.message}`);
+      }
+    }
+
+    for (const [brandId, totals] of Object.entries(perBrand)) {
+      const { socialPosts, ...analytics } = totals;
       await ctx.runMutation(api.kpi.upsertSnapshot, {
-        brandId: brand._id, date, source: "publer",
-        socialPosts: totalPosts, ...totals,
+        brandId: brandId as any, date, source: "publer",
+        socialPosts, ...analytics,
       });
-      results.push(`OK ${brand.slug}: reach=${totals.socialReach} eng=${totals.socialEngagement} posts=${totalPosts} (${wsIds.length} Workspaces)`);
+      results.push(
+        `OK ${slugById[brandId] ?? brandId}: reach=${totals.socialReach} eng=${totals.socialEngagement} posts=${socialPosts}`
+      );
     }
     return results;
   },
@@ -120,7 +115,9 @@ export const syncPublerRange = action({
   args: { startDate: v.string(), endDate: v.string() },
   handler: async (ctx, { startDate, endDate }) => {
     const brands = await ctx.runQuery(api.brands.list);
-    const brandWorkspaces = await getBrandWorkspaceMap(ctx);
+    const brandBySlug = Object.fromEntries(brands.map((b) => [b.slug, b]));
+    const slugById = Object.fromEntries(brands.map((b) => [b._id, b.slug]));
+    const workspaces = await getAssignedWorkspaces(ctx);
 
     // Build date list
     const dates: string[] = [];
@@ -131,45 +128,39 @@ export const syncPublerRange = action({
       cur.setDate(cur.getDate() + 1);
     }
 
-    const results: string[] = [];
-    for (const brand of brands) {
-      const wsIds = brandWorkspaces[brand._id];
-      if (!wsIds?.length) { results.push(`SKIP ${brand.slug}: keine Workspaces`); continue; }
-      // Use first workspace for range sync (primary workspace)
-      const workspaceId = wsIds[0];
+    // brandId → date → Totals
+    const perBrand: Record<string, Record<string, Totals>> = {};
+    const totalsFor = (brandId: string, date: string) => {
+      perBrand[brandId] ??= {};
+      return (perBrand[brandId][date] ??= emptyTotals());
+    };
 
-      // Step 1: get accounts once
+    const results: string[] = [];
+    for (const ws of workspaces) {
       let accounts: any[] = [];
       try {
-        accounts = await publerGet("/api/v1/accounts", workspaceId);
+        accounts = await publerGet("/api/v1/accounts", ws.workspaceId);
       } catch (e: any) {
-        results.push(`ERROR ${brand.slug} accounts: ${e.message}`); continue;
+        results.push(`ERROR ws=${ws.name} accounts: ${e.message}`);
+        continue;
       }
-      const analyticsAccounts = accounts.filter(a => ANALYTICS_ACCOUNT_TYPES.has(a.type));
 
-      // Step 2: per account, fetch entire range in one call → we get daily data for ≤7 days,
-      // weekly for larger ranges. For backfill we accept weekly granularity per week-start date.
-      // Map: date → aggregated totals
-      const byDate: Record<string, {
-        socialReach: number; socialEngagement: number; socialFollowers: number;
-        socialVideoViews: number; socialLinkClicks: number;
-      }> = {};
-      for (const d of dates) byDate[d] = { socialReach:0, socialEngagement:0, socialFollowers:0, socialVideoViews:0, socialLinkClicks:0 };
-
-      for (const account of analyticsAccounts) {
+      // Analytics je Account: ganzer Range in einem Call → tägliche Werte für ≤7 Tage,
+      // wöchentliche Buckets für größere Ranges (Wert gilt ab Wochenstart-Datum).
+      for (const account of accounts.filter((a) => ANALYTICS_ACCOUNT_TYPES.has(a.type))) {
+        const targetBrandId = resolveAccountBrand(account.id, ws.brandId!, brandBySlug);
         try {
-          await new Promise(r => setTimeout(r, 1500));
-          const chartParam = CHART_IDS.map(id => `chart_ids[]=${id}`).join("&");
+          await new Promise((r) => setTimeout(r, 1500));
+          const chartParam = CHART_IDS.map((id) => `chart_ids[]=${id}`).join("&");
           const data = await publerGet(
             `/api/v1/analytics/${account.id}/chart_data?${chartParam}&from=${startDate}&to=${endDate}`,
-            workspaceId
+            ws.workspaceId
           );
           const cur2 = data.current ?? {};
 
-          // For each chart, map returned rows to dates
           const mapRows = (rows: any[], field: "value" | "last_value") => {
             const m: Record<string, number> = {};
-            for (const r of (rows ?? [])) m[r.date] = (r[field] ?? 0) as number;
+            for (const r of rows ?? []) m[r.date] = (r[field] ?? 0) as number;
             return m;
           };
           const reach = mapRows(cur2.post_reach ?? [], "value");
@@ -178,59 +169,62 @@ export const syncPublerRange = action({
           const vid = mapRows(cur2.video_views ?? [], "value");
           const lnk = mapRows(cur2.link_clicks ?? [], "value");
 
-          // Apply to matching dates (weekly data → applies to week-start date)
-          for (const [d, totals] of Object.entries(byDate)) {
-            // Find the closest row date ≤ d
+          for (const d of dates) {
+            // Find the closest row date ≤ d (weekly bucket), max 7 Tage alt
             const rowDates = Object.keys(reach).sort();
-            const matchDate = rowDates.filter(rd => rd <= d).at(-1);
+            const matchDate = rowDates.filter((rd) => rd <= d).at(-1);
             if (!matchDate) continue;
-            // Only apply to dates within 7 days of matchDate (avoid double-counting)
             const diffDays = (new Date(d).getTime() - new Date(matchDate).getTime()) / 86400000;
             if (diffDays > 6) continue;
-            totals.socialReach += reach[matchDate] ?? 0;
-            totals.socialEngagement += eng[matchDate] ?? 0;
-            totals.socialFollowers += fol[matchDate] ?? 0;
-            totals.socialVideoViews += vid[matchDate] ?? 0;
-            totals.socialLinkClicks += lnk[matchDate] ?? 0;
+            const t = totalsFor(targetBrandId, d);
+            t.socialReach += reach[matchDate] ?? 0;
+            t.socialEngagement += eng[matchDate] ?? 0;
+            t.socialFollowers += fol[matchDate] ?? 0;
+            t.socialVideoViews += vid[matchDate] ?? 0;
+            t.socialLinkClicks += lnk[matchDate] ?? 0;
           }
         } catch {
           // skip accounts with no analytics
         }
       }
 
-      // Step 3: post counts — batch in 7-day windows to avoid rate limits
-      const postByDate: Record<string, number> = {};
+      // Post counts — 7-Tage-Fenster, je Post per account_id attribuiert.
       for (let i = 0; i < dates.length; i += 7) {
         const chunk = dates.slice(i, i + 7);
-        const from = chunk[0], to = chunk[chunk.length - 1];
         try {
-          await new Promise(r => setTimeout(r, 1500));
+          await new Promise((r) => setTimeout(r, 1500));
           const data = await publerGet(
-            `/api/v1/posts?state=published&from=${from}&to=${to}`,
-            workspaceId
+            `/api/v1/posts?state=published&from=${chunk[0]}&to=${chunk[chunk.length - 1]}`,
+            ws.workspaceId
           );
-          const posts: any[] = data.posts ?? [];
-          for (const post of posts) {
-            const d = (post.published_at ?? post.created_at ?? "").slice(0, 10);
-            if (d) postByDate[d] = (postByDate[d] ?? 0) + 1;
+          for (const post of data.posts ?? []) {
+            const d = (post.published_at ?? post.created_at ?? post.scheduled_at ?? "").slice(0, 10);
+            if (!d || !dates.includes(d)) continue;
+            totalsFor(resolveAccountBrand(post.account_id, ws.brandId!, brandBySlug), d).socialPosts++;
           }
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
+    }
 
-      // Step 4: upsert all dates
+    for (const [brandId, byDate] of Object.entries(perBrand)) {
       let saved = 0;
       for (const date of dates) {
-        const analytics = byDate[date];
-        const socialPosts = postByDate[date] ?? 0;
+        const totals = byDate[date];
+        if (!totals) continue;
+        const { socialPosts, ...analytics } = totals;
         try {
           await ctx.runMutation(api.kpi.upsertSnapshot, {
-            brandId: brand._id, date, source: "publer",
+            brandId: brandId as any, date, source: "publer",
             socialPosts, ...analytics,
           });
           saved++;
-        } catch { /* skip */ }
+        } catch {
+          /* skip */
+        }
       }
-      results.push(`${brand.slug}: ${saved}/${dates.length} dates`);
+      results.push(`${slugById[brandId] ?? brandId}: ${saved}/${dates.length} dates`);
     }
     return results;
   },

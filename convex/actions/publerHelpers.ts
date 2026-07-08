@@ -3,6 +3,26 @@ import { api } from "../_generated/api";
 import type { ActionCtx } from "../_generated/server";
 
 /**
+ * Account-Ebene: einzelne Accounts, die zu einer ANDEREN Brand gehören als ihr
+ * Workspace. Der Body-Cam-Workspace ist DE, aber Binck Weenink (LinkedIn)
+ * bespielt den NL-Markt → bodycam-nl. Workspaces selbst hängen per
+ * publerWorkspaces.brandId an ihrer Brand (BouwTV+ → bautv-nl).
+ */
+export const PUBLER_ACCOUNT_BRAND_OVERRIDES: Record<string, string> = {
+  "696f500c97aecd9a746f75dc": "bodycam-nl", // Binck Weenink (in_profile, Body-Cam-Workspace)
+};
+
+/** Ziel-brandId eines Accounts: Override-Slug, sonst Brand des Workspace. */
+export function resolveAccountBrand<T extends { _id: string; slug: string }>(
+  accountId: string | undefined,
+  workspaceBrandId: string,
+  brandBySlug: Record<string, T>,
+): string {
+  const slug = accountId ? PUBLER_ACCOUNT_BRAND_OVERRIDES[accountId] : undefined;
+  return slug && brandBySlug[slug] ? brandBySlug[slug]._id : workspaceBrandId;
+}
+
+/**
  * Build a map of brandId → workspaceId[] from the publerWorkspaces table.
  * Only returns workspaces that are assigned to a brand.
  */

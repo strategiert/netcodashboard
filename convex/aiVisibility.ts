@@ -231,6 +231,34 @@ export const upsertBingSearchSnapshot = mutation({
   },
 });
 
+// Tages-Zeile aus der Bing-Webmaster-API (eine Zeile pro Brand+Tag, ohne Query-Dimension).
+// Echtes Upsert — der tägliche Cron überschreibt statt zu duplizieren.
+export const upsertBingDaily = mutation({
+  args: {
+    brandId: v.id("brands"),
+    date: v.string(),
+    clicks: v.number(),
+    impressions: v.number(),
+    ctr: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("bingSearchSnapshots")
+      .withIndex("by_brand_date", (q) => q.eq("brandId", args.brandId).eq("date", args.date))
+      .filter((q) => q.eq(q.field("sourceProvider"), "bing-api"))
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { ...args, importedAt: Date.now() });
+      return existing._id;
+    }
+    return await ctx.db.insert("bingSearchSnapshots", {
+      ...args,
+      sourceProvider: "bing-api",
+      importedAt: Date.now(),
+    });
+  },
+});
+
 export const listPrompts = query({
   args: { brandId: v.id("brands"), activeOnly: v.optional(v.boolean()) },
   handler: async (ctx, { brandId, activeOnly }) => {

@@ -2,7 +2,7 @@
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { v } from "convex/values";
-import { getBrandWorkspaceMap, publerGet } from "./publerHelpers";
+import { getBrandWorkspaceMap, publerGet, resolveAccountBrand } from "./publerHelpers";
 
 // Get account name map for workspace. Returns empty map on failure (workspace skipped upstream).
 async function getAccountNames(workspaceId: string): Promise<Record<string, string>> {
@@ -50,6 +50,7 @@ export const syncPublerPosts = action({
     const from = start.toISOString().slice(0, 10);
     const to = end.toISOString().slice(0, 10);
 
+    const brandBySlug = Object.fromEntries(brandsRaw.map((b: any) => [b.slug, b]));
     const brandWorkspaces = await getBrandWorkspaceMap(ctx);
 
     const results: string[] = [];
@@ -85,7 +86,7 @@ export const syncPublerPosts = action({
               if (!publishedAt) continue;
 
               await ctx.runMutation(api.publer.upsertPost, {
-                brandId: brand._id,
+                brandId: resolveAccountBrand(post.account_id, brand._id, brandBySlug) as any,
                 workspaceId,
                 publerPostId: post.id,
                 accountId: post.account_id,

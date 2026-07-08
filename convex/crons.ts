@@ -12,6 +12,7 @@ crons.daily("sync Traffic",      { hourUTC: 6, minuteUTC: 25 }, api.actions.sync
 crons.daily("sync Publer Posts", { hourUTC: 6, minuteUTC: 30 }, api.actions.syncPublerPosts.syncPublerPosts, { days: 2 });
 crons.daily("sync SE Ranking",   { hourUTC: 6, minuteUTC: 35 }, api.actions.syncSERanking.syncSERanking);
 crons.daily("sync Daily Traffic", { hourUTC: 6, minuteUTC: 40 }, api.actions.syncDailyTraffic.syncDailyTraffic, {});
+crons.daily("sync Bing",         { hourUTC: 6, minuteUTC: 45 }, api.actions.syncBing.syncBing, {});
 // Mittags-Refresh, damit der Tagesreport tagsüber aktuelle Zahlen zeigt.
 crons.daily("sync Daily Traffic (noon)", { hourUTC: 11, minuteUTC: 0 }, api.actions.syncDailyTraffic.syncDailyTraffic, {});
 // SE Ranking AI Search wird monatlich aktualisiert und ist credits-basiert; wöchentlich reicht.
