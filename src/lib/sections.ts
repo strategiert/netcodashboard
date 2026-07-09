@@ -3,9 +3,9 @@
 // Admin sieht immer alles.
 
 export type SectionKey =
-  | "report" | "daily" | "social" | "rankings"          // member-vergebbar
-  | "dashboard" | "kpis" | "campaigns" | "funnel"        // admin-only
-  | "content" | "stakeholders" | "journeys" | "seo" | "aiVisibility";
+  | "report" | "daily" | "social" | "rankings" | "aiVisibility"  // member-vergebbar
+  | "dashboard" | "kpis" | "campaigns" | "funnel"                 // admin-only
+  | "content" | "stakeholders" | "journeys" | "seo";
 
 export type Section = {
   key: SectionKey;
@@ -21,6 +21,7 @@ export const SECTIONS: Section[] = [
   { key: "daily",        href: "/daily",        label: "Tagesreport",  icon: "CalendarDays",  adminOnly: false },
   { key: "social",       href: "/social",       label: "Social",       icon: "Share2",        adminOnly: false },
   { key: "rankings",     href: "/rankings",     label: "Rankings",     icon: "TrendingUp",    adminOnly: false },
+  { key: "aiVisibility", href: "/ai-visibility", label: "KI-Analyse",  icon: "Sparkles",      adminOnly: false },
   // Admin-only (für Mitarbeiter komplett unsichtbar):
   { key: "dashboard",    href: "",              label: "Dashboard",    icon: "LayoutDashboard", adminOnly: true },
   { key: "kpis",         href: "/kpis",         label: "KPIs",         icon: "BarChart2",     adminOnly: true },
@@ -30,7 +31,6 @@ export const SECTIONS: Section[] = [
   { key: "stakeholders", href: "/stakeholders", label: "Stakeholder",  icon: "Users",         adminOnly: true },
   { key: "journeys",     href: "/journeys",     label: "Journeys",     icon: "Route",         adminOnly: true },
   { key: "seo",          href: "/seo",          label: "SEO Cluster",  icon: "Search",        adminOnly: true },
-  { key: "aiVisibility", href: "/ai-visibility", label: "AI Visibility", icon: "Sparkles",    adminOnly: true },
 ];
 
 // Nur diese Sections kann ein Admin einem Member zuweisen.

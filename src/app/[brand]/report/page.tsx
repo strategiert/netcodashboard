@@ -162,6 +162,22 @@ function LeadsTable({ leads }: { leads: any[] }) {
   );
 }
 
+// ── SEO Keyword Helpers ───────────────────────────────────────────────────────
+
+function PosBadge({ pos }: { pos: number }) {
+  if (pos === 0) return <Badge variant="outline" className="text-muted-foreground">—</Badge>;
+  if (pos <= 3) return <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">{pos}</Badge>;
+  if (pos <= 10) return <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30">{pos}</Badge>;
+  if (pos <= 30) return <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30">{pos}</Badge>;
+  return <Badge variant="outline">{pos}</Badge>;
+}
+
+function ChangeCell({ change }: { change?: number }) {
+  if (!change) return <span className="text-muted-foreground">·</span>;
+  if (change > 0) return <span className="text-green-600 dark:text-green-400">▲ {change}</span>;
+  return <span className="text-red-600 dark:text-red-400">▼ {Math.abs(change)}</span>;
+}
+
 // ── Custom Tooltip ─────────────────────────────────────────────────────────────
 
 function CustomTooltip({ active, payload, label, isCurrency }: any) {
@@ -257,6 +273,12 @@ export default function ReportPage() {
   const weekly = useQuery(
     api.reports.getWeeklyReports,
     brandData ? { brandId: brandData._id, from: dateFrom, to: dateTo } : "skip"
+  );
+
+  // SEO-Keywords aus SE Ranking (gleiche Quelle wie Rankings-Seite)
+  const seKeywords = useQuery(
+    api.seranking.listKeywords,
+    brandData ? { brandId: brandData._id } : "skip"
   );
 
   // Metric view toggle (must be before conditional returns!)
@@ -356,6 +378,7 @@ export default function ReportPage() {
           <TabsTrigger value="weeks">Wochen (GA4)</TabsTrigger>
           <TabsTrigger value="crm">CRM</TabsTrigger>
           <TabsTrigger value="ads">Google Ads</TabsTrigger>
+          <TabsTrigger value="keywords">SEO Keywords</TabsTrigger>
         </TabsList>
 
         {/* ── Tab: Wochen-Traffic aus GA4 ──────────────────────────────────── */}
@@ -758,6 +781,76 @@ export default function ReportPage() {
           {(!gadsCampaigns || gadsCampaigns.length === 0) && (!gadsAdGroups || gadsAdGroups.length === 0) && (
             <p className="text-sm text-muted-foreground">Keine Google Ads Daten vorhanden.</p>
           )}
+        </TabsContent>
+
+        {/* ── Tab: SEO Keywords (SE Ranking) ────────────────────────────────── */}
+        <TabsContent value="keywords" className="space-y-4 mt-4">
+          {seKeywords === undefined ? (
+            <p className="text-sm text-muted-foreground">Lädt Keywords…</p>
+          ) : seKeywords.length === 0 ? (
+            <Card>
+              <CardContent className="py-8">
+                <p className="text-center text-muted-foreground">
+                  Keine SEO-Keyword-Daten vorhanden — Sync läuft täglich automatisch.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (() => {
+            const ranked = seKeywords.filter(k => k.position > 0);
+            const top3   = ranked.filter(k => k.position <= 3).length;
+            const top10  = ranked.filter(k => k.position <= 10).length;
+            return (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <KpiCard label="Keywords getrackt" value={String(seKeywords.length)} color="#8b5cf6" />
+                  <KpiCard label="Gerankt"           value={String(ranked.length)}     color="#3b82f6" />
+                  <KpiCard label="Top 10"            value={String(top10)}             color="#22c55e" />
+                  <KpiCard label="Top 3"             value={String(top3)}              color="#f59e0b" />
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Organische Keywords
+                      <span className="text-xs font-normal text-muted-foreground">
+                        SE Ranking · aktueller Stand
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="max-h-[520px] overflow-auto">
+                      <table className="w-full text-sm">
+                        <thead className="sticky top-0 bg-card">
+                          <tr className="border-b text-xs text-muted-foreground">
+                            <th className="text-left pb-2 pr-4 font-medium">Keyword</th>
+                            <th className="text-center pb-2 pr-3 font-medium">Position</th>
+                            <th className="text-center pb-2 pr-3 font-medium">Δ</th>
+                            <th className="text-right pb-2 pr-3 font-medium">Suchvolumen</th>
+                            <th className="text-right pb-2 font-medium">CPC</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {seKeywords.slice(0, 500).map((k) => (
+                            <tr key={k._id} className="hover:bg-muted/30">
+                              <td className="py-2 pr-4 text-xs font-medium max-w-[320px] truncate">
+                                {k.url
+                                  ? <a href={k.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{k.keyword}</a>
+                                  : k.keyword}
+                              </td>
+                              <td className="py-2 pr-3 text-center"><PosBadge pos={k.position} /></td>
+                              <td className="py-2 pr-3 text-center text-xs"><ChangeCell change={k.change} /></td>
+                              <td className="py-2 pr-3 text-right tabular-nums">{k.volume != null ? fmt(k.volume) : "—"}</td>
+                              <td className="py-2 text-right tabular-nums">{k.cpc != null ? `${k.cpc.toFixed(2)} €` : "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            );
+          })()}
         </TabsContent>
       </Tabs>
     </div>
