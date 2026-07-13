@@ -161,6 +161,91 @@ export const debugLast = query({
   },
 });
 
+// Datalake-Übersicht für die Dashboard-Ansicht (admin-gated). Liefert
+// Tages-Aggregate der letzten `days` Tage, Gesamtzahlen, Top-Kampagnen/Anzeigen
+// nach Touchpoints und die jüngsten Leads. Reine Sammel-Sicht (Paket A) —
+// echte Attribution folgt in Paket D.
+export const overview = query({
+  args: { brandSlug: v.string(), days: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Nicht angemeldet");
+    const user = await ctx.db.get(userId);
+    if (user?.role !== "admin") throw new Error("Keine Berechtigung (nur Admin)");
+
+    const brand = await ctx.db.query("brands")
+      .withIndex("by_slug", (q) => q.eq("slug", args.brandSlug)).unique();
+    if (!brand) return { found: false as const };
+
+    const days = Math.min(Math.max(args.days ?? 14, 1), 60);
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const dayKey = (ts: number) => new Date(ts).toISOString().slice(0, 10);
+
+    const touchpoints = await ctx.db.query("touchpoints")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id).gte("ts", cutoff))
+      .order("desc").take(8000);
+    const conversions = await ctx.db.query("conversions")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id).gte("ts", cutoff))
+      .order("desc").take(2000);
+    const persons = await ctx.db.query("persons")
+      .withIndex("by_brand", (q) => q.eq("brandId", brand._id)).take(2000);
+
+    // Tages-Buckets
+    const buckets: Record<string, { date: string; pageviews: number; otherTouch: number; leads: number }> = {};
+    for (let i = 0; i < days; i++) {
+      const d = dayKey(Date.now() - i * 24 * 60 * 60 * 1000);
+      buckets[d] = { date: d, pageviews: 0, otherTouch: 0, leads: 0 };
+    }
+    for (const t of touchpoints) {
+      const b = buckets[dayKey(t.ts)];
+      if (!b) continue;
+      if (t.type === "pageview") b.pageviews++; else b.otherTouch++;
+    }
+    for (const c of conversions) {
+      const b = buckets[dayKey(c.ts)];
+      if (b && c.type === "lead") b.leads++;
+    }
+    const daily = Object.values(buckets).sort((a, b) => a.date.localeCompare(b.date));
+
+    // Top-Kampagnen + Top-Anzeigen nach Touchpoint-Zahl
+    const countBy = (key: "campaignId" | "adId") => {
+      const m: Record<string, number> = {};
+      for (const t of touchpoints) {
+        const v0 = t[key];
+        if (v0) m[v0] = (m[v0] ?? 0) + 1;
+      }
+      return Object.entries(m).map(([id, count]) => ({ id, count }))
+        .sort((a, b) => b.count - a.count).slice(0, 8);
+    };
+
+    const recentLeads = conversions.filter((c) => c.type === "lead").slice(0, 12).map((c) => ({
+      ts: c.ts, value: c.value, currency: c.currency,
+      gclid: c.clickIds?.gclid, msclkid: c.clickIds?.msclkid, fbclid: c.clickIds?.fbclid,
+      pid: c.pid,
+    }));
+
+    // Kanal-Verteilung der Touchpoints
+    const channels: Record<string, number> = {};
+    for (const t of touchpoints) channels[t.channel || "direct"] = (channels[t.channel || "direct"] ?? 0) + 1;
+
+    return {
+      found: true as const,
+      days,
+      totals: {
+        persons: persons.length,
+        touchpoints: touchpoints.length,
+        conversions: conversions.length,
+        leads: conversions.filter((c) => c.type === "lead").length,
+      },
+      daily,
+      topCampaigns: countBy("campaignId"),
+      topAds: countBy("adId"),
+      channels: Object.entries(channels).map(([channel, count]) => ({ channel, count })).sort((a, b) => b.count - a.count),
+      recentLeads,
+    };
+  },
+});
+
 // Ops-/CLI-Debug (internal → nur über `npx convex run` bzw. andere Functions
 // aufrufbar, NICHT client-exponiert). Zählt Datalake-Zeilen je Brand und gibt
 // die jüngsten Touchpoints/Conversions zurück — für E2E- und Health-Checks.

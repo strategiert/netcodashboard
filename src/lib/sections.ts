@@ -5,7 +5,7 @@
 export type SectionKey =
   | "report" | "daily" | "social" | "rankings" | "aiVisibility"  // member-vergebbar
   | "dashboard" | "kpis" | "campaigns" | "funnel"                 // admin-only
-  | "content" | "stakeholders" | "journeys" | "seo";
+  | "content" | "stakeholders" | "journeys" | "seo" | "datalake";
 
 export type Section = {
   key: SectionKey;
@@ -31,6 +31,7 @@ export const SECTIONS: Section[] = [
   { key: "stakeholders", href: "/stakeholders", label: "Stakeholder",  icon: "Users",         adminOnly: true },
   { key: "journeys",     href: "/journeys",     label: "Journeys",     icon: "Route",         adminOnly: true },
   { key: "seo",          href: "/seo",          label: "SEO Cluster",  icon: "Search",        adminOnly: true },
+  { key: "datalake",     href: "/datalake",     label: "Datalake",     icon: "Database",      adminOnly: true },
 ];
 
 // Nur diese Sections kann ein Admin einem Member zuweisen.
