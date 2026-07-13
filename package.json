@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "ads:auth": "tsx --env-file=.env.local scripts/ads-auth.ts",
+    "msads:auth": "tsx --env-file=.env.local scripts/msads-auth.ts",
     "bing:ai-import": "tsx scripts/import-bing-ai-performance.ts"
   },
   "dependencies": {
