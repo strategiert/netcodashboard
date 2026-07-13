@@ -246,6 +246,59 @@ export const overview = query({
   },
 });
 
+// Einmalige Bereinigung der E2E-/Smoke-Testzeilen (internal, CLI-only).
+// Löscht Touchpoints/Conversions mit Test-pid- oder Test-gclid-Präfix und die
+// dazugehörigen Personen/Keys/Consent/sourceRecords. Echte Besucherzeilen
+// (reale gclid, UUID-pid) bleiben unberührt.
+export const purgeTest = internalMutation({
+  args: { brandSlug: v.string() },
+  handler: async (ctx, args) => {
+    const brand = await ctx.db.query("brands")
+      .withIndex("by_slug", (q) => q.eq("slug", args.brandSlug)).unique();
+    if (!brand) return { deleted: 0, reason: "unknown_brand" };
+
+    const isTestPid = (s?: string) => !!s && /^(e2e|fix)/.test(s);
+    const isTestGclid = (s?: string) => !!s && /^(WEBe2e|e2e|fixtest)/.test(s);
+    const testSourceAccounts = new Set(["e2e-prod", "smoke"]);
+
+    let deleted = 0;
+    const personIds = new Set<string>();
+    const srcIds = new Set<string>();
+
+    const conversions = await ctx.db.query("conversions")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id)).collect();
+    for (const c of conversions) {
+      if (isTestPid(c.pid) || isTestGclid(c.clickIds?.gclid)) {
+        personIds.add(c.personId);
+        srcIds.add(c.sourceRecordId);
+        await ctx.db.delete(c._id); deleted++;
+      }
+    }
+    const touchpoints = await ctx.db.query("touchpoints")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id)).collect();
+    for (const t of touchpoints) {
+      const src = await ctx.db.get(t.sourceRecordId);
+      const testSrc = src && testSourceAccounts.has(src.sourceAccount);
+      if (isTestPid(t.pid) || isTestGclid(t.clickIds?.gclid) || testSrc) {
+        srcIds.add(t.sourceRecordId);
+        await ctx.db.delete(t._id); deleted++;
+      }
+    }
+    // Personen aus Test-Conversions + ihre Keys/Consent
+    for (const pid of personIds) {
+      const keys = await ctx.db.query("identityKeys")
+        .withIndex("by_person", (q) => q.eq("personId", pid as never)).collect();
+      for (const k of keys) { await ctx.db.delete(k._id); deleted++; }
+      const consents = await ctx.db.query("consentLedger")
+        .withIndex("by_person", (q) => q.eq("personId", pid as never)).collect();
+      for (const c of consents) { await ctx.db.delete(c._id); deleted++; }
+      await ctx.db.delete(pid as never); deleted++;
+    }
+    for (const s of srcIds) { await ctx.db.delete(s as never); deleted++; }
+    return { deleted };
+  },
+});
+
 // Ops-/CLI-Debug (internal → nur über `npx convex run` bzw. andere Functions
 // aufrufbar, NICHT client-exponiert). Zählt Datalake-Zeilen je Brand und gibt
 // die jüngsten Touchpoints/Conversions zurück — für E2E- und Health-Checks.
