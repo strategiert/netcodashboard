@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 import { verifyIngestSignature } from "./datalakeHmac";
@@ -158,5 +158,30 @@ export const debugLast = query({
     const conversions = await ctx.db.query("conversions")
       .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id)).order("desc").take(10);
     return { touchpoints, conversions };
+  },
+});
+
+// Ops-/CLI-Debug (internal → nur über `npx convex run` bzw. andere Functions
+// aufrufbar, NICHT client-exponiert). Zählt Datalake-Zeilen je Brand und gibt
+// die jüngsten Touchpoints/Conversions zurück — für E2E- und Health-Checks.
+export const recentCounts = internalQuery({
+  args: { brandSlug: v.string() },
+  handler: async (ctx, args) => {
+    const brand = await ctx.db.query("brands")
+      .withIndex("by_slug", (q) => q.eq("slug", args.brandSlug)).unique();
+    if (!brand) return { brand: args.brandSlug, found: false };
+    const touchpoints = await ctx.db.query("touchpoints")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id)).order("desc").take(5);
+    const conversions = await ctx.db.query("conversions")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id)).order("desc").take(5);
+    const persons = await ctx.db.query("persons")
+      .withIndex("by_brand", (q) => q.eq("brandId", brand._id)).take(200);
+    return {
+      brand: args.brandSlug,
+      found: true,
+      personCount: persons.length,
+      recentTouchpoints: touchpoints.map((t) => ({ ts: t.ts, type: t.type, channel: t.channel, campaignId: t.campaignId, adId: t.adId, pid: t.pid, clickIds: t.clickIds })),
+      recentConversions: conversions.map((c) => ({ ts: c.ts, type: c.type, value: c.value, pid: c.pid, clickIds: c.clickIds, eventId: c.eventId })),
+    };
   },
 });
