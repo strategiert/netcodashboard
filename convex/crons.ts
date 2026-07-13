@@ -1,5 +1,5 @@
 import { cronJobs } from "convex/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const crons = cronJobs();
 
@@ -17,5 +17,7 @@ crons.daily("sync Bing",         { hourUTC: 6, minuteUTC: 45 }, api.actions.sync
 crons.daily("sync Daily Traffic (noon)", { hourUTC: 11, minuteUTC: 0 }, api.actions.syncDailyTraffic.syncDailyTraffic, {});
 // SE Ranking AI Search wird monatlich aktualisiert und ist credits-basiert; wöchentlich reicht.
 crons.weekly("sync AI Visibility", { dayOfWeek: "monday", hourUTC: 7, minuteUTC: 0 }, api.actions.syncAIVisibility.syncAIVisibility, {});
+// Aufräumen alter Ingest-Nonces (Datalake), verhindert unbegrenztes Wachstum von ingestNonces.
+crons.hourly("cleanup datalake nonces", { minuteUTC: 50 }, internal.datalake.cleanupNonces);
 
 export default crons;

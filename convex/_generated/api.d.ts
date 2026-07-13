@@ -37,6 +37,8 @@ import type * as campaigns from "../campaigns.js";
 import type * as content from "../content.js";
 import type * as crons from "../crons.js";
 import type * as dailyTraffic from "../dailyTraffic.js";
+import type * as datalake from "../datalake.js";
+import type * as datalakeHmac from "../datalakeHmac.js";
 import type * as gads from "../gads.js";
 import type * as http from "../http.js";
 import type * as journeys from "../journeys.js";
@@ -89,6 +91,8 @@ declare const fullApi: ApiFromModules<{
   content: typeof content;
   crons: typeof crons;
   dailyTraffic: typeof dailyTraffic;
+  datalake: typeof datalake;
+  datalakeHmac: typeof datalakeHmac;
   gads: typeof gads;
   http: typeof http;
   journeys: typeof journeys;

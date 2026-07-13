@@ -91,6 +91,7 @@ export const ingest = internalMutation({
           personId, brandId: brand._id, ts: r.ts, type: r.type,
           value: r.value, currency: r.currency ?? "EUR",
           eventId: r.eventId ?? r.externalId, sourceRecordId,
+          pid: r.pid, clickIds: r.clickIds,
         });
       } else {
         await ctx.db.insert("touchpoints", {
@@ -125,6 +126,20 @@ export const ingestHttp = httpAction(async (ctx, request) => {
   return new Response(JSON.stringify(result), {
     status: result.ok ? 200 : 409, headers: { "content-type": "application/json" },
   });
+});
+
+// Nonce-Aufräumen: Stale-Check (±5 min) läuft vor dem Nonce-Lookup, daher ist
+// Löschen von Nonces älter als 15 min sicher (großzügiger Puffer über die Stale-Grenze).
+export const cleanupNonces = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - 15 * 60 * 1000;
+    const old = await ctx.db.query("ingestNonces")
+      .withIndex("by_ts", (q) => q.lt("ts", cutoff))
+      .take(500);
+    for (const n of old) await ctx.db.delete(n._id);
+    return { deleted: old.length };
+  },
 });
 
 // Admin-Debug: letzte Datalake-Zeilen je Brand (requireAdmin-Muster aus convex/users.ts)

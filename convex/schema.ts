@@ -693,6 +693,12 @@ export default defineSchema({
     hubspotDealId: v.optional(v.string()),
     eventId: v.string(),
     sourceRecordId: v.id("sourceRecords"),
+    pid: v.optional(v.string()),
+    clickIds: v.optional(v.object({
+      gclid: v.optional(v.string()),
+      fbclid: v.optional(v.string()),
+      msclkid: v.optional(v.string()),
+    })),
   })
     .index("by_brand_ts", ["brandId", "ts"])
     .index("by_person", ["personId"]),
@@ -710,5 +716,7 @@ export default defineSchema({
   ingestNonces: defineTable({
     nonce: v.string(),
     ts: v.number(),
-  }).index("by_nonce", ["nonce"]),
+  })
+    .index("by_nonce", ["nonce"])
+    .index("by_ts", ["ts"]),
 });
