@@ -628,4 +628,87 @@ export default defineSchema({
     .index("by_brand_date", ["brandId", "date"])
     .index("by_query", ["query"])
     .index("by_page", ["page"]),
+
+  // ── Datalake (Design: docs/superpowers/specs/2026-07-13-datalake-attribution-design.md) ──
+  persons: defineTable({
+    brandId: v.id("brands"),
+    hubspotContactId: v.optional(v.string()),
+    firstSeen: v.number(),
+  }).index("by_brand", ["brandId"]),
+
+  identityKeys: defineTable({
+    personId: v.id("persons"),
+    brandId: v.id("brands"),
+    keyType: v.string(),   // "emailHmac" | "phoneHmac" | "pid" | "gaClientId" | "hubspotContactId"
+    keyValue: v.string(),
+    validFrom: v.number(),
+    validTo: v.optional(v.number()),
+    evidence: v.string(),  // sourceRecord-Schlüssel
+    conflictStatus: v.string(), // "unique" | "shared" | "disputed"
+  })
+    .index("by_key", ["brandId", "keyType", "keyValue"])
+    .index("by_person", ["personId"]),
+
+  sourceRecords: defineTable({
+    brandId: v.id("brands"),
+    source: v.string(),        // "web" | "hubspot" | "cleverreach" | "ads" | "fair"
+    sourceAccount: v.string(), // z. B. "bautvplus.com"
+    objectType: v.string(),    // "event" | "lead" | "contact" | "deal"
+    externalId: v.string(),
+    eventType: v.string(),
+    sourceVersion: v.number(),
+  }).index("by_unique", ["brandId", "source", "sourceAccount", "objectType", "externalId", "eventType", "sourceVersion"]),
+
+  touchpoints: defineTable({
+    personId: v.optional(v.id("persons")),
+    brandId: v.id("brands"),
+    ts: v.number(),
+    type: v.string(),      // "ad_click" | "pageview" | "form_start" | "email_click" | "nl_click" | "call" | "meeting" | "chat" | "fair_contact"
+    channel: v.string(),   // utm_source oder "direct"
+    campaignId: v.optional(v.string()),
+    adgroupId: v.optional(v.string()),
+    adId: v.optional(v.string()),
+    keyword: v.optional(v.string()),
+    device: v.optional(v.string()),
+    urlPath: v.optional(v.string()),
+    pid: v.optional(v.string()),
+    clickIds: v.optional(v.object({
+      gclid: v.optional(v.string()),
+      fbclid: v.optional(v.string()),
+      msclkid: v.optional(v.string()),
+    })),
+    sourceRecordId: v.id("sourceRecords"),
+  })
+    .index("by_brand_ts", ["brandId", "ts"])
+    .index("by_person", ["personId"])
+    .index("by_pid", ["brandId", "pid"]),
+
+  conversions: defineTable({
+    personId: v.id("persons"),
+    brandId: v.id("brands"),
+    ts: v.number(),
+    type: v.string(),      // "lead" | "mql" | "sql" | "deal_won" | "deal_lost"
+    value: v.optional(v.number()),
+    currency: v.string(),
+    hubspotDealId: v.optional(v.string()),
+    eventId: v.string(),
+    sourceRecordId: v.id("sourceRecords"),
+  })
+    .index("by_brand_ts", ["brandId", "ts"])
+    .index("by_person", ["personId"]),
+
+  consentLedger: defineTable({
+    personId: v.id("persons"),
+    brandId: v.id("brands"),
+    purpose: v.string(),      // "analytics" | "ads"
+    legalBasis: v.string(),   // "consent" | "contract" | "legitimate_interest"
+    grantedAt: v.number(),
+    revokedAt: v.optional(v.number()),
+    retentionUntil: v.optional(v.number()),
+  }).index("by_person", ["personId"]),
+
+  ingestNonces: defineTable({
+    nonce: v.string(),
+    ts: v.number(),
+  }).index("by_nonce", ["nonce"]),
 });
