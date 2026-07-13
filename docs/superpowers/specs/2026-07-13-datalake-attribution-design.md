@@ -1,106 +1,134 @@
 # NetCo Datalake + Customer-Journey-Attribution — Design
 
-Datum: 2026-07-13
+Datum: 2026-07-13 · **v2** (nach adversarialem Codex-Review, 10 Findings eingearbeitet)
 Status: Entwurf, wartet auf Klaus-Review
-Vorbild: Hyros/Tracify-Funktionsumfang, aber auf eigener Infrastruktur (Datenhoheit).
-Scope: BauTV+ als Pilot, Datenmodell von Anfang an mandantenfähig (`brand`-Feld) für Body-Cam und Microvista.
+Positionierung V1: **consentbasierte, deterministische Multi-Touch-Attribution auf eigener Infrastruktur** — nicht „Hyros-Klon". Call-Tracking/DNI, LTV und Conversion-Rückspielung sind eigene, spätere Pakete (siehe §5 F).
+Scope: BauTV+ als Pilot, Datenmodell mandantenfähig über referenzielle `brandId` (bestehende `brands`-Tabelle) für Body-Cam und Microvista.
 
 ## 1. Ziel
 
-Jede Conversion (Lead → MQL → SQL → Auftrag) bis auf das **einzelne Werbeelement** (Anzeige, Keyword, Creative) zurückverfolgen — über Web, Google/Microsoft/Meta-Ads, Newsletter, Telefonanrufe, CRM-Verlauf und Messekontakte hinweg. Deterministisches Matching zuerst, KI nur für die Grauzone. Danach: Dashboards und Reports auf dieser Datenbasis.
+Jede Conversion (Lead → MQL → SQL → Auftrag) bis auf das **einzelne Werbeelement** (Anzeige, Keyword, Creative) zurückverfolgen — über Web, Google/Microsoft/Meta-Ads, Newsletter, Anrufe (via CRM-Logging), CRM-Verlauf und Messekontakte. Deterministisches Matching zuerst; KI schlägt nur vor, ein Mensch bestätigt. Danach: Dashboards und Reports auf dieser Datenbasis.
 
 ## 2. Ist-Stand (verifiziert 13.07.2026)
 
 | Baustein | Zustand |
 |---|---|
-| Web-Events | First-Party-Beacon → Cloudflare Analytics Engine (`bautv_analytics`): pv/eng + ChatBob, UTM + eine ClickID, consent-pid. **Flüchtig** (AE-Retention), **nicht joinbar** |
+| Web-Events | First-Party-Beacon → Cloudflare Analytics Engine: pv/eng + ChatBob, UTM + eine ClickID, consent-pid. **Flüchtig, nicht joinbar** |
 | Server-Conversions | `/api/contact` → sGTM → Google EC / Meta CAPI / MS UET mit gclid/fbc/msclkid + event_id. **Wird nirgends bei uns gespeichert** |
 | Leads | Nur E-Mail an Vertrieb + CleverReach-DOI. **Kein eigener Lead-Store** |
-| Kosten | NetCo Dashboard (Convex): Google Ads täglich. **Microsoft/Meta-Kosten fehlen** |
-| Ad-Level-Kennung | Auto-Tagging (gclid) aktiv, aber **keine ValueTrack-/UTM-Templates** → Klick verrät Kampagne erst nach API-Umweg, Anzeige gar nicht |
-| CRM | HubSpot-Scopes liegen bei Johannes, noch keine Anbindung |
-| Identity | pid (consent), E-Mail/Telefon nur im Mail-Postfach |
+| Kosten | NetCo Dashboard (Convex): Google Ads täglich. **Microsoft/Meta fehlen** |
+| Ad-Level-Kennung | Auto-Tagging (gclid) aktiv, **keine ValueTrack-/UTM-Templates** |
+| CRM | HubSpot-Scopes bei Johannes, noch keine Anbindung |
+| Dashboard-Auth | Frontend-Gate; **Server-Queries noch nicht durchgängig gehärtet** — wird mit diesem Projekt Pflicht |
 
 ## 3. Architektur (5 Schichten)
 
 ```
-ERFASSUNG          Website-Beacon + /api/contact + ValueTrack-URLs
-                        │ (consentierte Events + alle Leads)
-INGEST             Convex-HTTP-Endpoint (live) + Crons (HubSpot, Ads-Kosten,
-                        │  CleverReach, click_view-Backstop) — bestehendes Cron-Muster
-IDENTITY           identities-Graph: deterministische Merges (Hash/ClickID/pid)
-                        │  + KI-Fuzzy-Matcher mit Review-Queue
-JOURNEY            touchpoints + conversions je Identity, zeitlich sortiert
-                        │
-ATTRIBUTION        Modelle (first/last/last-non-direct/linear/position/time-decay)
-                   → Gewichte je (Conversion × Touchpoint) → Reports im Dashboard
+ERFASSUNG    Website-Beacon + /api/contact + ValueTrack-URLs
+                 │  consentierte Events + alle Leads
+INGEST       Convex-HTTP-Endpoint (HMAC je Mandant, Timestamp+Nonce) + Crons
+                 │  (HubSpot, Ads-Kosten, CleverReach, click_view) — mit Cursor/Checkpoint
+IDENTITY     identityKeys + identityEdges (Evidenz, Zeitraum, Konflikt-Status,
+                 │  Split/Undo) — Auto-Merge nur bei konfliktfreien Schlüsseln;
+                 │  KI erzeugt ausschließlich Review-Vorschläge
+JOURNEY      touchpoints + conversions + sourceRecords (Quell-Dedupe) je Identity
+                 │
+ATTRIBUTION  Modelle als pure functions → denormalisierte attributionFacts mit
+             generation-Versionierung → Reports im Dashboard
 ```
 
-Alles in **Convex beim NetCo Dashboard** (Entscheid Klaus 13.07.): Kosten-Daten, Crons, Auth und Report-UI existieren dort schon; Journeys entstehen neben den Reports, kein zweites System.
+Speicherort: **Convex beim NetCo Dashboard** (Entscheid Klaus 13.07.) — Kosten, Crons, Auth, Report-UI existieren dort. Convex-Leitplanken (16 MiB/Transaktion, 32k Dokument-Scans, begrenzte parallele Scheduled Jobs) werden durch partitionierte Cursor-Jobs, Checkpoints und getrennte Raw-/Aggregat-Tabellen eingehalten; vor Paket B entsteht ein kurzes Lastmodell (erwartete Events/Tag je Marke × Retention × Attribution-Multiplikation).
 
-## 4. Datenmodell (Convex-Tabellen, alle mit `brand`)
+## 4. Datenmodell (Convex, alle Tabellen mit `brandId`)
 
 ```
-identities      _id, brand, emailSha256[], phoneSha256[], pids[], gaClientIds[],
-                hubspotContactId?, hubspotCompanyId?, firstSeen, mergedFrom[],
-                matchSource (deterministic | ai | manual), reviewStatus?
-touchpoints     identityId?, brand, ts, type (ad_click | pageview | form_start |
-                email_click | nl_click | call | meeting | chat | fair_contact),
-                channel, campaignId?, adgroupId?, adId?, keyword?, device?,
-                urlPath?, sourceRef (event_id | hubspot-activity-id | cr-mailing-id),
-                raw (Originalfelder)
-conversions     identityId, brand, ts, type (lead | mql | sql | deal_won | deal_lost),
-                value?, currency, hubspotDealId?, eventId (Dedupe zum sGTM-Event)
-adCosts         brand, channel, date, campaignId, adgroupId, adId, impressions,
-                clicks, spend, currency          ← Standard-Schema, alle Plattformen
-attribution     conversionId, model, touchpointId, weight   (materialisiert je Modell)
-identityReview  Kandidaten-Paare aus dem KI-Matcher mit Confidence + Begründung,
-                Status offen/bestätigt/abgelehnt (Dashboard-UI)
+persons          _id, brandId, hubspotContactId?, firstSeen, canonical (bool)
+identityKeys     personId, keyType (emailHmac | phoneHmac | pid | gaClientId |
+                 hubspotContactId), keyValue, validFrom, validTo?, evidence
+                 (sourceRef), conflictStatus (unique | shared | disputed)
+identityEdges    personA, personB, relation (same_person | same_company),
+                 source (deterministic | ai_suggested | manual), confidence?,
+                 begruendung?, status (active | undone), createdAt, undoneAt?
+                 → Merge = Edge, nie destruktives Zusammenkopieren; Split = undo
+companies        _id, brandId, hubspotCompanyId?, name-Hash
+devices          implizit über pid/gaClientId als eigene Key-Typen — Cross-Device
+                 NUR über harte Anker (gleiche E-Mail/Telefon), nie heuristisch
+sourceRecords    brandId, source (web | hubspot | cleverreach | ads | fair),
+                 sourceAccount, objectType, externalId, eventType, sourceVersion
+                 → UNIQUE-Schlüssel; jeder Ingest prüft hier zuerst (Dedupe
+                 Lead-Formular vs. späterer HubSpot-Import). Unsere event_id
+                 wird als Custom-Property nach HubSpot propagiert.
+touchpoints      personId?, brandId, ts, type (ad_click | pageview | form_start |
+                 email_click | nl_click | call | meeting | chat | fair_contact),
+                 channel, campaignId?, adgroupId?, adId?, keyword?, device?,
+                 urlPath?, sourceRecordId, fields (Allowlist statt raw-Dump)
+conversions      personId, brandId, ts, type (lead | mql | sql | deal_won |
+                 deal_lost), value?, currency, hubspotDealId?, sourceRecordId
+consentLedger    personId, purpose (analytics | ads), consentId, legalBasis
+                 (consent | contract | legitimate_interest), grantedAt,
+                 revokedAt?, retentionUntil
+adCosts          brandId, channel, date, campaignId, adgroupId, adId,
+                 impressions, clicks, spend, currency
+attributionFacts brandId, generation, model, modelVersion, lookbackDays,
+                 conversionDate, conversionType, channel, campaignId, adgroupId,
+                 adId, weightedValue, weightedCount
+                 → denormalisiert, reportfertig ohne Joins; Neuberechnung
+                 schreibt generation+1 und swappt atomar; Invalidation-Queue
+                 bei Merge/Split, Deal-Korrektur, spätem Touchpoint, Widerruf.
+                 Integritätsprüfung: Σ weight je Conversion = 1.
+identityReview   Kandidaten-Paare (KI oder Konflikt), confidence, begruendung,
+                 status (offen | bestaetigt | abgelehnt), decidedBy, decidedAt
 ```
 
-PII-Regel: Der Datalake speichert E-Mail/Telefon **nur als SHA-256** plus HubSpot-IDs als Referenz. Klartext lebt ausschließlich in HubSpot/Postfach. Löschung in HubSpot ⇒ Cron löscht Identity-Zweig (Löschkonzept aus dem etracker-Abgleich). Anonyme Pre-Consent-Events bleiben in Analytics Engine und werden **nie** rückwirkend verknüpft.
+**PII-Regeln (verschärft):**
+- Interne Matching-Keys sind **HMAC-SHA-256 mit eigenem, rotierbarem Secret** (nicht die Plattform-SHA-Hashes — die bleiben getrennt im Versandpfad). Hashes gelten als pseudonymisierte personenbezogene Daten, nicht als anonym — Auskunft/Berichtigung/Löschung laufen über die HubSpot-Referenz.
+- **Kein `raw`-Feld.** Touchpoints speichern nur Allowlist-Felder.
+- Löschung/Widerruf über den `consentLedger`: Widerruf trennt die betroffenen Kanten, löscht consentbasierte Events samt abgeleiteter Facts (Invalidation → Neuberechnung), setzt Tombstones. CRM-Daten mit eigener Rechtsgrundlage (Vertrag) bleiben davon getrennt bestehen.
+- Anonyme Pre-Consent-Events bleiben in Analytics Engine und werden nie rückwirkend verknüpft.
 
-## 5. Die fünf Arbeitspakete
+**Governance-Gate (vor Produktiv-Ingest von Paket C):** DSFA + Verarbeitungsverzeichnis-Eintrag + Rechtsgrundlagen-/Zweckmatrix mit dem DSB (Ralph Angerstein). Bis dahin: KI-Merges werden NIE automatisch übernommen — jeder Vorschlag läuft durch die Review-Queue, vollständige KI-Eingaben und Entscheidungen werden revisionsfest geloggt.
 
-### A — Fundament (Website + Konten, ~1 Tag)
-1. **Tracking-Templates setzen** (Konto-Ebene, einmalig):
-   - Google Ads: Final-URL-Suffix `utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_content={creative}&utm_term={keyword}&gad_group={adgroupid}&gad_device={device}`
-   - Microsoft Ads: analog mit `{CampaignId}/{AdGroupId}/{AdId}/{keyword:default}`
-   - Meta: UTM-Vorlage mit `{{campaign.id}}/{{adset.id}}/{{ad.id}}`
-   → ab dann trägt jeder Klick das Werbeelement in der URL; gclid bleibt als Backstop.
-2. **Beacon erweitert** (`functions/api/ev.ts`): utm_content/utm_term + gad_*-Felder in die Blobs; parallel **Dual-Write consentierter Events** an einen neuen Convex-HTTP-Endpoint (`/datalake/ingest`, Shared-Secret). Anonyme Events bleiben AE-only.
-3. **Lead-Store**: `/api/contact` schreibt jede Anfrage zusätzlich nach Convex (Hashes, ClickIDs, UTMs, event_id, interesse, value) — derselbe Payload, der ans sGTM geht.
+## 5. Arbeitspakete
 
-### B — Quellen-Connectoren (Convex-Crons, ~2–3 Tage, HubSpot abhängig von Johannes)
-4. **HubSpot-Sync**: Kontakte/Firmen/Deals/Aktivitäten (inkl. geloggter Anrufe und Meetings) → identities + touchpoints + conversions. Lifecycle-Übergänge = MQL/SQL-Conversions, `deal_won` mit Betrag.
-5. **Microsoft- und Meta-Kosten-Connector** ins `adCosts`-Schema (Google Ads liegt vor, wird auf adId-Tiefe erweitert).
-6. **CleverReach-Events**: Mailings + Empfänger-Klicks → touchpoints (`nl_click`), Match über emailSha256.
-7. **click_view-Backstop** (Google Ads API): gclid → campaign/adgroup/creative für Klicks ohne ValueTrack (nur 90 Tage rückwirkend abrufbar — früh einschalten).
-8. **Messe-/Manuell-Import**: CSV-Upload + Formular im Dashboard (`fair_contact`-Touchpoints, admin-only).
+### A — Fundament (~1–2 Tage) — **A1 sofort**
+1. **Tracking-Templates** (Konto-Ebene): Google Final-URL-Suffix `utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_content={creative}&utm_term={keyword}&gad_group={adgroupid}&gad_device={device}`; Microsoft analog (`{CampaignId}/{AdGroupId}/{AdId}/{keyword:default}`); Meta-UTM-Vorlage (`{{campaign.id}}/{{adset.id}}/{{ad.id}}`). gclid bleibt Backstop.
+2. **Beacon erweitert** (`functions/api/ev.ts`): ad-level UTM/gad-Felder; **Dual-Write consentierter Events** an Convex-HTTP-Endpoint — Auth per **mandantenspezifischem HMAC + Timestamp + Nonce** (kein globales Shared Secret), Secret rotierbar.
+3. **Lead-Store**: `/api/contact` schreibt jede Anfrage als sourceRecord + conversion(lead) + touchpoint nach Convex (HMAC-Keys, ClickIDs, UTM, event_id, value); dieselbe event_id geht später als Custom-Property nach HubSpot (Dedupe-Anker).
+4. **Server-Auth-Härtung**: `requireBrandAccess` für alle neuen Funktionen, sensible Logik als `internal*`; bestehende Report-Queries ziehen nach (die bekannte offene Flanke).
 
-### C — Identity + KI (~2 Tage)
-9. **Deterministischer Merger** (Convex-Function, läuft bei jedem Ingest): gleicher emailSha256 ∨ phoneSha256 ∨ pid ∨ hubspotContactId ⇒ merge. Firmen-Rollup über hubspotCompanyId (B2B: Account-Journey, mehrere Personen einer Firma).
-10. **KI-Fuzzy-Matcher** (Cron, Claude über App-Runtime-Key): bewertet Kandidaten-Paare, die deterministisch nicht zusammenfinden — Anrufnummern-Formate, Namens-/Firmenvarianten, Messe-Listen gegen CRM. Output: Confidence + Ein-Satz-Begründung. ≥0,9 auto-merge (als `ai` markiert, umkehrbar), darunter → `identityReview`-Queue im Dashboard, Mensch bestätigt. KI sieht nur die Match-Felder, nie ganze Datensätze.
+### B — Quellen-Connectoren (~3 Tage, HubSpot abhängig von Johannes)
+5. HubSpot-Sync (Kontakte/Firmen/Deals/Aktivitäten inkl. Anrufe) → sourceRecords/persons/touchpoints/conversions; Lifecycle-Übergänge als eigene Records, nicht als Kontakt-Duplikat.
+6. Microsoft- + Meta-Kosten-Connector ins adCosts-Schema; Google Ads auf adId-Tiefe erweitern.
+7. CleverReach-Events (Mailings, Klicks) → touchpoints via emailHmac.
+8. Google `click_view`-Backstop (gclid→creative, nur 90 Tage rückwirkend — früh aktivieren).
+9. Messe-/CSV-Import (admin-only) → sourceRecords + identityReview-Kandidaten.
+
+### C — Identity (~2 Tage) — erst nach Governance-Gate produktiv
+10. Deterministischer Merger: Edge nur bei **konfliktfreiem** Schlüssel (emailHmac/hubspotContactId eindeutig); geteilte Büro-Nummern/Sammel-Mails ⇒ `conflictStatus=shared`, kein Auto-Merge. Firmen-Rollup als `same_company`-Edge — **Account-Attribution wird separat ausgewiesen, nie als Personen-Journey verkauft**.
+11. KI-Vorschlags-Matcher (Claude, App-Runtime): Namens-/Firmenvarianten, Messe-Listen, Anrufnummern-Formate → ausschließlich identityReview-Einträge mit Confidence + Begründung. Kein Auto-Merge.
 
 ### D — Attribution + Reports (~2–3 Tage)
-11. **Engine**: je Conversion Touchpoints im Lookback-Fenster (Default 90 Tage, konfigurierbar) einsammeln, sechs Modelle als pure functions, Ergebnisse materialisieren. Regeln aus dem etracker-Abgleich: Direct-Definition, interne Referrer raus, Kampagnenwechsel bricht Session nicht.
-12. **Dashboard-Sections** (admin-only zuerst): *Attribution* (Ad-Level-Tabelle: Spend × attributierte Leads/Umsatz × ROAS, Modell-Umschalter, Modell-Vergleich), *Journeys* (Timeline je Identity/Firma, Suche über HubSpot-Referenz), *Review* (KI-Merge-Queue). QA-Alerts: Events-Einbruch, Kosten ohne Kampagne, Conversions ohne Touchpoint.
+12. Engine: Touchpoints im Lookback (Default 90 Tage) je Conversion, 6 Modelle (first/last/last-non-direct/linear/position/time-decay) → attributionFacts mit generation-Swap + Invalidation-Queue.
+13. Dashboard-Sections (admin-only): *Attribution* (Ad-Level: Spend × Leads/Umsatz × ROAS, Modell-Umschalter), *Journeys* (Timeline je Person/Firma), *Review* (Merge-Queue), QA-Alerts (Event-Einbruch, Kosten ohne Kampagne, Σweight≠1, Facts-Staleness).
 
-### E — später (bewusst NICHT jetzt)
-Datengetriebenes Modell (braucht Monate an Daten), Body-Cam/Microvista-Anbindung (Schema steht bereit), Telefonanlagen-Integration (bis dahin: Anrufe via HubSpot-Logging + Website-Call-Clicks), LinkedIn/Taboola-Kosten.
+### E — Governance (parallel zu B, vor C-Produktivbetrieb)
+14. DSFA + Verarbeitungsverzeichnis + Rechtsgrundlagen-Matrix mit DSB; Betroffenenprozess (Auskunft/Löschung) dokumentiert; Lastmodell für Convex.
 
-## 6. Was der KI-Einsatz konkret ist — und was nicht
+### F — bewusst später
+Call-Tracking/DNI (dynamische Rufnummern) + Telefonanlagen-Integration; Conversion-Outbox (qualifizierte Offline-Conversions zurück an Google/Meta/MS); LTV/wiederkehrender Umsatz; datengetriebenes Attributionsmodell (braucht Exposures + Nicht-Konvertierer + idealerweise Holdouts); Body-Cam/Microvista-Anbindung; LinkedIn/Taboola.
 
-Hyros verkauft „AI attribution"; der belastbare Kern ist deterministisches Identity-Matching plus gutes Tracking. Genau so bauen wir: **ClickIDs, Hashes und pids lösen ~90 % der Fälle exakt.** KI übernimmt nur, was Regeln nicht können: unscharfe Namen, Firmenzuordnung, Messe-Listen, Anruf-Zuordnung. Jeder KI-Merge ist markiert, begründet und umkehrbar — keine Blackbox-Attribution.
+## 6. Ehrliche Einordnung gegenüber Hyros/Tracify
+
+V1 liefert: lückenlose consentbasierte Web-Journey mit Ad-Level-Auflösung, CRM-Durchgriff bis Umsatz, sechs Regelmodelle, nachvollziehbare (nie automatische) KI-Merge-Vorschläge. V1 liefert NICHT: consentfreies Tracking-Matching, heuristisches Cross-Device, Call-DNI, verhaltensbasierte „AI-Attribution". Das meiste davon ist bei den Anbietern Produkt-Claim ohne unabhängigen Beleg; was davon real nützt (Call-Tracking, Conversion-Rückspielung), steht als Paket F im Plan.
 
 ## 7. Risiken / offene Punkte
 
-- **Consent-Reichweite**: Journeys entstehen nur für Besucher mit Einwilligung; die Ablehner-Quote begrenzt die Abdeckung (ehrlich ausweisen, nicht schätzen).
-- **Anruf-Quelle**: solange die Telefonanlage nichts liefert, hängt Anruf-Attribution am Vertriebs-Logging in HubSpot (Disziplin-Frage).
-- **HubSpot-Aktivitäts-Scopes**: in Johannes' Liste fehlten granulare Engagement-Scopes — ggf. nachfordern, sobald der Sync konkrete 403s liefert.
-- **Convex-Volumen**: consentierte Events + Touchpoints für B2B-Traffic sind unkritisch; sollte eine Marke B2C-Volumen bringen, Events aggregieren statt roh speichern (Schema lässt beides zu).
-- **Umsatz/Marge**: braucht gepflegte Deal-Beträge in HubSpot — Prozessfrage an den Vertrieb.
+- **Consent-Reichweite** begrenzt Journey-Abdeckung — Ablehner-Quote im Dashboard ehrlich ausweisen.
+- **Anruf-Attribution** hängt bis Paket F am HubSpot-Logging des Vertriebs (Prozessfrage).
+- **HubSpot-Engagement-Scopes** evtl. nachfordern (fehlten in Johannes' Liste).
+- **Umsatz/Marge** braucht gepflegte Deal-Beträge (Prozessfrage Vertrieb).
+- **DSB-Kapazität** fürs Governance-Gate — früh anfragen, sonst blockiert C.
 
-## 8. Reihenfolge-Empfehlung
+## 8. Reihenfolge
 
-A1 (Tracking-Templates) **sofort** — jeder Tag ohne ValueTrack ist ein Tag ohne Ad-Level-Daten, und click_view reicht nur 90 Tage zurück. Dann A2/A3 + Schema, dann B parallel zum HubSpot-Fortschritt, C sobald zwei Quellen liefern, D zum Schluss.
+A1 (Templates) **sofort** → A2–A4 + Schema → B parallel zu E (Governance) → C nach Gate → D. Erste sichtbare Reports (Ad-Level-Kosten × Web-Leads deterministisch) sind schon nach A+B möglich — ohne KI, ohne Merge-Risiken.
