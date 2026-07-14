@@ -124,10 +124,13 @@ export const upsertClickViews = internalMutation({
       const brandId = brandIds[row.brandSlug];
       if (!brandId) { skippedBrand++; continue; }
 
-      const existing = await ctx.db
+      // Index deckt gclid+date; sourceAccount zusätzlich im Code matchen, damit ein
+      // künftiges zweites Google-Konto keine fremden Zeilen überschreibt.
+      const candidates = await ctx.db
         .query("clickViews")
         .withIndex("by_gclid", (q) => q.eq("gclid", row.gclid).eq("date", row.date))
-        .first();
+        .collect();
+      const existing = candidates.find((c) => c.sourceAccount === row.sourceAccount) ?? null;
 
       const doc = {
         brandId,

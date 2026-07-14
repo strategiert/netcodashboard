@@ -21,6 +21,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * offsetDays erlaubt gestückelte Backfills ohne Überlappung.
  */
 export function dateWindow(days: number, nowMs: number, offsetDays = 0): DateWindow {
+  if (!Number.isInteger(days) || days < 1) throw new Error(`dateWindow: ungültige days=${days}`);
+  if (!Number.isInteger(offsetDays) || offsetDays < 0) throw new Error(`dateWindow: ungültiger offset=${offsetDays}`);
   const todayUtc = Date.UTC(
     new Date(nowMs).getUTCFullYear(),
     new Date(nowMs).getUTCMonth(),
@@ -77,17 +79,26 @@ function toNumber(s: string): number {
 
 /**
  * MS-Ads-Report-CSV → Datenzeilen. Sucht die Header-Zeile (Report-Vorspann davor),
- * überspringt Fußzeilen (@Rows/©) und leere Zeilen. Leerer Report → [].
+ * überspringt Fußzeilen (@Rows/©) und leere Zeilen.
+ * Leerer String → []. Nicht-leerer Inhalt OHNE vollständigen Header → throw:
+ * eine beschädigte/inkompatible CSV darf nie wie ein legitimer Leerreport aussehen
+ * (der nachgelagerte Stale-Sweep würde sonst alle Zeilen des Fensters löschen).
  */
 export function parseMsAdsCsv(csv: string): MsRow[] {
-  const lines = csv.replace(/^﻿/, "").split(/\r?\n/);
+  const cleaned = csv.replace(/^﻿/, "");
+  if (cleaned.trim() === "") return [];
+  const lines = cleaned.split(/\r?\n/);
   const headerIdx = lines.findIndex((l) => {
     const cells = splitCsvLine(l);
     return cells.includes("TimePeriod") && cells.includes("CampaignId");
   });
-  if (headerIdx < 0) return [];
+  if (headerIdx < 0) {
+    throw new Error(`parseMsAdsCsv: keine Header-Zeile gefunden (erste Zeile: ${lines[0]?.slice(0, 120)})`);
+  }
   const header = splitCsvLine(lines[headerIdx]);
   const col = Object.fromEntries(MS_COLUMNS.map((c) => [c, header.indexOf(c)]));
+  const missing = MS_COLUMNS.filter((c) => col[c] < 0);
+  if (missing.length) throw new Error(`parseMsAdsCsv: Pflichtspalten fehlen: ${missing.join(", ")}`);
 
   const rows: MsRow[] = [];
   for (const line of lines.slice(headerIdx + 1)) {
@@ -134,11 +145,27 @@ function isMetaRateLimitBody(body: string): boolean {
   }
 }
 
+/** URL für Fehlermeldungen/Logs: Query-String kann Tokens/Signaturen tragen → kappen. */
+export function redactUrl(url: string): string {
+  const q = url.indexOf("?");
+  return q < 0 ? url : url.slice(0, q) + "?…";
+}
+
+function retryAfterMs(header: string | null): number | null {
+  if (!header) return null;
+  const secs = Number(header);
+  if (Number.isFinite(secs) && secs >= 0) return secs * 1000;
+  const dateMs = Date.parse(header); // HTTP-Date-Variante
+  if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
+  return null;
+}
+
 /**
- * fetch mit Retry für 429/5xx und Meta-Rate-Limit-Bodies. Respektiert Retry-After,
- * sonst exponentielles Backoff mit Jitter. Nach maxAttempts: throw (Cron soll rot werden).
- * Nicht-retrybare Fehler (gewöhnliche 4xx) werden als Response durchgereicht —
- * der Aufrufer entscheidet, wie er sie behandelt.
+ * fetch mit Retry für Netzwerkfehler, 429/5xx und Meta-Rate-Limit-Bodies.
+ * Respektiert Retry-After (Sekunden oder HTTP-Date), sonst exponentielles Backoff
+ * mit Jitter. Nach maxAttempts: throw (Cron soll rot werden). Nicht-retrybare
+ * Fehler (gewöhnliche 4xx) werden als Response durchgereicht. Fehlermeldungen
+ * enthalten nie den Query-String (Credentials!).
  */
 export async function fetchWithRetry(
   url: string,
@@ -149,26 +176,29 @@ export async function fetchWithRetry(
   const baseDelayMs = opts.baseDelayMs ?? 2000;
   const doFetch = opts.fetchImpl ?? fetch;
 
-  let lastStatus = 0;
+  let lastError = "";
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const res = await doFetch(url, init);
-    lastStatus = res.status;
-
-    let retryable = res.status === 429 || res.status >= 500;
-    if (!retryable && res.status === 400) {
-      const body = await res.clone().text();
-      retryable = isMetaRateLimitBody(body);
-    }
-    if (!retryable || attempt === maxAttempts) {
-      if (retryable) break; // letzter Versuch war retrybar-fehlerhaft → throw unten
-      return res;
+    let res: Response | null = null;
+    try {
+      res = await doFetch(url, init);
+    } catch (err) {
+      lastError = `Netzwerkfehler: ${err instanceof Error ? err.message : String(err)}`;
     }
 
-    const retryAfter = Number(res.headers.get("Retry-After"));
-    const delay = Number.isFinite(retryAfter) && retryAfter >= 0
-      ? retryAfter * 1000
-      : baseDelayMs * 2 ** (attempt - 1) * (1 + Math.random() * 0.25);
+    if (res) {
+      lastError = `HTTP ${res.status}`;
+      let retryable = res.status === 429 || res.status >= 500;
+      if (!retryable && res.status === 400) {
+        const body = await res.clone().text();
+        retryable = isMetaRateLimitBody(body);
+      }
+      if (!retryable) return res;
+      if (attempt === maxAttempts) break;
+    } else if (attempt === maxAttempts) break;
+
+    const fromHeader = res ? retryAfterMs(res.headers.get("Retry-After")) : null;
+    const delay = fromHeader ?? baseDelayMs * 2 ** (attempt - 1) * (1 + Math.random() * 0.25);
     await new Promise((r) => setTimeout(r, delay));
   }
-  throw new Error(`fetchWithRetry: ${url} nach ${maxAttempts} Versuchen fehlgeschlagen (zuletzt HTTP ${lastStatus})`);
+  throw new Error(`fetchWithRetry: ${redactUrl(url)} nach ${maxAttempts} Versuchen fehlgeschlagen (zuletzt ${lastError})`);
 }

@@ -58,9 +58,9 @@ type Row = {
 };
 
 type SyncResult = {
-  window: string; fetched: number; pmaxRows: number;
+  window: string; currency: string; fetched: number; pmaxRows: number;
   inserted: number; updated: number; deleted: number;
-  skippedNoBrand: number; skippedUnknownBrand: number;
+  skippedNoBrand: number; skippedNoBrandSpend: number; skippedUnknownBrand: number;
 };
 
 export const syncGadsCosts = internalAction({
@@ -70,6 +70,11 @@ export const syncGadsCosts = internalAction({
     const customerId = process.env.GADS_CUSTOMER_ID_NETCO!.replace(/-/g, "");
     const win = dateWindow(WINDOW_DAYS, Date.now());
     const token = await getAdsToken();
+
+    // Währungsinvariante einmal pro Lauf prüfen statt blind "EUR" zu etikettieren.
+    const customerRows = await gaqlSearch(token, customerId,
+      "SELECT customer.currency_code FROM customer");
+    const currency: string = customerRows[0]?.customer?.currencyCode ?? "EUR";
 
     // Kein campaign.status-Filter: sonst veralten Zeilen entfernter Kampagnen im Fenster.
     const adRows = await gaqlSearch(token, customerId, `
@@ -88,29 +93,37 @@ export const syncGadsCosts = internalAction({
         AND campaign.advertising_channel_type = 'PERFORMANCE_MAX'
     `);
 
-    let skippedNoBrand = 0;
+    let skippedNoBrand = 0, skippedNoBrandSpend = 0;
     const rows: Row[] = [];
-    const mapRow = (r: any, adgroupId: string, adId: string) => {
+    const mapRow = (r: any, adgroupId: string, adId: string, pmax: boolean) => {
+      const date = r.segments?.date ?? "";
+      const campaignId = String(r.campaign?.id ?? "");
+      // Identität vollständig? Leere IDs sind nur beim PMax-Fallback legitim —
+      // sonst kollabieren Dedupe-Keys und Zeilen überschreiben sich gegenseitig.
+      if (!date || !campaignId || (!pmax && (!adgroupId || !adId))) {
+        throw new Error(`Google-Row ohne vollständige Identität: ${JSON.stringify(r).slice(0, 300)}`);
+      }
       const name = r.campaign?.name ?? "";
+      const spend = microsToEur(Number(r.metrics?.costMicros ?? r.metrics?.cost_micros ?? 0));
       const brandSlug = detectBrand(name);
-      if (!brandSlug) { skippedNoBrand++; return; }
+      if (!brandSlug) { skippedNoBrand++; skippedNoBrandSpend += spend; return; }
       rows.push({
         brandSlug,
         channel: "google",
         sourceAccount: customerId,
-        date: r.segments?.date ?? "",
-        campaignId: String(r.campaign?.id ?? ""),
+        date,
+        campaignId,
         campaignName: name,
         adgroupId,
         adId,
         impressions: Number(r.metrics?.impressions ?? 0),
         clicks: Number(r.metrics?.clicks ?? 0),
-        spend: microsToEur(Number(r.metrics?.costMicros ?? r.metrics?.cost_micros ?? 0)),
-        currency: "EUR",
+        spend,
+        currency,
       });
     };
-    for (const r of adRows) mapRow(r, String(r.adGroup?.id ?? ""), String(r.adGroupAd?.ad?.id ?? ""));
-    for (const r of pmaxRows) mapRow(r, "", "");
+    for (const r of adRows) mapRow(r, String(r.adGroup?.id ?? ""), String(r.adGroupAd?.ad?.id ?? ""), false);
+    for (const r of pmaxRows) mapRow(r, "", "", true);
 
     let inserted = 0, updated = 0, skippedUnknownBrand = 0;
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -126,10 +139,11 @@ export const syncGadsCosts = internalAction({
     });
 
     return {
-      window: `${win.start}..${win.end}`,
+      window: `${win.start}..${win.end}`, currency,
       fetched: adRows.length + pmaxRows.length,
       pmaxRows: pmaxRows.length,
-      inserted, updated, deleted: swept.deleted, skippedNoBrand, skippedUnknownBrand,
+      inserted, updated, deleted: swept.deleted,
+      skippedNoBrand, skippedNoBrandSpend, skippedUnknownBrand,
     };
   },
 });

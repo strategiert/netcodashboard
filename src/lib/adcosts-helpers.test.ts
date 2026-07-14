@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { dateWindow, parseMsAdsCsv, microsToEur, fetchWithRetry } from "./adcosts-helpers";
+import { dateWindow, parseMsAdsCsv, microsToEur, fetchWithRetry, redactUrl } from "./adcosts-helpers";
 
 // 2026-07-14T02:00:00Z als fixes "jetzt" für deterministische Fenster.
 const NOW = Date.UTC(2026, 6, 14, 2, 0, 0);
@@ -26,6 +26,13 @@ describe("dateWindow", () => {
     expect(dateWindow(1, justAfterMidnight).end).toBe("2026-07-13");
     const justBeforeMidnight = Date.UTC(2026, 6, 13, 23, 59, 59);
     expect(dateWindow(1, justBeforeMidnight).end).toBe("2026-07-12");
+  });
+
+  it("wirft bei ungültigen days/offset", () => {
+    expect(() => dateWindow(0, NOW)).toThrow();
+    expect(() => dateWindow(-3, NOW)).toThrow();
+    expect(() => dateWindow(1.5, NOW)).toThrow();
+    expect(() => dateWindow(5, NOW, -1)).toThrow();
   });
 });
 
@@ -74,8 +81,25 @@ describe("parseMsAdsCsv", () => {
     expect(parseMsAdsCsv(csv)).toEqual([]);
   });
 
-  it("Report ohne Header-Zeile → []", () => {
-    expect(parseMsAdsCsv('"irgendwas"\n"anderes"')).toEqual([]);
+  it("leerer String → []", () => {
+    expect(parseMsAdsCsv("")).toEqual([]);
+    expect(parseMsAdsCsv("﻿\n")).toEqual([]);
+  });
+
+  it("nicht-leerer Report ohne Header-Zeile → throw (nie wie Leerreport behandeln)", () => {
+    expect(() => parseMsAdsCsv('"irgendwas"\n"anderes"')).toThrow(/Header/);
+  });
+
+  it("Header mit fehlenden Pflichtspalten → throw", () => {
+    const csv = '"TimePeriod","CampaignId","Impressions"\n"2026-07-13","1","5"';
+    expect(() => parseMsAdsCsv(csv)).toThrow(/Pflichtspalten/);
+  });
+});
+
+describe("redactUrl", () => {
+  it("kappt den Query-String", () => {
+    expect(redactUrl("https://g.com/x?access_token=geheim")).toBe("https://g.com/x?…");
+    expect(redactUrl("https://g.com/x")).toBe("https://g.com/x");
   });
 });
 
@@ -132,5 +156,25 @@ describe("fetchWithRetry", () => {
     const res = await fetchWithRetry("https://x", {}, { fetchImpl: f, baseDelayMs: 1 });
     expect(res.status).toBe(400);
     expect(f).toHaveBeenCalledTimes(1);
+  });
+
+  it("Netzwerkfehler wird retryt und erholt sich", async () => {
+    const f = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("ECONNRESET"))
+      .mockResolvedValueOnce(jsonResponse(200, { ok: true }));
+    const res = await fetchWithRetry("https://x", {}, { fetchImpl: f, baseDelayMs: 1 });
+    expect(res.status).toBe(200);
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+
+  it("Fehlermeldung enthält keinen Query-String (Token-Redaction)", async () => {
+    const f = vi.fn().mockRejectedValue(new Error("kaputt"));
+    await expect(
+      fetchWithRetry("https://x/y?access_token=geheim123", {}, { fetchImpl: f, baseDelayMs: 1, maxAttempts: 2 })
+    ).rejects.toThrow(/https:\/\/x\/y\?…/);
+    await expect(
+      fetchWithRetry("https://x/y?access_token=geheim123", {}, { fetchImpl: f, baseDelayMs: 1, maxAttempts: 2 })
+    ).rejects.not.toThrow(/geheim123/);
   });
 });

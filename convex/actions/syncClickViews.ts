@@ -78,6 +78,11 @@ export const syncClickViews = internalAction({
     const dates = args.startDate && args.endDate
       ? isoRange(args.startDate, args.endDate)
       : dateWindow(args.days ?? 3, Date.now()).dates;
+    // ~3.500 Klicks/Tag: 15 Tage ≈ 4 Min. Mehr als 20 Tage riskiert das
+    // 10-Min-Action-Limit → gestückelt via startDate/endDate fahren.
+    if (dates.length > 20) {
+      throw new Error(`syncClickViews: ${dates.length} Tage überschreiten den Guard (20) — in Chunks aufrufen`);
+    }
 
     const token = await getAdsToken();
 
@@ -108,7 +113,8 @@ export const syncClickViews = internalAction({
         const campaignId = String(r.campaign?.id ?? "");
         const brandSlug = campaignBrand[campaignId];
         if (!brandSlug) { skippedNoBrand++; continue; }
-        // "customers/…/adGroupAds/{agId}~{adId}" → adgroupId/adId
+        // "customers/…/adGroupAds/{agId}~{adId}" → adgroupId/adId.
+        // || statt ??: split liefert bei leerem Ressourcennamen "" (nicht undefined).
         const res = String(r.clickView?.adGroupAd ?? "");
         const tail = res.split("/").pop() ?? "";
         const [agId, adId] = tail.split("~");
@@ -118,8 +124,8 @@ export const syncClickViews = internalAction({
           gclid,
           date: r.segments?.date ?? day,
           campaignId,
-          adgroupId: agId ?? String(r.adGroup?.id ?? ""),
-          adId: adId ?? "",
+          adgroupId: agId || String(r.adGroup?.id ?? ""),
+          adId: adId || "",
           clickType: r.segments?.clickType ?? undefined,
           keyword: r.clickView?.keywordInfo?.text ?? undefined,
         });
@@ -129,6 +135,7 @@ export const syncClickViews = internalAction({
         const res = await ctx.runMutation(internal.adCosts.upsertClickViews, { rows: rows.slice(i, i + BATCH_SIZE) });
         inserted += res.inserted; updated += res.updated; skippedUnknownBrand += res.skippedBrand;
       }
+      console.log(`click_view ${day}: ${results.length} Klicks verarbeitet`);
     }
 
     return { days: dates.length, fetched, skippedNoGclid, skippedNoBrand, skippedUnknownBrand, inserted, updated };

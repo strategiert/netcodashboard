@@ -70,8 +70,10 @@ export const syncMsCosts = internalAction({
       "Content-Type": "application/json",
     };
 
-    // ReturnOnlyCompleteData bewusst false: das 35-Tage-Fenster refetcht täglich,
-    // true würde frische Tage oft komplett verweigern.
+    // ReturnOnlyCompleteData true: MS kann sonst einen "erfolgreichen" Report mit
+    // erst teilweise verarbeiteten Daten liefern — der Stale-Sweep würde die
+    // fehlenden Zeilen löschen. Schlägt der Report fehl (frischer Tag noch nicht
+    // final), wird der Cron sichtbar rot und der nächste Lauf heilt.
     const submitRes = await fetchWithRetry(`${REPORTING}/GenerateReport/Submit`, {
       method: "POST",
       headers,
@@ -83,7 +85,7 @@ export const syncMsCosts = internalAction({
           ExcludeColumnHeaders: false,
           ExcludeReportFooter: true,
           ExcludeReportHeader: true,
-          ReturnOnlyCompleteData: false,
+          ReturnOnlyCompleteData: true,
           Columns: ["TimePeriod", "CampaignId", "CampaignName", "AdGroupId", "AdId",
                     "Impressions", "Clicks", "Spend", "CurrencyCode"],
           Scope: { AccountIds: [Number(accountId)] },
@@ -127,6 +129,9 @@ export const syncMsCosts = internalAction({
       const csvName = Object.keys(zip).find((n) => n.toLowerCase().endsWith(".csv"));
       if (!csvName) throw new Error(`MS ZIP ohne CSV (Einträge: ${Object.keys(zip).join(", ")})`);
       csv = strFromU8(zip[csvName]);
+      // Download vorhanden, aber CSV komplett leer → beschädigt, nicht "keine Daten".
+      // parseMsAdsCsv wirft zusätzlich bei non-empty CSV ohne validen Header.
+      if (csv.trim() === "") throw new Error("MS CSV leer trotz ReportDownloadUrl");
     }
 
     const parsed = parseMsAdsCsv(csv);
