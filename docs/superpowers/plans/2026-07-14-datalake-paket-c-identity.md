@@ -1,6 +1,6 @@
 # Datalake Paket C — Identity (deterministischer Merger + KI-Review-Queue)
 
-**Version 2 (14.07., nach adversarialem Review durch Opus/deep-reasoner — Codex-Quota bis 20.07. erschöpft).** Wichtigste v2-Korrekturen: Cluster-Touchpoint-Sammlung über pid-Union statt personId-Map (Web-Touchpoints tragen KEINE personId!), separates LLM-Flag (KI-Aufrufe sind Verarbeitung und bleiben bis DSFA aus), Evidenz-Allowlist ohne urlPath/keyword, Paar-Normalisierung, On-Demand-Recompute nach Approve. Design: `docs/superpowers/specs/2026-07-13-datalake-attribution-design.md` §5 C (Punkte 10+11) + §Governance-Gate.
+**Version 3 (14.07., nach ZWEI unabhängigen Reviews: Opus/deep-reasoner → v2, Codex gpt-5.6-sol → v3).** v2-Korrekturen: pid-Union statt personId-Map, separates LLM-Flag, Evidenz-Allowlist, Paar-Normalisierung. v3-Korrekturen (Codex): shared-Semantik repariert (hätte sonst alle Email-Merges verhindert), Ingest-Key-Upsert als Voraussetzung, Cluster-Gruppierung in journeyList, Generation-Reservierung gegen Recompute-Races, drittes Gate für die Kandidaten-Enumeration selbst, append-only Audit-Trail. Design: `docs/superpowers/specs/2026-07-13-datalake-attribution-design.md` §5 C + §Governance-Gate.
 
 **HARTES GATE: Dieses Paket wird GEPLANT und gebaut, aber NICHT produktiv geschaltet, bevor DSFA + Verarbeitungsverzeichnis + Rechtsgrundlagen-Matrix mit dem DSB (Ralph Angerstein) abgeschlossen sind.** Klaus gibt das Governance-Paket heute an Legal. Alle Merge-Funktionen bleiben bis zur Freigabe hinter einem Feature-Flag (`IDENTITY_MERGE_ENABLED`, Convex-Env, Default aus). KI-Merges werden NIE automatisch übernommen — jeder Vorschlag läuft durch die Review-Queue; vollständige KI-Eingaben und Entscheidungen werden revisionsfest geloggt (Design §Governance).
 
@@ -16,10 +16,13 @@
 
 ## Global Constraints
 
-* **ZWEI Feature-Flags** (Convex-Env, beide Default "false"):
+* **DREI Feature-Flags** (Convex-Env, alle Default "false") — Codex-F10: schon die Kandidaten-Enumeration ist Identitäts-Profiling mit pseudonymen personenbezogenen Daten und darf vor der DSB-Freigabe in PROD nicht laufen:
+  * `IDENTITY_CANDIDATES_ENABLED` — gated Kandidaten-Enumeration, shared-Markierung, Review-Einträge (reine DB-Arbeit, aber neuer Verarbeitungszweck).
+  * `IDENTITY_MATCHER_LLM_ENABLED` — gated zusätzlich JEDEN Claude-Aufruf (Abfluss an Auftragsverarbeiter).
   * `IDENTITY_MERGE_ENABLED` — gated JEDEN Kanten-Write (deterministisch UND approve).
-  * `IDENTITY_MATCHER_LLM_ENABLED` — gated JEDEN Claude-Aufruf. Begründung (Review-F2): Auch pseudonyme Daten an Anthropic zu senden ist Verarbeitung durch einen Auftragsverarbeiter und gehört HINTER die DSFA — „nur Mergen ist gated" wäre die falsche Trennlinie. Ungated läuft ausschließlich DB-interne Arbeit: Kandidaten-Enumeration, shared-Markierung, Review-Einträge OHNE aiLog.
-  * Beide Flags + die Frage „darf der DEV-Matcher vor DSFA laufen?" stehen als explizite DSB-Fragen im Governance-Paket.
+  * Konsequenz: In prod läuft vor DSB-Freigabe NICHTS von Paket C; dev-Tests je nach DSB-Antwort auf Governance-Frage F3/F6.
+* **shared-Semantik (Codex-F1, ersetzt die v1/v2-Regel):** `shared` bezeichnet die reale Mehrbenutzer-Natur eines Identifiers, NICHT die Zahl der Person-Zeilen — sonst würde die shared-Erkennung genau die Email-Merges verhindern, für die das Paket existiert. Regeln: emailHmac/hubspotContactId bei mehreren Personen = deterministischer MERGE-Kandidat (Schlüssel bleibt unique; Ausnahme: manuell als Sammel-Adresse markiert). phoneHmac bei mehreren Personen = Review-Kandidat, nie Auto-Merge; „shared" wird eine REVIEW-Entscheidung des Menschen (Büro-Nummer bestätigt), kein automatischer Zustand.
+* **Voraussetzung Ingest-Key-Upsert (Codex-F2, EINZIGE bewusste Änderung an Paket A):** `datalake.ts` legt identityKeys heute nur im `if (!personId)`-Zweig an — eine zweite Conversion derselben Person ergänzt neue phone-/pid-Schlüssel NICHT; die Cluster-Union hätte nichts zu vereinen. Additiver Patch: bei JEDER Conversion fehlende Keys (email/phone/pid) idempotent an die gefundene Person anhängen. Eigener Task 0, mit Test.
 * Auto-Merge NUR bei `conflictStatus: "unique"`-Schlüsseln, die exakt gleich sind (emailHmac ODER hubspotContactId). Telefon-HMAC allein merged NIE automatisch (geteilte Büro-Nummern!) — nur als KI-Vorschlag.
 * Geteilte Schlüssel (mehrere Personen, gleicher keyValue) → `conflictStatus: "shared"` setzen, kein Merge, im Review sichtbar.
 * Firmen-Rollup (`same_company`) ist eine EIGENE Kantenart und fließt NIE in Personen-Journeys — Account-Sicht wird separat ausgewiesen (Design §C).
@@ -32,7 +35,13 @@
 
 ---
 
-### Task 1: Schema `personEdges` + `identityReview` + Flag
+### Task 0: Ingest-Key-Upsert (Voraussetzung, Codex-F2)
+
+**Files:** Modify: `convex/datalake.ts` (additiv, einzige Paket-A-Änderung)
+
+* [ ] Bei jeder Conversion mit gefundener Bestandsperson: fehlende identityKeys (emailHmac/phoneHmac/pid) idempotent ergänzen (Lookup über by_key, nur einfügen wenn für DIESE Person fehlend). Test: zweite Conversion mit neuem Telefon ergänzt phoneHmac-Key. Commit.
+
+### Task 1: Schema `personEdges` + `identityReview` + `identityAudit` + Flags
 
 **Files:** Modify: `convex/schema.ts`
 
@@ -50,9 +59,11 @@
     retractedAt: v.optional(v.number()),
     retractedBy: v.optional(v.string()),
   })
-    .index("by_brand", ["brandId", "status"])
-    .index("by_from", ["fromPersonId"])
-    .index("by_to", ["toPersonId"]),
+    // Codex-F7: Pair-Lookup + Adjazenz brauchen brand/kind/status im Index,
+    // sonst blockiert ein same_company-Eintrag same_person-Lookups bzw. wird alles Scan.
+    .index("by_pair", ["brandId", "kind", "fromPersonId", "toPersonId", "status"])
+    .index("by_from", ["brandId", "kind", "status", "fromPersonId"])
+    .index("by_to", ["brandId", "kind", "status", "toPersonId"]),
 
   identityReview: defineTable({
     brandId: v.id("brands"),
@@ -70,8 +81,22 @@
     createdAt: v.number(),
   })
     .index("by_brand_status", ["brandId", "status"])
-    .index("by_pair", ["personAId", "personBId"]),
+    .index("by_pair", ["brandId", "kind", "personAId", "personBId", "status"]),
+
+  // Codex-F11: revisionsfest heißt append-only — Reviews sind mutierbar,
+  // der Audit-Trail nicht. Jedes Ereignis ein unveränderliches Event.
+  identityAudit: defineTable({
+    brandId: v.id("brands"),
+    ts: v.number(),
+    event: v.string(),   // candidate_created | ai_scored | approved | rejected | edge_created | edge_retracted
+    actor: v.string(),   // "system" | "matcher" | Admin-User-Id
+    reviewId: v.optional(v.id("identityReview")),
+    edgeId: v.optional(v.id("personEdges")),
+    payload: v.string(), // JSON-Snapshot (bei ai_scored inkl. vollständigem aiLog)
+  }).index("by_brand_ts", ["brandId", "ts"]),
 ```
+
+Zusatzregeln (Codex-F11): Ein entschiedenes Review DARF nach Kanten-Retraction oder neuer Evidenz neu geöffnet werden (Re-Review statt Dauer-Skip); Widerrufs-/Lösch-Hook: Person-Löschung retracted ihre Kanten, öffnet betroffene Reviews und triggert Facts-Recompute — manueller Vollzugstest ist Teil der Abnahme.
 
 * [ ] Step 1: Schema + `npx convex dev --once`. Step 2: Env `IDENTITY_MERGE_ENABLED=false` (dev+prod). Commit.
 
@@ -99,7 +124,8 @@
 
 **Files:** Create: `convex/actions/identityMatcher.ts` ("use node")
 
-* **Kandidaten-Suche (ungated, reine DB-Arbeit, Blocking vor jedem LLM):** Personen-Paare derselben Brand mit (a) gleichem phoneHmac (shared), (b) Conversions binnen **±10 Minuten** MIT Zusatzsignal — komplementäre Schlüsseltypen (einer email-only, einer phone-only) ODER gleiche Kampagne/Landingpage (Review-F11: ±1 h ohne Zusatzsignal wäre O(n²)-LLM-Flut) —, (c) künftig HubSpot-Namensvarianten. Hartes Limit: max. 20 neue Kandidaten je Lauf, Überhang geloggt. Nur normalisierte Paare ohne Kante/Review. Kandidaten landen SOFORT als identityReview (confidence 0, rationale „Kandidat — KI-Bewertung ausstehend").
+* **Kandidaten-Suche (gated auf `IDENTITY_CANDIDATES_ENABLED`, reine DB-Arbeit, Blocking vor jedem LLM):** Personen-Paare derselben Brand mit (a) gleichem phoneHmac (Review-Kandidat), (b) Conversions binnen **±10 Minuten** (Sliding Window über `by_brand_ts`, Codex-F8: kein naiver O(n²)-Scan) MIT Zusatzsignal: komplementäre **Kontakt-Schlüssel-Projektion** — definiert als Projektion auf {emailHmac, phoneHmac, hubspotContactId}; pid/gaClientId zählen NICHT ins Muster (Codex-F5) —, (c) künftig HubSpot-Namensvarianten. Deterministische Ordnung (ts aufsteigend) + Cursor für den Überhang; max. 20 NEUE Kandidaten je Lauf, Rest im nächsten Lauf (kein stilles Verwerfen — der reale 13-s-Fall ist über die Ordnung garantiert im ersten Lauf). Nur normalisierte Paare ohne aktive Kante/offenes Review. Kandidat → identityReview (confidence 0) + identityAudit `candidate_created`.
+* **Architektur (Codex-F6):** Die Node-Action (`"use node"`) macht NUR den LLM-Call; Enumeration, Review-Inserts und -Updates leben als internalQuery/internalMutation in `convex/identity.ts` (Node-Actions haben kein ctx.db — Muster wie computeAttribution).
 * **LLM-Bewertung (gated auf `IDENTITY_MATCHER_LLM_ENABLED`):** je offener Kandidat EIN Claude-Aufruf (App-Runtime-Key, Modell claude-haiku-4-5). **Evidenz-Allowlist (Review-F3), abschließend:** Zeitdifferenz der Conversions, Schlüsseltyp-Muster (email-only/phone-only/…), Conversion-Typ+Wert, Kampagnen-/Adgroup-IDs (numerisch), Geräteklasse. **Explizit VERBOTEN: urlPath, keyword, HMAC-Werte oder -Präfixe** (urlPath/keyword können Klartext-PII tragen; HMAC-Präfixe nützen dem Matching nichts). Ausgabe strukturiert {same_person, confidence, rationale}; Update des Review-Eintrags mit vollständigem `aiLog`.
 * NIE Kanten-Writes aus diesem Pfad.
 * Cron: wöchentlich (Montag 07:30) + manuell; bei LLM-Flag aus endet der Lauf nach der Kandidaten-Enumeration.
@@ -110,13 +136,15 @@
 **Files:** Modify: `src/app/[brand]/attribution/page.tsx` (neuer Tab „Identitäten"), `convex/identity.ts` (+admin-Queries/Mutations), `convex/attribution.ts` + `convex/actions/computeAttribution.ts` (Kanonisierungs-Map)
 
 * Review-Tab: offene Vorschläge mit Confidence, Begründung, Evidenz-Vergleich, aiLog aufklappbar; Bestätigen/Ablehnen (approve schreibt normalisierte Kante source "review_approved" + createdBy Admin — NUR bei `IDENTITY_MERGE_ENABLED`, sonst Gate-Hinweis); Entscheidungs-Historie.
-* **Cluster-Gathering (F1-Fix, betrifft DREI Leser — Review-F7, kein Ein-Punkt-Eingriff):** neuer interner Loader `clusterFor(personId)` → Mitglieder via canonicalMap → `clusterKeys` (alle pids + personIds des Clusters) → Touchpoints als Union über `by_pid` je pid UND `by_person` je Mitglied; Conversions als Union über `by_person` je Mitglied. Konsumenten: (1) `touchpointsFor` (Signatur ändert sich auf {brandId, personIds[], pids[]}), (2) `journeyList`, (3) Engine-Loader in `computeAttribution`. attributionFacts-Schema unverändert.
-* **Approve-Recompute (Review-F6):** approve/reject triggert `ctx.scheduler.runAfter(0, computeAttribution, {brandSlug})` — sonst zeigen die vorberechneten Facts den Merge erst nach dem Nacht-Cron, während journeyList ihn live zeigt.
+* **Cluster-Gathering (betrifft DREI Leser):** Graph-Snapshot je Brand EINMAL je Lauf laden (canonicalMap), dann `clusterKeys` (alle pids + personIds des Clusters) → Touchpoints als Union über `by_pid` je pid UND `by_person` je Mitglied; Conversions als Union über `by_person` je Mitglied. Konsumenten: (1) `touchpointsFor` (Signatur {brandId, personIds[], pids[]}), (2) `journeyList`, (3) Engine-Loader. attributionFacts-Schema unverändert.
+* **journeyList gruppiert nach Cluster (Codex-F3):** Ausgabe je KANONISCHER Person: eine Cluster-Zeile mit `conversions[]` (die zwei Test-Leads = EINE Zeile mit zwei Anfragen und gemeinsamer Timeline); Limit erst NACH der Gruppierung anwenden, Cluster-Duplikate unterdrücken. Facts behalten bewusst beide Conversions einzeln (ohne Touchpoints beide korrekt unattributed) — „zusammenrechnen" heißt gemeinsame Journey, NIE Kollabieren zweier Anfragen zu einer.
+* **Approve-Recompute mit Koaleszenz (Codex-F4):** approve setzt nur `recomputeRequested=true` in attributionMeta + plant EINEN Runner via `ctx.scheduler.runAfter(0, internal.actions.computeAttribution.computeAttribution, …)`, wenn nicht schon einer aussteht (Lease-Feld). Die Engine reserviert ihre Ziel-Generation ATOMAR (neue Mutation `reserveGeneration`: vergibt max(active, lastReserved)+1 und merkt lastReserved) — zwei parallele Läufe können so nie in dieselbe Generation schreiben; CAS-Swap bleibt zweite Verteidigungslinie. Scheduled Actions sind at-most-once: der Nacht-Cron bleibt Backstop. Reject triggert KEINEN Recompute (keine Kante geändert).
+* **Edge-Write-Validierung (Codex-F9):** Vor jedem Kanten-Insert beide persons laden und `personA.brandId === personB.brandId === edge.brandId` erzwingen — der pure Helper bekommt eine validierte Person→Brand-Map, `v.id("persons")` prüft nur die Tabelle.
 * [ ] Bauen, `npm run build`, dev-Smoke (Flag an in dev: approve → Journey zeigt beide Conversions einer Person; nach dem getriggerten Engine-Lauf rechnet auch die Attribution zusammen). Commit.
 
 ### Task 6: Cron + Prod-Deploy (Flag AUS) + Doku
 
-* [ ] Crons: `runDeterministicMerge` täglich 07:15 (vor Attribution 07:20!), Matcher wöchentlich. Prod-Deploy mit `IDENTITY_MERGE_ENABLED=false` — Queue füllt sich, nichts merged. Mission Control + Memory: „C gebaut, wartet auf DSB-Freigabe; Aktivierung = ein Env-Flip + Review-Abarbeitung".
+* [ ] Crons: `runDeterministicMerge` täglich 07:15 (vor Attribution 07:20!), Matcher wöchentlich. Prod-Deploy mit ALLEN DREI Flags aus — in prod läuft von Paket C NICHTS, auch keine Queue-Befüllung (Codex-F10: Kandidaten-Enumeration ist bereits Identitäts-Profiling; DSB-Fragen F3/F6 entscheiden über dev-Tests und Aktivierungsreihenfolge). Mission Control + Memory: „C gebaut, dreistufig gesperrt; Aktivierung = DSB-Freigabe → Flags in Reihenfolge CANDIDATES → LLM → MERGE".
 
 ## Bewusst NICHT in diesem Plan
 
@@ -135,4 +163,4 @@ Auto-Merge über Telefon/Namen (nie automatisch), Cross-Brand-Identitäten (jede
 * Robustheit: Paar-Normalisierung (F4), deterministischer Repräsentant ehrlich als technischer Schlüssel (F5), Approve-Recompute (F6), Brand-Partition (F12), Kandidaten-Limit + enge Kriterien (F11). ✓
 * Abnahmetest deterministisch über die Kandidaten-Enumeration statt LLM-Confidence (F10). ✓
 * Ehrliche Erwartung: deterministische Email-Merges werden erst mit HubSpot real (F9) — der Sofort-Nutzen ist shared-Erkennung + der reale 2-Leads-Fall in der Queue.
-* Review-Historie: v1→v2 auf Basis des Opus/deep-reasoner-Reviews (Codex-Quota erschöpft, Reset 20.07. — optionaler Codex-Zweitreview danach).
+* Review-Historie: v1→v2 Opus/deep-reasoner (12 Findings, u. a. pid-Union-Blocker); v2→v3 Codex gpt-5.6-sol (11 Findings, u. a. shared-Logik-Widerspruch, Ingest-Key-Lücke, Cluster-Gruppierung, Generation-Race, Enumeration-Gate, Audit-Trail). Beide Reviews unabhängig, beide fanden Punkte, die der jeweils andere übersah — das Zwei-Reviewer-Muster hat sich für dieses Paket doppelt bezahlt gemacht.
