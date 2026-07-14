@@ -761,4 +761,35 @@ export default defineSchema({
     refreshToken: v.string(),
     updatedAt: v.number(),
   }).index("by_provider", ["provider"]),
+
+  // ── Datalake Paket D: Attribution (Plan: docs/superpowers/plans/2026-07-14-datalake-paket-d-attribution.md) ──
+  attributionFacts: defineTable({
+    brandId: v.id("brands"),
+    generation: v.number(),
+    model: v.string(),             // "first" | "last" | "last_non_direct" | "linear" | "position" | "time_decay"
+    conversionId: v.id("conversions"),
+    conversionType: v.string(),    // denormalisiert für Aggregation ohne Join
+    conversionTs: v.number(),
+    value: v.number(),             // 0 wenn Conversion ohne value
+    currency: v.string(),
+    weight: v.number(),            // Anteil dieses Touchpoints an der Conversion (Σ je conversion+model = 1)
+    touchpointId: v.optional(v.id("touchpoints")), // fehlt beim "direct"-Fact und beim gclid-Backstop
+    // Dimensionen des Touchpoints, denormalisiert:
+    channel: v.string(),           // utm_source | "direct"
+    campaignId: v.optional(v.string()),
+    adgroupId: v.optional(v.string()),
+    adId: v.optional(v.string()),
+  })
+    .index("by_brand_gen_model_ts", ["brandId", "generation", "model", "conversionTs"])
+    .index("by_conversion", ["conversionId", "generation"]),
+
+  // Aktive Facts-Generation je Brand — Leser sehen nur diese; Swap erst nach fehlerfreiem Komplettlauf.
+  attributionMeta: defineTable({
+    brandId: v.id("brands"),
+    activeGeneration: v.number(),
+    computedAt: v.number(),
+    lookbackDays: v.number(),
+    conversions: v.number(),
+    facts: v.number(),
+  }).index("by_brand", ["brandId"]),
 });
