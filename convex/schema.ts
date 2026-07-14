@@ -719,4 +719,46 @@ export default defineSchema({
   })
     .index("by_nonce", ["nonce"])
     .index("by_ts", ["ts"]),
+
+  // ── Datalake Paket B: Ad-Level-Kosten (Plan: docs/superpowers/plans/2026-07-14-datalake-paket-b-kosten.md) ──
+  adCosts: defineTable({
+    brandId: v.id("brands"),        // Klassifikation (detectBrand), NICHT Teil der Identität
+    channel: v.string(),            // "google" | "bing" | "facebook"
+    sourceAccount: v.string(),      // Plattform-Konto: Google-CID | MS-Account-ID | "act_…"
+    date: v.string(),               // "YYYY-MM-DD" im Konto-Tag der jeweiligen Plattform
+    campaignId: v.string(),
+    campaignName: v.optional(v.string()),
+    adgroupId: v.string(),          // "" wenn Ebene nicht existiert (z. B. PMax)
+    adId: v.string(),               // "" wenn Ebene nicht existiert
+    impressions: v.number(),
+    clicks: v.number(),             // Meta: inline_link_clicks (Vergleichbarkeit mit Google-Klicks)
+    spend: v.number(),              // EUR, ungerundet — Summen müssen Plattformtotalen entsprechen
+    currency: v.string(),
+    syncedAt: v.number(),
+  })
+    // by_unique deckt per Präfix (channel, sourceAccount, date) auch den Stale-Sweep ab.
+    .index("by_unique", ["channel", "sourceAccount", "date", "campaignId", "adgroupId", "adId"])
+    .index("by_brand_date", ["brandId", "date"]),
+
+  clickViews: defineTable({
+    brandId: v.id("brands"),
+    sourceAccount: v.string(),
+    gclid: v.string(),
+    date: v.string(),
+    campaignId: v.string(),
+    adgroupId: v.string(),
+    adId: v.string(),
+    clickType: v.optional(v.string()),
+    keyword: v.optional(v.string()),
+    syncedAt: v.number(),
+  })
+    .index("by_gclid", ["gclid", "date"])
+    .index("by_brand_date", ["brandId", "date"]),
+
+  // MS rotiert Refresh-Tokens; der jeweils neueste muss persistiert werden, sonst stirbt der Cron.
+  oauthTokens: defineTable({
+    provider: v.string(),           // "msads"
+    refreshToken: v.string(),
+    updatedAt: v.number(),
+  }).index("by_provider", ["provider"]),
 });
