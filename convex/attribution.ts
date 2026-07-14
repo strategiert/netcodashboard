@@ -513,6 +513,18 @@ export const qaAlerts = query({
       alerts.push(`click_view-Register zuletzt vor ${Math.round((now - newestClick.syncedAt) / 3_600_000)} h aktualisiert — Cron prüfen.`);
     }
 
+    // (l) Indexierungs-Stichprobe: Sitemap-URLs, die Google nicht im Index führt.
+    const coverage = await ctx.db
+      .query("indexCoverage")
+      .withIndex("by_brand_date", (q) => q.eq("brandId", brand._id))
+      .order("desc")
+      .first();
+    if (coverage && coverage.notIndexed > 0) {
+      alerts.push(
+        `${coverage.notIndexed}/${coverage.inspected} geprüfte Sitemap-URLs nicht im Google-Index (Stichprobe ${coverage.date}) — Details in indexCoverage.`,
+      );
+    }
+
     return alerts;
   },
 });

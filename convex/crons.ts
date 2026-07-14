@@ -27,6 +27,11 @@ crons.daily("sync ad costs meta",   { hourUTC: 6, minuteUTC: 55 }, internal.acti
 crons.daily("sync ad costs ms",     { hourUTC: 6, minuteUTC: 58 }, internal.actions.syncMsCosts.syncMsCosts, {});
 crons.daily("sync click views",     { hourUTC: 7, minuteUTC: 8 },  internal.actions.syncClickViews.syncClickViews, { days: 3 });
 
+// GSC Brand/Non-Brand-Split (Regex) — nach dem GSC-Total-Sync.
+crons.daily("sync gsc brand split", { hourUTC: 6, minuteUTC: 5 }, internal.actions.syncGSCBrandSplit.syncGSCBrandSplit, {});
+// Indexierungs-Stichprobe (URL Inspection, rotierend über die Sitemap) — wöchentlich reicht.
+crons.weekly("sync index coverage", { dayOfWeek: "tuesday", hourUTC: 7, minuteUTC: 40 }, internal.actions.syncIndexCoverage.syncIndexCoverage, {});
+
 // Anonyme Web-Sessions aus Analytics Engine (Definition: 30-Min-Lücke, Tages-Hash).
 crons.daily("sync web sessions",    { hourUTC: 7, minuteUTC: 12 }, internal.actions.syncWebSessions.syncWebSessions, { days: 3 });
 

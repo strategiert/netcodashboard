@@ -799,6 +799,29 @@ export default defineSchema({
     syncedAt: v.number(),
   }).index("by_brand_date", ["brandId", "date"]),
 
+  // GSC Brand/Non-Brand-Split (Regex-Filter der Search-Analytics-API).
+  gscQuerySplitDaily: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),
+    brandClicks: v.number(),
+    brandImpressions: v.number(),
+    nonBrandClicks: v.number(),
+    nonBrandImpressions: v.number(),
+    topNonBrandQueries: v.string(), // JSON [{query, clicks, impressions, position}] Top 5
+    syncedAt: v.number(),
+  }).index("by_brand_date", ["brandId", "date"]),
+
+  // Indexierungs-Monitoring (URL-Inspection-Stichprobe aus der Sitemap).
+  indexCoverage: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),
+    inspected: v.number(),
+    indexed: v.number(),
+    notIndexed: v.number(),
+    failures: v.string(),   // JSON [{url, verdict, coverageState}] nur die Nicht-Indexierten
+    syncedAt: v.number(),
+  }).index("by_brand_date", ["brandId", "date"]),
+
   // Aktive Facts-Generation je Brand — Leser sehen nur diese; Swap erst nach fehlerfreiem Komplettlauf.
   attributionMeta: defineTable({
     brandId: v.id("brands"),
