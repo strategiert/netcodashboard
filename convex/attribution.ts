@@ -434,6 +434,85 @@ export const qaAlerts = query({
         );
       }
     }
+
+    // (e) Kosten-Sync-Ausfall je Kanal: Kanal hatte in den 7 Tagen davor Spend,
+    // aber für gestern existiert keine einzige Zeile → Connector prüfen.
+    const yesterday = new Date(now - 86_400_000).toISOString().slice(0, 10);
+    const weekAgo = new Date(now - 8 * 86_400_000).toISOString().slice(0, 10);
+    const recentCosts = await ctx.db
+      .query("adCosts")
+      .withIndex("by_brand_date", (q) => q.eq("brandId", brand._id).gte("date", weekAgo))
+      .collect();
+    const channelsWithSpend = new Set(recentCosts.filter((c) => c.spend > 0 && c.date < yesterday).map((c) => c.channel));
+    const channelsYesterday = new Set(recentCosts.filter((c) => c.date === yesterday).map((c) => c.channel));
+    for (const ch of channelsWithSpend) {
+      if (!channelsYesterday.has(ch)) {
+        alerts.push(`Kanal ${ch}: keine Kostenzeilen für ${yesterday}, obwohl zuvor Spend floss — Sync/Konto prüfen.`);
+      }
+    }
+
+    // (f) Kosten-Daten veraltet: neuester syncedAt aller adCosts älter als 26 h.
+    if (recentCosts.length > 0) {
+      const newestSync = Math.max(...recentCosts.map((c) => c.syncedAt));
+      if (now - newestSync > 26 * 3_600_000) {
+        alerts.push(`Kosten zuletzt vor ${Math.round((now - newestSync) / 3_600_000)} h synchronisiert — Crons prüfen.`);
+      }
+    }
+
+    // (g) Fremdwährung eingeschleppt: alles außer EUR verfälscht Summen ungewarnt.
+    const foreignCurrency = recentCosts.find((c) => c.currency && c.currency !== "EUR");
+    if (foreignCurrency) {
+      alerts.push(`adCosts enthält Währung ${foreignCurrency.currency} (${foreignCurrency.channel}) — Summen sind nicht mehr EUR-rein.`);
+    }
+
+    // (h) Unbekannte utm_source-Werte: bezahlter Traffic, der keinem Kostenkanal
+    // zuordenbar ist (Tippfehler im Template?), ab 5 Vorkommen in 7 Tagen.
+    const recentTps = await ctx.db
+      .query("touchpoints")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id).gte("ts", now - 7 * 86_400_000))
+      .collect();
+    const unknownSources = new Map<string, number>();
+    for (const t of recentTps) {
+      const ch = (t.channel || "direct").toLowerCase();
+      if (ch !== "direct" && !normalizeChannel(ch) && !["newsletter", "email", "linkedin"].includes(ch)) {
+        unknownSources.set(ch, (unknownSources.get(ch) ?? 0) + 1);
+      }
+    }
+    for (const [src, count] of unknownSources) {
+      if (count >= 5) alerts.push(`Unbekannte utm_source „${src}" (${count}× in 7 Tagen) — Kampagnen-Template prüfen.`);
+    }
+
+    // (i) ClickID-Verlust: Ad-Touchpoints (google/bing/facebook) ohne gespeicherte Click-ID.
+    const adTps = recentTps.filter((t) => normalizeChannel(t.channel || ""));
+    if (adTps.length >= 10) {
+      const withClickId = adTps.filter((t) => t.clickIds && (t.clickIds.gclid || t.clickIds.fbclid || t.clickIds.msclkid)).length;
+      const lossPct = Math.round((1 - withClickId / adTps.length) * 100);
+      if (lossPct > 50) {
+        alerts.push(`${lossPct} % der Anzeigen-Touchpoints (7 Tage) ohne Click-ID — Auto-Tagging/Consent-Kopplung prüfen.`);
+      }
+    }
+
+    // (j) Conversion-Duplikate: gleiche eventId mehrfach (Dedupe-Anker verletzt).
+    const recentConvs = await ctx.db
+      .query("conversions")
+      .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id).gte("ts", now - 7 * 86_400_000))
+      .collect();
+    const eventIds = new Map<string, number>();
+    for (const c of recentConvs) eventIds.set(c.eventId, (eventIds.get(c.eventId) ?? 0) + 1);
+    for (const [id, count] of eventIds) {
+      if (count > 1) { alerts.push(`Conversion-eventId ${id.slice(0, 8)}… existiert ${count}× — Dedupe verletzt.`); break; }
+    }
+
+    // (k) click_view-Register veraltet (Backstop verliert Tage; 90-Tage-Frist!).
+    const newestClick = await ctx.db
+      .query("clickViews")
+      .withIndex("by_brand_date", (q) => q.eq("brandId", brand._id))
+      .order("desc")
+      .first();
+    if (newestClick && now - newestClick.syncedAt > 26 * 3_600_000) {
+      alerts.push(`click_view-Register zuletzt vor ${Math.round((now - newestClick.syncedAt) / 3_600_000)} h aktualisiert — Cron prüfen.`);
+    }
+
     return alerts;
   },
 });
