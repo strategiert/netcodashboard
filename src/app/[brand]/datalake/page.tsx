@@ -18,6 +18,7 @@ export default function DatalakePage() {
   const params = useParams();
   const brandSlug = params.brand as string;
   const data = useQuery(api.datalake.overview, { brandSlug, days: 14 });
+  const sessions = useQuery(api.webSessions.range, { brandSlug, days: 14 });
 
   if (data === undefined) {
     return <div className="p-6 text-sm text-muted-foreground">Lade Datalake …</div>;
@@ -54,6 +55,49 @@ export default function DatalakePage() {
           </Card>
         ))}
       </div>
+
+      {/* Anonyme Besuche (Sessionisierung der Basismessung) */}
+      <Card>
+        <CardHeader><CardTitle>Anonyme Besuche (ohne Cookies, 30-Min-Regel)</CardTitle></CardHeader>
+        <CardContent>
+          {sessions === undefined && <p className="text-sm text-muted-foreground">Lade Besuche …</p>}
+          {sessions && sessions.length === 0 && (
+            <p className="text-sm text-muted-foreground">Noch keine Session-Aggregate — Sync läuft täglich 09:12.</p>
+          )}
+          {sessions && sessions.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-1.5 pr-4 font-medium">Tag</th>
+                    <th className="py-1.5 pr-4 font-medium text-right">Besuche</th>
+                    <th className="py-1.5 pr-4 font-medium text-right">Besucher</th>
+                    <th className="py-1.5 pr-4 font-medium text-right">Seitenaufrufe</th>
+                    <th className="py-1.5 pr-4 font-medium text-right">Seiten/Besuch</th>
+                    <th className="py-1.5 font-medium text-right">Kampagnen-Besuche</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...sessions].sort((a, b) => b.date.localeCompare(a.date)).map((s) => (
+                    <tr key={s.date} className="border-b last:border-0">
+                      <td className="py-1.5 pr-4">{shortDay(s.date)}</td>
+                      <td className="py-1.5 pr-4 text-right tabular-nums font-medium">{s.sessions.toLocaleString("de-DE")}</td>
+                      <td className="py-1.5 pr-4 text-right tabular-nums">{s.visitors.toLocaleString("de-DE")}</td>
+                      <td className="py-1.5 pr-4 text-right tabular-nums">{s.pageviews.toLocaleString("de-DE")}</td>
+                      <td className="py-1.5 pr-4 text-right tabular-nums">{s.pagesPerSession.toLocaleString("de-DE")}</td>
+                      <td className="py-1.5 text-right tabular-nums">{s.campaignSessions.toLocaleString("de-DE")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Definition: gleiche Tages-Kennung, Inaktivität unter 30 Minuten; harte Tagesgrenze (keine
+                tagesübergreifende Wiedererkennung). Quelle: eigene anonyme Basismessung (Analytics Engine).
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Tagesverlauf */}
       <Card>

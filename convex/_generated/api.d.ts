@@ -33,6 +33,7 @@ import type * as actions_syncPublerAccounts from "../actions/syncPublerAccounts.
 import type * as actions_syncPublerPosts from "../actions/syncPublerPosts.js";
 import type * as actions_syncSERanking from "../actions/syncSERanking.js";
 import type * as actions_syncTraffic from "../actions/syncTraffic.js";
+import type * as actions_syncWebSessions from "../actions/syncWebSessions.js";
 import type * as adCosts from "../adCosts.js";
 import type * as adsMapping from "../adsMapping.js";
 import type * as aiVisibility from "../aiVisibility.js";
@@ -61,6 +62,7 @@ import type * as seranking from "../seranking.js";
 import type * as stakeholders from "../stakeholders.js";
 import type * as teamBoard from "../teamBoard.js";
 import type * as users from "../users.js";
+import type * as webSessions from "../webSessions.js";
 
 import type {
   ApiFromModules,
@@ -94,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "actions/syncPublerPosts": typeof actions_syncPublerPosts;
   "actions/syncSERanking": typeof actions_syncSERanking;
   "actions/syncTraffic": typeof actions_syncTraffic;
+  "actions/syncWebSessions": typeof actions_syncWebSessions;
   adCosts: typeof adCosts;
   adsMapping: typeof adsMapping;
   aiVisibility: typeof aiVisibility;
@@ -122,6 +125,7 @@ declare const fullApi: ApiFromModules<{
   stakeholders: typeof stakeholders;
   teamBoard: typeof teamBoard;
   users: typeof users;
+  webSessions: typeof webSessions;
 }>;
 
 /**

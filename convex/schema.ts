@@ -785,6 +785,20 @@ export default defineSchema({
     .index("by_brand_gen_model_ts", ["brandId", "generation", "model", "conversionTs"])
     .index("by_conversion", ["conversionId", "generation"]),
 
+  // Anonyme Web-Sessions (Tagesaggregat aus Cloudflare Analytics Engine).
+  // Session-Definition: gleiche Tages-Hash-Kennung, Lücke < 30 Min; harte
+  // Tagesgrenze (Hash rotiert täglich, keine tagesübergreifende Wiedererkennung).
+  webSessionDaily: defineTable({
+    brandId: v.id("brands"),
+    date: v.string(),          // YYYY-MM-DD (UTC — Rotationsgrenze des Hashes)
+    sessions: v.number(),
+    visitors: v.number(),      // eindeutige Tages-Hashes
+    pageviews: v.number(),
+    pagesPerSession: v.number(),
+    campaignSessions: v.number(), // Sessions mit utm_source am Einstieg
+    syncedAt: v.number(),
+  }).index("by_brand_date", ["brandId", "date"]),
+
   // Aktive Facts-Generation je Brand — Leser sehen nur diese; Swap erst nach fehlerfreiem Komplettlauf.
   attributionMeta: defineTable({
     brandId: v.id("brands"),

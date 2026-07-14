@@ -27,6 +27,9 @@ crons.daily("sync ad costs meta",   { hourUTC: 6, minuteUTC: 55 }, internal.acti
 crons.daily("sync ad costs ms",     { hourUTC: 6, minuteUTC: 58 }, internal.actions.syncMsCosts.syncMsCosts, {});
 crons.daily("sync click views",     { hourUTC: 7, minuteUTC: 8 },  internal.actions.syncClickViews.syncClickViews, { days: 3 });
 
+// Anonyme Web-Sessions aus Analytics Engine (Definition: 30-Min-Lücke, Tages-Hash).
+crons.daily("sync web sessions",    { hourUTC: 7, minuteUTC: 12 }, internal.actions.syncWebSessions.syncWebSessions, { days: 3 });
+
 // Datalake Paket D: Attribution nach den Kosten-Syncs neu berechnen (Generation-Swap).
 crons.daily("compute attribution",  { hourUTC: 7, minuteUTC: 20 }, internal.actions.computeAttribution.computeAttribution, {});
 
