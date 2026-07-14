@@ -773,9 +773,11 @@ export default defineSchema({
     value: v.number(),             // 0 wenn Conversion ohne value
     currency: v.string(),
     weight: v.number(),            // Anteil dieses Touchpoints an der Conversion (Σ je conversion+model = 1)
-    touchpointId: v.optional(v.id("touchpoints")), // fehlt beim "direct"-Fact und beim gclid-Backstop
+    modelVersion: v.optional(v.string()), // "v1" — optional nur wegen Bestandsdaten der Erst-Generation
+    touchpointId: v.optional(v.id("touchpoints")), // fehlt beim "unattributed"-Fact und beim gclid-Backstop
     // Dimensionen des Touchpoints, denormalisiert:
-    channel: v.string(),           // utm_source | "direct"
+    channel: v.string(),           // utm_source | "direct" | "unattributed" (kein zuordenbarer Touchpoint!)
+    sourceAccount: v.optional(v.string()), // Plattform-Konto (nur wenn bekannt, z. B. gclid-Backstop)
     campaignId: v.optional(v.string()),
     adgroupId: v.optional(v.string()),
     adId: v.optional(v.string()),

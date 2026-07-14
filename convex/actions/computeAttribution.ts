@@ -12,6 +12,17 @@ import {
 
 const LOOKBACK_DAYS_DEFAULT = 90;
 const BATCH = 500;
+const MODEL_VERSION = "v1";
+
+// "Sessionisierung light" v1: Direct-Pageviews sind Browsing-Intensität, kein
+// Marketing-Einfluss — nur akquisitions-relevante Touchpoints gehen in die Modelle
+// (UTM-Landungen, Klick-/Mail-/Call-Events). Echte Sessionisierung folgt mit Paket C.
+const ACQUISITION_TYPES = new Set([
+  "ad_click", "email_click", "nl_click", "call", "meeting", "chat", "fair_contact", "form_start",
+]);
+function isAcquisitionTouchpoint(t: TP & { type?: string }): boolean {
+  return t.channel !== "direct" || ACQUISITION_TYPES.has(t.type ?? "");
+}
 
 type BrandResult = {
   slug: string; generation: number; conversions: number; facts: number; deletedOld: number;
@@ -40,34 +51,53 @@ export const computeAttribution = internalAction({
       });
       const generation = oldGeneration + 1;
 
+      // Pre-Cleanup: Orphan-Facts eines früher abgebrochenen Laufs derselben
+      // Ziel-Generation entfernen, sonst würden sie sich mit unseren mischen.
+      for (;;) {
+        const res = await ctx.runMutation(internal.attribution.deleteGeneration, {
+          brandId: brand.brandId, generation, batch: BATCH,
+        });
+        if (res.done) break;
+      }
+
       const facts: any[] = [];
       for (const c of conversions) {
         const tps = await ctx.runQuery(internal.attribution.touchpointsFor, {
           brandId: brand.brandId, personId: c.personId, pid: c.pid,
         });
-        let selected: TP[] = selectTouchpoints(
-          tps.map((t: any) => ({ id: t.id, ts: t.ts, channel: t.channel, campaignId: t.campaignId, adgroupId: t.adgroupId, adId: t.adId })),
+        let selected: (TP & { type?: string; sourceAccount?: string })[] = selectTouchpoints(
+          tps
+            .filter((t: any) => isAcquisitionTouchpoint(t))
+            .map((t: any) => ({ id: t.id, ts: t.ts, type: t.type, channel: t.channel, campaignId: t.campaignId, adgroupId: t.adgroupId, adId: t.adId })),
           c.ts, lookbackMs,
         );
 
         // gclid-Backstop (Paket B clickViews): wenn kein Touchpoint Ad-Level trägt,
-        // liefert der gespeicherte Klick die Kampagnen-/Ad-Zuordnung.
+        // liefert der gespeicherte Klick die Kampagnen-/Ad-Zuordnung — mit dem
+        // ECHTEN Klickdatum (Mittag UTC als neutraler Tagespunkt), sonst gewinnt
+        // der Backstop fälschlich jedes Last-/Time-Decay-Modell.
         if (c.clickIds?.gclid && !selected.some((t) => t.adId)) {
           const cv = await ctx.runQuery(internal.attribution.clickViewByGclid, {
             brandId: brand.brandId, gclid: c.clickIds.gclid,
           });
           if (cv) {
-            selected = [...selected, {
-              id: `gclid-backstop`, ts: c.ts, channel: "google",
-              campaignId: cv.campaignId, adgroupId: cv.adgroupId, adId: cv.adId,
-            }];
+            const clickTs = Math.min(Date.parse(`${cv.date}T12:00:00Z`), c.ts);
+            selected = selectTouchpoints(
+              [...selected, {
+                id: `gclid-backstop`, ts: clickTs, channel: "google",
+                campaignId: cv.campaignId, adgroupId: cv.adgroupId, adId: cv.adId,
+                sourceAccount: cv.sourceAccount,
+              }],
+              c.ts, lookbackMs,
+            );
           }
         }
 
         for (const model of MODELS) {
           if (selected.length === 0) {
-            // Keine Touchpoints im Lookback → kompletter Credit an "direct".
-            facts.push(baseFact(brand.brandId, generation, model, c, 1, undefined, "direct"));
+            // Kein zuordenbarer Touchpoint ≠ "direct"! Ehrlich als unattributed ausweisen
+            // (fehlender pid/Klick-Match ist ein Coverage-Problem, keine Direct-Sitzung).
+            facts.push(baseFact(brand.brandId, generation, model, c, 1, undefined, "unattributed"));
             continue;
           }
           const weights = computeWeights(model, selected, c.ts);
@@ -80,7 +110,7 @@ export const computeAttribution = internalAction({
             facts.push(baseFact(
               brand.brandId, generation, model, c, weights[i],
               t.id === "gclid-backstop" ? undefined : (t.id as any),
-              t.channel, t.campaignId, t.adgroupId, t.adId,
+              t.channel, t.campaignId, t.adgroupId, t.adId, t.sourceAccount,
             ));
           });
         }
@@ -89,8 +119,9 @@ export const computeAttribution = internalAction({
       for (let i = 0; i < facts.length; i += BATCH) {
         await ctx.runMutation(internal.attribution.insertFacts, { facts: facts.slice(i, i + BATCH) });
       }
+      // CAS-Swap: schlägt fehl, wenn ein paralleler Lauf inzwischen aktiviert hat.
       await ctx.runMutation(internal.attribution.swapGeneration, {
-        brandId: brand.brandId, generation, lookbackDays,
+        brandId: brand.brandId, generation, expectedGeneration: oldGeneration, lookbackDays,
         conversions: conversions.length, facts: facts.length,
       });
 
@@ -114,6 +145,7 @@ export const computeAttribution = internalAction({
 function baseFact(
   brandId: any, generation: number, model: string, c: any, weight: number,
   touchpointId: any, channel: string, campaignId?: string, adgroupId?: string, adId?: string,
+  sourceAccount?: string,
 ) {
   return {
     brandId, generation, model,
@@ -123,7 +155,8 @@ function baseFact(
     value: c.value ?? 0,
     currency: c.currency,
     weight,
+    modelVersion: MODEL_VERSION,
     touchpointId,
-    channel, campaignId, adgroupId, adId,
+    channel, sourceAccount, campaignId, adgroupId, adId,
   };
 }

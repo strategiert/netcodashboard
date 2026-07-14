@@ -89,7 +89,10 @@ function Journey({ j }: { j: NonNullable<ReturnType<typeof useJourneys>>[number]
       {open && (
         <div className="border-t px-4 py-3 space-y-1.5">
           {j.timeline.length === 0 && (
-            <p className="text-sm text-muted-foreground">Keine Touchpoints — Conversion kam ohne vorherige getrackte Sitzung (direct).</p>
+            <p className="text-sm text-muted-foreground">
+              Keine zuordenbaren Touchpoints — Conversion konnte nicht mit einer getrackten Sitzung
+              verknüpft werden (fehlender pid-/Klick-Match). Das ist ein Coverage-Signal, nicht zwingend „direct".
+            </p>
           )}
           {j.timeline.map((t, i) => (
             <div key={i} className="flex items-center gap-2 text-sm">
@@ -178,7 +181,10 @@ export default function AttributionPage() {
           <Card>
             <CardHeader><CardTitle>Nach Kanal</CardTitle></CardHeader>
             <CardContent>
-              <PerfTable rows={summary.byChannel} labelFn={(r) => r.channel} />
+              <PerfTable
+                rows={summary.byChannel}
+                labelFn={(r) => (r.channel === "unattributed" ? "nicht zuordenbar (Coverage-Lücke)" : r.channel)}
+              />
             </CardContent>
           </Card>
 

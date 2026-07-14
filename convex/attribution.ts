@@ -62,13 +62,19 @@ export const touchpointsFor = internalQuery({
       if (seen.has(t._id)) continue;
       seen.add(t._id);
       out.push({
-        id: t._id, ts: t.ts, type: t.type, channel: t.channel || "direct",
+        id: t._id, ts: t.ts, type: t.type, channel: normalizeRawChannel(t.channel),
         campaignId: t.campaignId, adgroupId: t.adgroupId, adId: t.adId,
       });
     }
     return out;
   },
 });
+
+/** Roh-Kanal säubern, BEVOR Modelle rechnen — "Direct"/"(direct)"/"" sind alle direct. */
+function normalizeRawChannel(raw: string | undefined | null): string {
+  const s = (raw ?? "").trim().toLowerCase().replace(/^\(|\)$/g, "");
+  return s === "" || s === "direct" || s === "none" ? "direct" : s;
+}
 
 /** gclid-Backstop: Ad-Zuordnung aus Paket-B-clickViews, wenn UTM nichts hergab. */
 export const clickViewByGclid = internalQuery({
@@ -78,9 +84,17 @@ export const clickViewByGclid = internalQuery({
       .query("clickViews")
       .withIndex("by_gclid", (q) => q.eq("gclid", gclid))
       .collect();
-    const match = rows.find((r) => r.brandId === brandId) ?? rows[0] ?? null;
+    // NUR Brand-Match — ein Cross-Brand-Fallback würde Conversions bewusst falsch klassifizieren.
+    const match = rows.find((r) => r.brandId === brandId) ?? null;
     return match
-      ? { campaignId: match.campaignId, adgroupId: match.adgroupId, adId: match.adId, date: match.date }
+      ? {
+          campaignId: match.campaignId,
+          // clickViews liefern für PMax "0" — Kosten speichern "" (Join-Kompatibilität).
+          adgroupId: match.adgroupId === "0" ? "" : match.adgroupId,
+          adId: match.adId,
+          date: match.date,
+          sourceAccount: match.sourceAccount,
+        }
       : null;
   },
 });
@@ -95,8 +109,10 @@ const factRow = v.object({
   value: v.number(),
   currency: v.string(),
   weight: v.number(),
+  modelVersion: v.string(),
   touchpointId: v.optional(v.id("touchpoints")),
   channel: v.string(),
+  sourceAccount: v.optional(v.string()),
   campaignId: v.optional(v.string()),
   adgroupId: v.optional(v.string()),
   adId: v.optional(v.string()),
@@ -125,6 +141,7 @@ export const swapGeneration = internalMutation({
   args: {
     brandId: v.id("brands"),
     generation: v.number(),
+    expectedGeneration: v.number(), // CAS: Schutz gegen parallele Läufe
     lookbackDays: v.number(),
     conversions: v.number(),
     facts: v.number(),
@@ -134,6 +151,13 @@ export const swapGeneration = internalMutation({
       .query("attributionMeta")
       .withIndex("by_brand", (q) => q.eq("brandId", args.brandId))
       .unique();
+    // Compare-and-swap: Hat ein paralleler Lauf inzwischen aktiviert, brechen wir ab,
+    // statt dessen Generation zu überschreiben (Mutation ist transaktional).
+    if ((meta?.activeGeneration ?? 0) !== args.expectedGeneration) {
+      throw new Error(
+        `swapGeneration: aktive Generation ist ${meta?.activeGeneration ?? 0}, erwartet ${args.expectedGeneration} — paralleler Lauf?`,
+      );
+    }
     const doc = {
       brandId: args.brandId,
       activeGeneration: args.generation,
@@ -239,7 +263,9 @@ export const attributionSummary = query({
     for (const f of facts) {
       const costChannel = normalizeChannel(f.channel);
       const channel = costChannel ?? f.channel;
-      const r = rowFor(channel, f.campaignId ?? "", f.adgroupId ?? "", f.adId ?? "");
+      // "0"→"" wie beim Backstop: Kosten-PMax-Zeilen tragen leere Dimensionen.
+      const norm = (s?: string) => (s === "0" ? "" : (s ?? ""));
+      const r = rowFor(channel, norm(f.campaignId), norm(f.adgroupId), norm(f.adId));
       if (f.conversionType === "lead") r.leads += f.weight;
       if (f.conversionType === "deal_won") r.revenue += f.weight * f.value;
     }
@@ -280,11 +306,28 @@ export const journeyList = query({
       .take(Math.min(limit ?? 20, 50));
 
     const out = [];
+    const LOOKBACK_MS = 90 * 86_400_000;
     for (const c of conversions) {
-      const tps = await ctx.db
+      // Gleiche Join-Logik wie die Engine: Person UND pid, dedupliziert —
+      // und NUR Touchpoints vor der Conversion im Lookback (spätere Pageviews
+      // gehören nicht zur Journey dieser Conversion).
+      const byPerson = await ctx.db
         .query("touchpoints")
         .withIndex("by_person", (q) => q.eq("personId", c.personId))
         .collect();
+      let byPid: Doc<"touchpoints">[] = [];
+      if (c.pid) {
+        byPid = await ctx.db
+          .query("touchpoints")
+          .withIndex("by_pid", (q) => q.eq("brandId", brand._id).eq("pid", c.pid))
+          .collect();
+      }
+      const seen = new Set<string>();
+      const tps = [...byPerson, ...byPid].filter((t) => {
+        if (seen.has(t._id)) return false;
+        seen.add(t._id);
+        return t.ts <= c.ts && t.ts >= c.ts - LOOKBACK_MS;
+      });
       out.push({
         conversionId: c._id,
         ts: c.ts,
@@ -294,7 +337,7 @@ export const journeyList = query({
         timeline: tps
           .sort((a, b) => a.ts - b.ts)
           .map((t) => ({
-            ts: t.ts, type: t.type, channel: t.channel || "direct",
+            ts: t.ts, type: t.type, channel: normalizeRawChannel(t.channel),
             campaignId: t.campaignId, urlPath: t.urlPath, device: t.device,
           })),
       });
@@ -365,11 +408,17 @@ export const qaAlerts = query({
         .withIndex("by_brand_ts", (q) => q.eq("brandId", brand._id))
         .order("desc")
         .take(10);
+      let unattributed = 0;
       for (const c of sample) {
         const facts = await ctx.db
           .query("attributionFacts")
           .withIndex("by_conversion", (q) => q.eq("conversionId", c._id).eq("generation", meta.activeGeneration))
           .collect();
+        if (facts.length === 0) {
+          alerts.push(`Conversion ${c._id} hat KEINE Facts in der aktiven Generation — Engine-Lauf prüfen.`);
+          break;
+        }
+        if (facts.some((f) => f.channel === "unattributed")) unattributed++;
         const linear = facts.filter((f) => f.model === "linear");
         if (linear.length > 0) {
           const s = linear.reduce((a, f) => a + f.weight, 0);
@@ -378,6 +427,11 @@ export const qaAlerts = query({
             break;
           }
         }
+      }
+      if (unattributed > 0) {
+        alerts.push(
+          `${unattributed}/${sample.length} der letzten Conversions sind NICHT zuordenbar (kein pid-/Klick-Match) — Beacon-/pid-Coverage prüfen.`,
+        );
       }
     }
     return alerts;

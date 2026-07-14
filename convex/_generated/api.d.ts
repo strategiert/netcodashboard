@@ -10,6 +10,7 @@
 
 import type * as actions_aggregateBautvWeekly from "../actions/aggregateBautvWeekly.js";
 import type * as actions_backfill from "../actions/backfill.js";
+import type * as actions_computeAttribution from "../actions/computeAttribution.js";
 import type * as actions_fetchPublerWorkspaces from "../actions/fetchPublerWorkspaces.js";
 import type * as actions_publerHelpers from "../actions/publerHelpers.js";
 import type * as actions_seedBautvGsc from "../actions/seedBautvGsc.js";
@@ -35,6 +36,7 @@ import type * as actions_syncTraffic from "../actions/syncTraffic.js";
 import type * as adCosts from "../adCosts.js";
 import type * as adsMapping from "../adsMapping.js";
 import type * as aiVisibility from "../aiVisibility.js";
+import type * as attribution from "../attribution.js";
 import type * as auth from "../auth.js";
 import type * as authEmail from "../authEmail.js";
 import type * as brands from "../brands.js";
@@ -69,6 +71,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "actions/aggregateBautvWeekly": typeof actions_aggregateBautvWeekly;
   "actions/backfill": typeof actions_backfill;
+  "actions/computeAttribution": typeof actions_computeAttribution;
   "actions/fetchPublerWorkspaces": typeof actions_fetchPublerWorkspaces;
   "actions/publerHelpers": typeof actions_publerHelpers;
   "actions/seedBautvGsc": typeof actions_seedBautvGsc;
@@ -94,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   adCosts: typeof adCosts;
   adsMapping: typeof adsMapping;
   aiVisibility: typeof aiVisibility;
+  attribution: typeof attribution;
   auth: typeof auth;
   authEmail: typeof authEmail;
   brands: typeof brands;
