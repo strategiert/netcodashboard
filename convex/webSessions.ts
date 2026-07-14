@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, query, QueryCtx, MutationCtx } from "./_generated/server";
+import { internalMutation, internalQuery, query, QueryCtx, MutationCtx } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Anonyme Web-Sessions: Upsert (Engine) + Admin-Query (Dashboard).
