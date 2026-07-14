@@ -20,4 +20,11 @@ crons.weekly("sync AI Visibility", { dayOfWeek: "monday", hourUTC: 7, minuteUTC:
 // Aufräumen alter Ingest-Nonces (Datalake), verhindert unbegrenztes Wachstum von ingestNonces.
 crons.hourly("cleanup datalake nonces", { minuteUTC: 50 }, internal.datalake.cleanupNonces);
 
+// Datalake Paket B: Ad-Level-Kosten (35-Tage-Restatement-Fenster) + click_view-Backstop.
+// Minute 50 gemieden (nonce-cleanup); Staffelung ist Lastglättung, keine Serialisierung.
+crons.daily("sync ad costs google", { hourUTC: 6, minuteUTC: 52 }, internal.actions.syncGadsCosts.syncGadsCosts, {});
+crons.daily("sync ad costs meta",   { hourUTC: 6, minuteUTC: 55 }, internal.actions.syncMetaCosts.syncMetaCosts, {});
+crons.daily("sync ad costs ms",     { hourUTC: 6, minuteUTC: 58 }, internal.actions.syncMsCosts.syncMsCosts, {});
+crons.daily("sync click views",     { hourUTC: 7, minuteUTC: 8 },  internal.actions.syncClickViews.syncClickViews, { days: 3 });
+
 export default crons;
