@@ -183,6 +183,41 @@ async function requireAdmin(ctx: QueryCtx | MutationCtx) {
   return user;
 }
 
+/**
+ * Tagessummen-Abgleich: adCosts je Kanal vs. kpiSnapshots-adSpend (source "ads",
+ * Kampagnen-Aggregat aus syncAds). Google sollte ±Rundung übereinstimmen.
+ */
+export const verifyDay = internalQuery({
+  args: { date: v.string() },
+  handler: async (ctx, { date }) => {
+    const brands = await ctx.db.query("brands").collect();
+    const byChannel: Record<string, { spend: number; clicks: number; rows: number }> = {};
+    for (const brand of brands) {
+      const docs = await ctx.db
+        .query("adCosts")
+        .withIndex("by_brand_date", (q) => q.eq("brandId", brand._id).eq("date", date))
+        .collect();
+      for (const d of docs) {
+        byChannel[d.channel] ??= { spend: 0, clicks: 0, rows: 0 };
+        byChannel[d.channel].spend += d.spend;
+        byChannel[d.channel].clicks += d.clicks;
+        byChannel[d.channel].rows++;
+      }
+    }
+    let kpiAdSpend = 0;
+    for (const brand of brands) {
+      const snap = await ctx.db
+        .query("kpiSnapshots")
+        .withIndex("by_brand_source_date", (q) =>
+          q.eq("brandId", brand._id).eq("source", "ads").eq("date", date),
+        )
+        .first();
+      kpiAdSpend += snap?.adSpend ?? 0;
+    }
+    return { date, byChannel, kpiAdSpendGoogle: kpiAdSpend };
+  },
+});
+
 export const debugAdCosts = query({
   args: { brandSlug: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, { brandSlug, limit }) => {
