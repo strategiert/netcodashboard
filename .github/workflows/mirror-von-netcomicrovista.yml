@@ -1,0 +1,29 @@
+name: Backup-Spiegel von netcomicrovista
+
+# netcomicrovista = aktives Git (Mitarbeiter), strategiert = Backup-Kopie.
+# Läuft nur im strategiert-Repo (Guard unten); die Datei liegt in beiden Repos,
+# damit der Force-Push sie nicht aus dem Backup löscht.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mirror-backup
+  cancel-in-progress: false
+
+jobs:
+  pull-mirror:
+    if: github.repository_owner == 'strategiert'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Spiegeln
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          git clone --mirror "https://x-access-token:${{ secrets.NETCOMICROVISTA_TOKEN }}@github.com/netcomicrovista/${REPO_NAME}.git" src.git
+          cd src.git
+          git push --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*"
