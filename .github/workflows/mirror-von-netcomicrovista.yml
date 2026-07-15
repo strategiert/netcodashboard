@@ -26,4 +26,5 @@ jobs:
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           git clone --mirror "https://x-access-token:${{ secrets.NETCOMICROVISTA_TOKEN }}@github.com/netcomicrovista/${REPO_NAME}.git" src.git
           cd src.git
-          git push --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*"
+          # PAT statt github.token: GITHUB_TOKEN darf keine Workflow-Dateien pushen
+          git push --force "https://x-access-token:${{ secrets.STRATEGIERT_PUSH_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" "refs/heads/*:refs/heads/*" "refs/tags/*:refs/tags/*"
