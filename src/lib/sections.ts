@@ -4,8 +4,9 @@
 
 export type SectionKey =
   | "report" | "daily" | "social" | "rankings" | "aiVisibility"  // member-vergebbar
+  | "datalake" | "attribution"                                    // member-vergebbar
   | "dashboard" | "kpis" | "campaigns" | "funnel"                 // admin-only
-  | "content" | "stakeholders" | "journeys" | "seo" | "datalake" | "attribution";
+  | "content" | "stakeholders" | "journeys" | "seo";
 
 export type Section = {
   key: SectionKey;
@@ -22,6 +23,8 @@ export const SECTIONS: Section[] = [
   { key: "social",       href: "/social",       label: "Social",       icon: "Share2",        adminOnly: false },
   { key: "rankings",     href: "/rankings",     label: "Rankings",     icon: "TrendingUp",    adminOnly: false },
   { key: "aiVisibility", href: "/ai-visibility", label: "KI-Analyse",  icon: "Sparkles",      adminOnly: false },
+  { key: "datalake",     href: "/datalake",     label: "Datalake",     icon: "Database",      adminOnly: false },
+  { key: "attribution",  href: "/attribution",  label: "Attribution",  icon: "GitBranch",     adminOnly: false },
   // Admin-only (für Mitarbeiter komplett unsichtbar):
   { key: "dashboard",    href: "",              label: "Dashboard",    icon: "LayoutDashboard", adminOnly: true },
   { key: "kpis",         href: "/kpis",         label: "KPIs",         icon: "BarChart2",     adminOnly: true },
@@ -31,8 +34,6 @@ export const SECTIONS: Section[] = [
   { key: "stakeholders", href: "/stakeholders", label: "Stakeholder",  icon: "Users",         adminOnly: true },
   { key: "journeys",     href: "/journeys",     label: "Journeys",     icon: "Route",         adminOnly: true },
   { key: "seo",          href: "/seo",          label: "SEO Cluster",  icon: "Search",        adminOnly: true },
-  { key: "datalake",     href: "/datalake",     label: "Datalake",     icon: "Database",      adminOnly: true },
-  { key: "attribution",  href: "/attribution",  label: "Attribution",  icon: "GitBranch",     adminOnly: true },
 ];
 
 // Nur diese Sections kann ein Admin einem Member zuweisen.
