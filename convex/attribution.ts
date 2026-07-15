@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import {
-  internalMutation, internalQuery, query, QueryCtx, MutationCtx,
+  internalMutation, internalQuery, query, QueryCtx,
 } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireSection } from "./authz";
 import { Id, Doc } from "./_generated/dataModel";
 import { normalizeChannel, MODELS } from "../src/lib/attribution-models";
 
@@ -186,15 +186,7 @@ export const deleteGeneration = internalMutation({
   },
 });
 
-// ── Admin-Queries (exakt das requireAdmin-Muster aus convex/users.ts) ──────
-
-async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Nicht angemeldet");
-  const user = await ctx.db.get(userId);
-  if (user?.role !== "admin") throw new Error("Keine Berechtigung (nur Admin)");
-  return user;
-}
+// ── UI-Queries (Section-Recht "attribution", siehe convex/authz.ts) ────────
 
 async function brandBySlug(ctx: QueryCtx, slug: string) {
   return await ctx.db
@@ -212,7 +204,7 @@ type AggRow = {
 export const attributionSummary = query({
   args: { brandSlug: v.string(), model: v.string(), days: v.number() },
   handler: async (ctx, { brandSlug, model, days }) => {
-    await requireAdmin(ctx);
+    await requireSection(ctx, "attribution");
     if (!(MODELS as readonly string[]).includes(model)) throw new Error(`Unbekanntes Modell: ${model}`);
     const brand = await brandBySlug(ctx, brandSlug);
     if (!brand) return null;
@@ -296,7 +288,7 @@ export const attributionSummary = query({
 export const journeyList = query({
   args: { brandSlug: v.string(), limit: v.optional(v.number()) },
   handler: async (ctx, { brandSlug, limit }) => {
-    await requireAdmin(ctx);
+    await requireSection(ctx, "attribution");
     const brand = await brandBySlug(ctx, brandSlug);
     if (!brand) return [];
     const conversions = await ctx.db
@@ -349,7 +341,7 @@ export const journeyList = query({
 export const qaAlerts = query({
   args: { brandSlug: v.string() },
   handler: async (ctx, { brandSlug }) => {
-    await requireAdmin(ctx);
+    await requireSection(ctx, "attribution");
     const brand = await brandBySlug(ctx, brandSlug);
     if (!brand) return [];
     const alerts: string[] = [];

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, query, QueryCtx, MutationCtx } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
+import { requireSection } from "./authz";
 
-// Anonyme Web-Sessions: Upsert (Engine) + Admin-Query (Dashboard).
+// Anonyme Web-Sessions: Upsert (Engine) + Dashboard-Query (Section "datalake").
 // Session-Definition siehe convex/actions/syncWebSessions.ts + Governance-Paket.
 
 export const upsertDay = internalMutation({
@@ -30,14 +30,6 @@ export const upsertDay = internalMutation({
     else await ctx.db.insert("webSessionDaily", doc);
   },
 });
-
-async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Nicht angemeldet");
-  const user = await ctx.db.get(userId);
-  if (user?.role !== "admin") throw new Error("Keine Berechtigung (nur Admin)");
-  return user;
-}
 
 // Wochensummen für den etracker-Parallelvergleich (CLI: npx convex run webSessions:parallelWeek --prod).
 export const parallelWeek = internalQuery({
@@ -76,7 +68,7 @@ export const parallelWeek = internalQuery({
 export const range = query({
   args: { brandSlug: v.string(), days: v.optional(v.number()) },
   handler: async (ctx, { brandSlug, days }) => {
-    await requireAdmin(ctx);
+    await requireSection(ctx, "datalake");
     const brand = await ctx.db
       .query("brands")
       .withIndex("by_slug", (q) => q.eq("slug", brandSlug))

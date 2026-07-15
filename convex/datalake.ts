@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 import { verifyIngestSignature } from "./datalakeHmac";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireSection } from "./authz";
 import type { Id } from "./_generated/dataModel";
 
 const recordValidator = v.object({
@@ -168,10 +169,7 @@ export const debugLast = query({
 export const overview = query({
   args: { brandSlug: v.string(), days: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Nicht angemeldet");
-    const user = await ctx.db.get(userId);
-    if (user?.role !== "admin") throw new Error("Keine Berechtigung (nur Admin)");
+    await requireSection(ctx, "datalake");
 
     const brand = await ctx.db.query("brands")
       .withIndex("by_slug", (q) => q.eq("slug", args.brandSlug)).unique();
