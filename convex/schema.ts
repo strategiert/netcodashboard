@@ -831,4 +831,34 @@ export default defineSchema({
     conversions: v.number(),
     facts: v.number(),
   }).index("by_brand", ["brandId"]),
+
+  // ── Forecast (Chronos-2, externer nächtlicher Python-Prozess) ───────────────
+  // 14-Tage-Prognosen (p10/p50/p90) je Marke/Metrik + Anomalien aus 7-Tage-Backtest.
+  // Generation-Swap wie attributionFacts: Sweep erst nach fehlerfreiem Komplettlauf.
+  forecasts: defineTable({
+    brandId: v.id("brands"),
+    metric: v.union(v.literal("sessions"), v.literal("adSpend"), v.literal("adConversions")),
+    date: v.string(),        // YYYY-MM-DD
+    p10: v.number(),
+    p50: v.number(),
+    p90: v.number(),
+    generation: v.number(),
+    computedAt: v.number(),
+  })
+    .index("by_brand_metric_date", ["brandId", "metric", "date"])
+    .index("by_generation", ["generation"]),
+
+  forecastAnomalies: defineTable({
+    brandId: v.id("brands"),
+    metric: v.union(v.literal("sessions"), v.literal("adSpend"), v.literal("adConversions")),
+    date: v.string(),        // YYYY-MM-DD
+    actual: v.number(),
+    p10: v.number(),
+    p90: v.number(),
+    severity: v.union(v.literal("warn"), v.literal("critical")),
+    generation: v.number(),
+    computedAt: v.number(),
+  })
+    .index("by_brand_date", ["brandId", "date"])
+    .index("by_generation", ["generation"]),
 });
