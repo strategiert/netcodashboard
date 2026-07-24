@@ -317,7 +317,9 @@ export default function DailyReportPage() {
   const cplPrev = convPrev > 0 ? spendPrev / convPrev : 0;
 
   // Liniendaten: Sitzungen letzte 28 Tage + Vorwochen-Vergleichslinie ab Wochenstart
-  const lineData = rows.map(r => ({
+  // Chart ohne den laufenden Tag: der ist in GA4 immer unvollständig und ließe
+  // die Ist-Linie scheinbar abstürzen, während die Prognose (ab heute) oben ansetzt.
+  const lineData = rows.filter(r => r.date < todayIso).map(r => ({
     name: dayLabel(r.date),
     date: r.date,
     Sitzungen: r.sessions,
@@ -325,13 +327,16 @@ export default function DailyReportPage() {
   const weekStartLabel = lineData.find(d => d.date === iso(thisMon))?.name;
 
   // Prognose-Band (Chronos-2): Ist-Reihe um 14 Tage p10/p50/p90 verlängern.
-  // Am heutigen Tag (Bridge-Punkt) wird Prognose zusätzlich zur Ist-Linie
-  // gesetzt, damit die gestrichelte Linie nahtlos anschließt.
+  // Bridge-Punkt: am LETZTEN Ist-Tag (gestern) startet die gestrichelte Linie auf
+  // dem Ist-Wert, damit sie nahtlos anschließt statt versetzt daneben zu beginnen.
   const forecastByDate = new Map((forecastSessions as ForecastPoint[] | undefined ?? []).map(f => [f.date, f]));
   const hasForecastSessions = forecastByDate.size > 0;
+  const lastActualDate = lineData.at(-1)?.date;
   const chartData: ChartRow[] = lineData.map(r => {
     const f = forecastByDate.get(r.date);
-    return f ? { ...r, Prognose: f.p50, p10: f.p10, p90: f.p90 } : r;
+    if (f) return { ...r, Prognose: f.p50, p10: f.p10, p90: f.p90 };
+    if (hasForecastSessions && r.date === lastActualDate) return { ...r, Prognose: r.Sitzungen };
+    return r;
   });
   const chartDates = new Set(chartData.map(r => r.date));
   for (const f of (forecastSessions as ForecastPoint[] | undefined ?? [])) {
