@@ -25,7 +25,7 @@ function loadSecret() {
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
     const m = line.match(/^FORECAST_INGEST_SECRET=(.*)$/);
-    if (m) return m[1].trim();
+    if (m) return m[1].trim().replace(/^["']|["']$/g, "");
   }
   return undefined;
 }
@@ -76,6 +76,14 @@ async function main() {
   const anomalies = data.anomalies ?? [];
   if (typeof generation !== "number" || !Number.isFinite(generation)) {
     console.error(`FEHLER: ungültige generation in ${OUT_FILE}: ${generation}`);
+    process.exit(1);
+  }
+  // Leer-Lauf-Schutz: 0 Forecast-Rows + done=true würde via sweepStale ALLE
+  // bestehenden Prognosen löschen, ohne dass etwas nachrückt (z. B. wenn ein
+  // Feldname kippt und alle Serien am <60-Punkte-Filter hängenbleiben). Ein
+  // leerer Lauf ist nie ein legitimer Zustand — abbrechen, alte Generation bleibt.
+  if (rows.length === 0) {
+    console.error("FEHLER: output.json enthält 0 Forecast-Rows — Push abgebrochen, bestehende Prognosen bleiben aktiv.");
     process.exit(1);
   }
 

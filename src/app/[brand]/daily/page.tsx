@@ -151,10 +151,10 @@ function ForecastChartTooltip({ active, payload, label }: any) {
           <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0 border border-[#2a78d6]" />
           <span className="text-muted-foreground">Prognose:</span>
           <span className="font-semibold tabular-nums">
-            {prognoseEntry.value.toLocaleString("de-DE")}
+            {Math.round(prognoseEntry.value).toLocaleString("de-DE")}
             {row?.p10 != null && row?.p90 != null && (
               <span className="text-muted-foreground font-normal">
-                {" "}(Band {row.p10.toLocaleString("de-DE")}–{row.p90.toLocaleString("de-DE")})
+                {" "}(Band {Math.round(row.p10).toLocaleString("de-DE")}–{Math.round(row.p90).toLocaleString("de-DE")})
               </span>
             )}
           </span>
@@ -333,14 +333,20 @@ export default function DailyReportPage() {
     const f = forecastByDate.get(r.date);
     return f ? { ...r, Prognose: f.p50, p10: f.p10, p90: f.p90 } : r;
   });
+  const chartDates = new Set(chartData.map(r => r.date));
   for (const f of (forecastSessions as ForecastPoint[] | undefined ?? [])) {
-    if (f.date > todayIso) {
+    // Alle Prognose-Tage anhängen, die nicht schon als Ist-/Bridge-Zeile existieren —
+    // deckt auch den Fall, dass dailyTraffic für heute noch keine Zeile hat.
+    if (!chartDates.has(f.date)) {
       chartData.push({ name: dayLabel(f.date), date: f.date, Prognose: f.p50, p10: f.p10, p90: f.p90 });
+      chartDates.add(f.date);
     }
   }
+  chartData.sort((a, b) => a.date.localeCompare(b.date));
 
-  // Prognose-Kachel „Nächste 7 Tage": Summe p50/p10/p90 Sitzungen (Tage nach heute)
-  const next7Sessions = (forecastSessions as ForecastPoint[] | undefined ?? []).filter(f => f.date > todayIso);
+  // Prognose-Kachel „Nächste 7 Tage": Summe p50/p10/p90 Sitzungen (heute+1 … heute+7)
+  const next7Sessions = (forecastSessions as ForecastPoint[] | undefined ?? [])
+    .filter(f => f.date > todayIso && f.date <= forecastTo7);
   const next7SessionsP50 = next7Sessions.reduce((s, f) => s + f.p50, 0);
   const next7SessionsP10 = next7Sessions.reduce((s, f) => s + f.p10, 0);
   const next7SessionsP90 = next7Sessions.reduce((s, f) => s + f.p90, 0);
