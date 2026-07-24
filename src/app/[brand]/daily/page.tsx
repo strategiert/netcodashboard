@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
+  Line, BarChart, Bar, ComposedChart, Area, XAxis, YAxis, Tooltip, Legend,
   ResponsiveContainer, CartesianGrid, ReferenceLine,
 } from "recharts";
 
@@ -126,6 +126,79 @@ function ChartTooltip({ active, payload, label, isCurrency }: any) {
   );
 }
 
+// ── Forecast-Tooltip (Sitzungen-Chart, Ist + Prognose-Band) ──────────────────
+
+function ForecastChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const sitzungenEntry = payload.find((p: any) => p.dataKey === "Sitzungen");
+  const prognoseEntry = payload.find((p: any) => p.dataKey === "Prognose");
+  const row = payload[0]?.payload;
+  const hasSitzungen = sitzungenEntry && typeof sitzungenEntry.value === "number";
+  const hasPrognose = prognoseEntry && typeof prognoseEntry.value === "number";
+  if (!hasSitzungen && !hasPrognose) return null;
+  return (
+    <div className="rounded-lg border bg-popover p-3 shadow-md text-sm">
+      <p className="font-medium mb-1">{label}</p>
+      {hasSitzungen && (
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: "#2a78d6" }} />
+          <span className="text-muted-foreground">Sitzungen:</span>
+          <span className="font-semibold tabular-nums">{sitzungenEntry.value.toLocaleString("de-DE")}</span>
+        </div>
+      )}
+      {hasPrognose && (
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0 border border-[#2a78d6]" />
+          <span className="text-muted-foreground">Prognose:</span>
+          <span className="font-semibold tabular-nums">
+            {prognoseEntry.value.toLocaleString("de-DE")}
+            {row?.p10 != null && row?.p90 != null && (
+              <span className="text-muted-foreground font-normal">
+                {" "}(Band {row.p10.toLocaleString("de-DE")}–{row.p90.toLocaleString("de-DE")})
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Anomalie-Banner ───────────────────────────────────────────────────────────
+
+const ANOMALY_METRIC_LABELS: Record<string, string> = {
+  sessions: "Sitzungen",
+  adSpend: "Werbekosten",
+  adConversions: "Conversions",
+};
+
+function AnomalyBanner({ anomalies }: { anomalies: AnomalyPoint[] }) {
+  if (!anomalies.length) return null;
+  return (
+    <div className="space-y-2">
+      {anomalies.map((a) => {
+        const isCurrency = a.metric === "adSpend";
+        const fmtVal = (n: number) => (isCurrency ? eur(n) : fmt(n));
+        const critical = a.severity === "critical";
+        return (
+          <div
+            key={`${a.date}-${a.metric}`}
+            className={`rounded-lg border p-3 text-sm flex flex-wrap items-center gap-2 ${
+              critical
+                ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400"
+                : "border-amber-500/30 bg-amber-500/20 text-amber-700 dark:text-amber-500"
+            }`}
+          >
+            <span className="font-medium whitespace-nowrap">{dayLabel(a.date)}</span>
+            <span>· {ANOMALY_METRIC_LABELS[a.metric] ?? a.metric}:</span>
+            <span>Ist {fmtVal(a.actual)}, erwartet {fmtVal(a.p10)}–{fmtVal(a.p90)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Sync-Button (nur Tages-Traffic + Ads) ─────────────────────────────────────
 
 function DailySyncButton() {
@@ -170,6 +243,15 @@ function sumField(rows: DayRow[], field: keyof DayRow): number {
   return rows.reduce((s, r) => s + (Number(r[field]) || 0), 0);
 }
 
+type ForecastPoint = { date: string; p10: number; p50: number; p90: number };
+type AnomalyPoint = {
+  date: string;
+  metric: "sessions" | "adSpend" | "adConversions";
+  actual: number; p10: number; p90: number;
+  severity: "warn" | "critical";
+};
+type ChartRow = { name: string; date: string; Sitzungen?: number; Prognose?: number; p10?: number; p90?: number };
+
 export default function DailyReportPage() {
   const { brand } = useParams<{ brand: string }>();
   const brandData = useQuery(api.brands.getBySlug, { slug: brand });
@@ -191,6 +273,23 @@ export default function DailyReportPage() {
   const adsSnaps = useQuery(
     api.kpi.getAllByDateRange,
     brandData ? { brandId: brandData._id, from, to: todayIso } : "skip"
+  );
+
+  // Forecast (Chronos-2): Sitzungen 14 Tage voraus (inkl. heute für den
+  // Anschlusspunkt an die Ist-Linie), Ad-Spend + Anomalien nur nächste 7 Tage.
+  const forecastTo14 = iso(addDays(today, 14));
+  const forecastTo7 = iso(addDays(today, 7));
+  const forecastSessions = useQuery(
+    api.forecast.getForecast,
+    brandData ? { brandSlug: brand, metric: "sessions", from: todayIso, to: forecastTo14 } : "skip"
+  );
+  const forecastAdSpend = useQuery(
+    api.forecast.getForecast,
+    brandData ? { brandSlug: brand, metric: "adSpend", from: iso(addDays(today, 1)), to: forecastTo7 } : "skip"
+  );
+  const anomalies = useQuery(
+    api.forecast.getAnomalies,
+    brandData ? { brandSlug: brand, days: 7 } : "skip"
   );
 
   if (!brandData || traffic === undefined || adsSnaps === undefined) {
@@ -224,6 +323,35 @@ export default function DailyReportPage() {
     Sitzungen: r.sessions,
   }));
   const weekStartLabel = lineData.find(d => d.date === iso(thisMon))?.name;
+
+  // Prognose-Band (Chronos-2): Ist-Reihe um 14 Tage p10/p50/p90 verlängern.
+  // Am heutigen Tag (Bridge-Punkt) wird Prognose zusätzlich zur Ist-Linie
+  // gesetzt, damit die gestrichelte Linie nahtlos anschließt.
+  const forecastByDate = new Map((forecastSessions as ForecastPoint[] | undefined ?? []).map(f => [f.date, f]));
+  const hasForecastSessions = forecastByDate.size > 0;
+  const chartData: ChartRow[] = lineData.map(r => {
+    const f = forecastByDate.get(r.date);
+    return f ? { ...r, Prognose: f.p50, p10: f.p10, p90: f.p90 } : r;
+  });
+  for (const f of (forecastSessions as ForecastPoint[] | undefined ?? [])) {
+    if (f.date > todayIso) {
+      chartData.push({ name: dayLabel(f.date), date: f.date, Prognose: f.p50, p10: f.p10, p90: f.p90 });
+    }
+  }
+
+  // Prognose-Kachel „Nächste 7 Tage": Summe p50/p10/p90 Sitzungen (Tage nach heute)
+  const next7Sessions = (forecastSessions as ForecastPoint[] | undefined ?? []).filter(f => f.date > todayIso);
+  const next7SessionsP50 = next7Sessions.reduce((s, f) => s + f.p50, 0);
+  const next7SessionsP10 = next7Sessions.reduce((s, f) => s + f.p10, 0);
+  const next7SessionsP90 = next7Sessions.reduce((s, f) => s + f.p90, 0);
+
+  const forecastAdSpendRows = (forecastAdSpend as ForecastPoint[] | undefined ?? []);
+  const hasForecastAdSpend = forecastAdSpendRows.length > 0;
+  const next7AdSpendP50 = forecastAdSpendRows.reduce((s, f) => s + f.p50, 0);
+  const next7AdSpendP10 = forecastAdSpendRows.reduce((s, f) => s + f.p10, 0);
+  const next7AdSpendP90 = forecastAdSpendRows.reduce((s, f) => s + f.p90, 0);
+
+  const anomalyRows = (anomalies as AnomalyPoint[] | undefined ?? []);
 
   // Kanal-Vergleich (diese Woche vs Vorwoche gleiche Tage)
   const channels: { key: keyof DayRow; label: string }[] = [
@@ -266,6 +394,9 @@ export default function DailyReportPage() {
         <DailySyncButton />
       </div>
 
+      {/* Anomalie-Hinweise (Chronos-2-Backtest, letzte 7 Tage) */}
+      <AnomalyBanner anomalies={anomalyRows} />
+
       {/* KPI-Kacheln */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <KpiTile label="Sitzungen heute" value={fmt(todayRow?.sessions ?? 0)}
@@ -294,27 +425,73 @@ export default function DailyReportPage() {
         <CardHeader>
           <CardTitle className="text-base">
             Sitzungen pro Tag (letzte 4 Wochen)
-            <span className="ml-2 text-xs font-normal text-muted-foreground">gestrichelte Linie = Start der laufenden Woche</span>
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              gestrichelte Linie = Start der laufenden Woche
+              {hasForecastSessions && " · gepunktete Linie ab heute = Prognose (Band = P10–P90)"}
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData} margin={{ top: 4, right: 12, bottom: 0, left: -20 }}>
+              <ComposedChart data={chartData} margin={{ top: 4, right: 12, bottom: 0, left: -20 }}>
                 <CartesianGrid strokeDasharray="0" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={24} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip content={<ChartTooltip />} />
+                <Tooltip content={<ForecastChartTooltip />} />
                 {weekStartLabel && (
                   <ReferenceLine x={weekStartLabel} stroke="#2a78d6" strokeDasharray="4 3" />
                 )}
+                {hasForecastSessions && (
+                  <ReferenceLine x={dayLabel(todayIso)} stroke="#94a3b8" strokeDasharray="3 3"
+                    label={{ value: "Heute", position: "insideTopRight", fontSize: 10, fill: "#94a3b8" }} />
+                )}
+                {hasForecastSessions && (
+                  <Area type="monotone" dataKey={(d: ChartRow) => (d.p10 != null && d.p90 != null ? [d.p10, d.p90] : null)}
+                    stroke="none" fill="#2a78d6" fillOpacity={0.15} isAnimationActive={false} legendType="none" />
+                )}
                 <Line type="monotone" dataKey="Sitzungen" stroke="#2a78d6" strokeWidth={2} dot={false}
                   activeDot={{ r: 4 }} />
-              </LineChart>
+                {hasForecastSessions && (
+                  <Line type="monotone" dataKey="Prognose" stroke="#2a78d6" strokeWidth={2}
+                    strokeDasharray="5 3" strokeOpacity={0.6} dot={false} activeDot={{ r: 4 }}
+                    connectNulls={false} isAnimationActive={false} />
+                )}
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
+
+      {/* Prognose-Kachel „Nächste 7 Tage" (Chronos-2) */}
+      {hasForecastSessions && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Prognose: nächste 7 Tage</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-8">
+              <div>
+                <div className="text-xs text-muted-foreground mb-1">Sitzungen (Summe)</div>
+                <div className="text-2xl font-bold tabular-nums">{fmt(Math.round(next7SessionsP50))}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Band {fmt(Math.round(next7SessionsP10))}–{fmt(Math.round(next7SessionsP90))}
+                </div>
+              </div>
+              {hasForecastAdSpend && (
+                <div>
+                  <div className="text-xs text-muted-foreground mb-1">Ad-Spend (Summe)</div>
+                  <div className="text-2xl font-bold tabular-nums">{eur(next7AdSpendP50)}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    Band {eur(next7AdSpendP10)}–{eur(next7AdSpendP90)}
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground/70 mt-4">Chronos-2, nächtlich aktualisiert</p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Kanäle */}
