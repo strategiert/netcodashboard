@@ -136,6 +136,11 @@ export const sweepStale = internalMutation({
   },
 });
 
+// Anders als datalake.ingest bewusst OHNE Nonce-Replay-Store: verifyIngestSignature
+// verwirft Requests außerhalb ±5 Minuten, der Upsert ist idempotent je
+// (brand,metric,date), und ein Replay mit alter generation kann via sweepStale
+// (löscht nur generation < X) keine neueren Daten entfernen. Ein Replay im
+// 5-Minuten-Fenster schreibt also nur identische Werte doppelt — folgenlos.
 export const ingestHttp = httpAction(async (ctx, request) => {
   const secret = process.env.FORECAST_INGEST_SECRET;
   if (!secret) return new Response("not configured", { status: 503 });
@@ -148,6 +153,13 @@ export const ingestHttp = httpAction(async (ctx, request) => {
 
   let parsed: { generation: number; rows?: unknown[]; anomalies?: unknown[]; done?: boolean };
   try { parsed = JSON.parse(body); } catch { return new Response("bad json", { status: 400 }); }
+  if (typeof parsed.generation !== "number" || !Number.isFinite(parsed.generation)) {
+    return new Response("bad generation", { status: 400 });
+  }
+  if ((parsed.rows !== undefined && !Array.isArray(parsed.rows)) ||
+      (parsed.anomalies !== undefined && !Array.isArray(parsed.anomalies))) {
+    return new Response("bad payload", { status: 400 });
+  }
 
   const result = await ctx.runMutation(internal.forecast.upsertBatch, {
     rows: (parsed.rows ?? []) as never,
