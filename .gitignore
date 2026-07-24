@@ -42,3 +42,8 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# forecast-Pipeline (forecast/): Python-venv, Roh-/Ergebnisdaten, Nachtlauf-Logs
+forecast/.venv/
+forecast/data/
+forecast/logs/
