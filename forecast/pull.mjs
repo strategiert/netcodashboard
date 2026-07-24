@@ -27,7 +27,10 @@ async function main() {
   const brands = await client.query("brands:list", {});
   console.log(`  ${brands.length} Marken gefunden.`);
 
-  const to = isoDaysAgo(0);
+  // Bis GESTERN: der laufende Tag ist in GA4/Ads immer unvollständig — nähme man
+  // ihn mit, produzierte der Backtest garantiert Fake-Anomalien („Ist 8, erwartet
+  // 41–75") und der Forecast lernte einen künstlichen Einbruch am Serienende.
+  const to = isoDaysAgo(1);
   const from = isoDaysAgo(LOOKBACK_DAYS);
 
   const out = { pulledAt: new Date().toISOString(), brands: [] };
